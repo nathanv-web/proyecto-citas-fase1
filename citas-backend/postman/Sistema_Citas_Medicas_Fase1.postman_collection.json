@@ -1,0 +1,210 @@
+{
+  "info": {
+    "_postman_id": "0a42399e-e37f-4b8e-b9c0-f29b4e61f5a6",
+    "name": "Sistema de Citas Médicas - Fase 1",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "00 - Prueba",
+      "item": [
+        {
+          "name": "Backend funcionando",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/hola",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "hola"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "01 - Médicos",
+      "item": [
+        {
+          "name": "Listar médicos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/doctors",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "doctors"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Crear médico",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Carlos\",\n  \"apellido\": \"Martinez\",\n  \"colegiado\": \"COL-1002\",\n  \"telefono\": \"55550003\",\n  \"especialidad\": {\n    \"id\": 1\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/doctors",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "doctors"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "02 - Horarios",
+      "item": [
+        {
+          "name": "Horarios disponibles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/schedules/available?medicoId=1&fecha=2026-08-24",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "schedules", "available"],
+              "query": [
+                {
+                  "key": "medicoId",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "fecha",
+                  "value": "2026-08-24",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "03 - Autenticación",
+      "item": [
+        {
+          "name": "Iniciar sesión",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    pm.collectionVariables.set(\"token\", pm.response.text().trim());",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"paciente@correo.com\",\n  \"password\": \"123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "login"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "04 - Citas",
+      "item": [
+        {
+          "name": "Crear cita",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idHorario\": 1,\n  \"idUsuario\": 1,\n  \"idEstado\": 1,\n  \"motivo\": \"Consulta médica general\",\n  \"observaciones\": \"Primera cita de prueba desde Postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/appointments",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "appointments"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Listar citas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/appointments",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "appointments"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8081"
+    },
+    {
+      "key": "token",
+      "value": ""
+    }
+  ]
+}
