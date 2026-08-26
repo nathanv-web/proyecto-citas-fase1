@@ -6,51 +6,74 @@ import jakarta.persistence.*;
 @Table(name = "medicos")
 public class Medico {
 
+    //ATRIBUTOS
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "id_medico")
+    private Long idMedico;
 
-    @Column(nullable = false)
-    private String nombre;
 
-    @Column(nullable = false)
-    private String apellido;
+    //RELACION CON TABLA USUARIO
+    @OneToOne
+    @JoinColumn(name = "id_usuario")
+    private Usuario usuario;
 
-    @Column(nullable = false, unique = true)
+
+    //RELACION CON TABLA ESPECIALIDAD
+    @ManyToOne
+    @JoinColumn(name = "id_especialidad")
+    private Especialidad especialidad;
+
+
+    //ATRIBUTOS
+
     private String colegiado;
 
-    private String telefono;
+    @Column(name = "anios_experiencia")
+    private Integer aniosExperiencia;
 
-    @ManyToOne
-    @JoinColumn(name = "especialidad_id", nullable = false)
-    private Especialidad especialidad;
+    private String biografia;
+
+    //Estado actual del medico
+    @Enumerated(EnumType.STRING)
+    private EstadoMedico estado = EstadoMedico.ACTIVO;
+
+
+    //CONSTRUCTOR
 
     public Medico() {
     }
 
-    public Long getId() {
-        return id;
+
+    //GETTERS Y SETTERS
+
+    public Long getIdMedico() {
+        return idMedico;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setIdMedico(Long idMedico) {
+        this.idMedico = idMedico;
     }
 
-    public String getNombre() {
-        return nombre;
+
+    public Usuario getUsuario() {
+        return usuario;
     }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
     }
 
-    public String getApellido() {
-        return apellido;
+
+    public Especialidad getEspecialidad() {
+        return especialidad;
     }
 
-    public void setApellido(String apellido) {
-        this.apellido = apellido;
+    public void setEspecialidad(Especialidad especialidad) {
+        this.especialidad = especialidad;
     }
+
 
     public String getColegiado() {
         return colegiado;
@@ -60,19 +83,37 @@ public class Medico {
         this.colegiado = colegiado;
     }
 
-    public String getTelefono() {
-        return telefono;
+
+    public Integer getAniosExperiencia() {
+        return aniosExperiencia;
     }
 
-    public void setTelefono(String telefono) {
-        this.telefono = telefono;
+    public void setAniosExperiencia(Integer aniosExperiencia) {
+        this.aniosExperiencia = aniosExperiencia;
     }
 
-    public Especialidad getEspecialidad() {
-        return especialidad;
+
+    public String getBiografia() {
+        return biografia;
     }
 
-    public void setEspecialidad(Especialidad especialidad) {
-        this.especialidad = especialidad;
+    public void setBiografia(String biografia) {
+        this.biografia = biografia;
+    }
+
+
+    public EstadoMedico getEstado() {
+        return estado;
+    }
+
+    public void setEstado(EstadoMedico estado) {
+        this.estado = estado;
+    }
+
+
+    //ESTADOS POSIBLES DEL MEDICO
+    public enum EstadoMedico {
+        ACTIVO,
+        INACTIVO
     }
 }
