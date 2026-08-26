@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/v1/doctors")
+@RequestMapping("/api/v1/medicos")
 public class MedicoController {
 
     @Autowired
