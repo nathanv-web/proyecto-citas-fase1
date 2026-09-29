@@ -1,22 +1,36 @@
 package com.proyectocitas.service.Impl;
 
+import com.proyectocitas.dto.RolUpdateDTO;
+import com.proyectocitas.exception.DuplicateResourceException;
+import com.proyectocitas.exception.ResourceNotFoundException;
+import com.proyectocitas.model.Permiso;
 import com.proyectocitas.model.Rol;
 import com.proyectocitas.repository.RolRepository;
 import com.proyectocitas.service.RolService;
+import com.proyectocitas.repository.UsuarioRepository;
+import java.util.HashSet;
+
 import org.springframework.stereotype.Service;
+
+
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import org.springframework.http.HttpStatus;
 
 @Service
 public class RolServiceImpl implements RolService {
 
     private final RolRepository rolRepository;
+    private final UsuarioRepository usuarioRepository;
 
     //Constructor para inyectar el repositorio
 
-    public RolServiceImpl(RolRepository rolRepository) {
+    public RolServiceImpl(RolRepository rolRepository,
+            UsuarioRepository usuarioRepository){
         this.rolRepository = rolRepository;
+        this.usuarioRepository = usuarioRepository;
     }
 
     //Obtener todos los roles
@@ -29,8 +43,11 @@ public class RolServiceImpl implements RolService {
     //Buscar un rol por su ID
 
     @Override
-    public Optional<Rol> obtenerPorId(Long id) {
-        return rolRepository.findById(id);
+    public Rol obtenerPorId(Long id) {
+        return rolRepository.findById(id)
+                .orElseThrow(() ->
+                new ResourceNotFoundException(" El rol indicado no existe"));
+                
     }
 
     //Buscar un rol por su nombre
@@ -44,35 +61,76 @@ public class RolServiceImpl implements RolService {
 
     @Override
     public Rol guardar(Rol rol) {
+        if (rolRepository.existsByNombre(rol.getNombre())) {
+            throw new DuplicateResourceException(
+            "Ya existe un rol con este nombre");
+        }
         return rolRepository.save(rol);
     }
 
     //Actualizar solamente los campos que tengan información
 
     @Override
-    public Rol actualizar(Rol rol, Long id) {
-
-        //Buscar el rol existente
-        Rol rolDB = rolRepository.findById(id).get();
-
-        //Actualizar nombre si viene con valor
-        if (rol.getNombre() != null && !rol.getNombre().isEmpty()) {
-            rolDB.setNombre(rol.getNombre());
+    public Rol actualizar(
+           RolUpdateDTO rol
+            , Long id) {
+        
+        Rol rolDB = rolRepository.findById(id)
+                .orElseThrow(() -> 
+                        new  ResourceNotFoundException("El rol indicado no existe"));
+        
+        if (rol.getNombre() != null) {
+            if (!rol.getNombre()
+                .equalsIgnoreCase(rolDB.getNombre())){
+            if (rolRepository.existsByNombre(rol.getNombre())) {
+                throw new DuplicateResourceException(
+                "Ya existe un rol con este nombre");
+            }
+            }
+                rolDB.setNombre(rol.getNombre());
         }
-
-        //Actualizar descripción si viene con valor
-        if (rol.getDescripcion() != null && !rol.getDescripcion().isEmpty()) {
+        
+        if (rol.getDescripcion() != null) {
             rolDB.setDescripcion(rol.getDescripcion());
         }
-
-        //Guardar los cambios realizados
         return rolRepository.save(rolDB);
+        
     }
 
-    //Eliminar un rol
+    //Eliminar un rol y la verificacion si esta asignado a uno o mas usuarios 
 
     @Override
     public void eliminar(Long id) {
-        rolRepository.deleteById(id);
+        
+        Rol rol = rolRepository.findById(id)
+                .orElseThrow(()->
+                new ResourceNotFoundException("El rol indicado no existe"));
+        
+        if (usuarioRepository.existsByRoles_IdRol(id)) {
+            throw new DuplicateResourceException("No se puede eliminar el rol porque esta asignado a uno o más usuarios");
+                    }
+        rolRepository.delete(rol);
     }
+    
+    @Override
+public Rol asignarPermisos(
+        Long idRol,
+        Set<Permiso> permisos) {
+
+    // Buscar rol existente
+    Rol rol = rolRepository.findById(idRol)
+            .orElseThrow(() ->
+                    new ResourceNotFoundException(
+                            "El rol indicado no existe"
+                    )
+            );
+
+    // Asignar permisos seleccionados
+    rol.setPermisos(
+            new HashSet<>(permisos)
+    );
+
+    // Guardar cambios
+    return rolRepository.save(rol);
+}
 }

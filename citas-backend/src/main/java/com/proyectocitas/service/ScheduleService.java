@@ -6,6 +6,7 @@ import com.proyectocitas.model.HorarioDisponible.EstadoHorario;
 import com.proyectocitas.repository.CitaRepository;
 import com.proyectocitas.repository.HorarioDisponibleRepository;
 import com.proyectocitas.repository.MedicoRepository;
+import com.proyectocitas.exception.ResourceNotFoundException;
 
 import org.springframework.stereotype.Service;
 
@@ -65,7 +66,7 @@ public class ScheduleService {
         HorarioDisponible horario =
                 horarioRepository.findById(idHorario)
                         .orElseThrow(() ->
-                                new IllegalArgumentException(
+                                new ResourceNotFoundException(
                                         "El horario no existe"
                                 )
                         );
@@ -168,7 +169,7 @@ public class ScheduleService {
         //Verificar que exista el medico
         if (!medicoRepository.existsById(idMedico)) {
 
-            throw new IllegalArgumentException(
+            throw new ResourceNotFoundException(
                     "El medico indicado no existe"
             );
         }

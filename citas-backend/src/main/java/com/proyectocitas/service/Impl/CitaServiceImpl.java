@@ -1,5 +1,7 @@
 package com.proyectocitas.service.Impl;
 
+import com.proyectocitas.exception.ResourceNotFoundException;
+import com.proyectocitas.exception.ScheduleConflictException;
 import com.proyectocitas.model.Cita;
 import com.proyectocitas.model.EstadoCita;
 import com.proyectocitas.model.HorarioDisponible;
@@ -98,14 +100,17 @@ public class CitaServiceImpl implements CitaService {
         //Buscar el horario seleccionado
         HorarioDisponible horarioDB = horarioRepository.findById(
                 cita.getHorario().getIdHorario()
-        ).get();
+        ).
+                orElseThrow( () ->
+                new  ResourceNotFoundException("El horario indicado no existe")
+                ); 
 
 
         //Verificar que el horario no tenga otra cita
         if (citaRepository.existsByHorario_IdHorario(
                 horarioDB.getIdHorario())) {
 
-            throw new RuntimeException(
+            throw new ScheduleConflictException(
                     "El horario ya fue reservado"
             );
         }
@@ -115,7 +120,7 @@ public class CitaServiceImpl implements CitaService {
         if (horarioDB.getEstado()
                 != EstadoHorario.DISPONIBLE) {
 
-            throw new RuntimeException(
+            throw new ScheduleConflictException(
                     "El horario no está disponible"
             );
         }
@@ -124,13 +129,19 @@ public class CitaServiceImpl implements CitaService {
         //Buscar el usuario que funcionará como paciente
         Usuario pacienteDB = usuarioRepository.findById(
                 cita.getPaciente().getIdUsuario()
-        ).get();
+        ).
+                orElseThrow(()->
+                new  ResourceNotFoundException("El paciente indicado no existe")
+                );
 
 
         //Buscar el estado de la cita
         EstadoCita estadoDB = estadoCitaRepository.findById(
                 cita.getEstado().getIdEstado()
-        ).get();
+        ).
+                orElseThrow(()-> 
+                new  ResourceNotFoundException("El estado de cita indicado no existe")
+                );
 
 
         //Asignar las entidades existentes a la cita
@@ -164,15 +175,21 @@ public class CitaServiceImpl implements CitaService {
 
         //Buscar la cita existente
         Cita citaDB =
-                citaRepository.findById(id).get();
-
+                citaRepository.findById(id)
+                .orElseThrow(()->
+                new ResourceNotFoundException("La cita indicada no existe")
+                );
 
         //Actualizar paciente si viene con información
         if (cita.getPaciente() != null) {
 
             Usuario pacienteDB = usuarioRepository.findById(
                     cita.getPaciente().getIdUsuario()
-            ).get();
+            )
+                    .orElseThrow(()->
+                    new ResourceNotFoundException(
+                    "EL paciente indicado no existe"
+                    ));
 
             citaDB.setPaciente(pacienteDB);
         }
@@ -183,7 +200,11 @@ public class CitaServiceImpl implements CitaService {
 
             EstadoCita estadoDB = estadoCitaRepository.findById(
                     cita.getEstado().getIdEstado()
-            ).get();
+            )
+                    .orElseThrow(()->
+                    new ResourceNotFoundException("El estado de la cita indicado no existe"
+                    )
+                    );
 
             citaDB.setEstado(estadoDB);
         }
@@ -197,8 +218,6 @@ public class CitaServiceImpl implements CitaService {
                     cita.getMotivo()
             );
         }
-
-
         //Actualizar diagnóstico y receta si viene con valor
         if (cita.getDiagnosticoReceta() != null
                 && !cita.getDiagnosticoReceta().isEmpty()) {
@@ -207,8 +226,6 @@ public class CitaServiceImpl implements CitaService {
                     cita.getDiagnosticoReceta()
             );
         }
-
-
         //Actualizar observaciones si vienen con valor
         if (cita.getObservaciones() != null
                 && !cita.getObservaciones().isEmpty()) {
@@ -217,15 +234,10 @@ public class CitaServiceImpl implements CitaService {
                     cita.getObservaciones()
             );
         }
-
-
         //Guardar los cambios realizados
         return citaRepository.save(citaDB);
     }
-
-
     //Eliminar una cita y liberar su horario
-
     @Override
     @Transactional
     //Nos ayuda a tratar las operaciones como una sola.
@@ -234,24 +246,20 @@ public class CitaServiceImpl implements CitaService {
 
         //Buscar la cita que será eliminada
         Cita citaDB =
-                citaRepository.findById(id).get();
-
-
+                citaRepository.findById(id)
+                .orElseThrow(()->
+                new ResourceNotFoundException("La cita indicada no existe")
+                );
+                
         //Obtener el horario relacionado con la cita
         HorarioDisponible horarioDB =
                 citaDB.getHorario();
-
-
         //Liberar nuevamente el horario
         horarioDB.setEstado(
                 EstadoHorario.DISPONIBLE
         );
-
-
         //Guardar el cambio del horario
         horarioRepository.save(horarioDB);
-
-
         //Eliminar la cita
         citaRepository.deleteById(id);
     }

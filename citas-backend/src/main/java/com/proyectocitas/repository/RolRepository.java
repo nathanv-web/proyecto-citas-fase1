@@ -10,4 +10,6 @@ public interface RolRepository extends JpaRepository<Rol, Long> {
     
     // Spring Boot es tan inteligente que si le pides "buscar por nombre", él hace el resto
     Optional<Rol> findByNombre(String nombre);
+    //Verificar que no haiga duplicacion de roles
+    boolean existsByNombre(String nombre);
 }

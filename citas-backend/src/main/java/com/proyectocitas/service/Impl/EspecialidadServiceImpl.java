@@ -1,5 +1,6 @@
 package com.proyectocitas.service.Impl;
 
+import com.proyectocitas.exception.ResourceNotFoundException;
 import com.proyectocitas.model.Especialidad;
 import com.proyectocitas.repository.EspecialidadRepository;
 import com.proyectocitas.service.EspecialidadService;
@@ -53,7 +54,10 @@ public class EspecialidadServiceImpl implements EspecialidadService {
     public Especialidad actualizar(Especialidad especialidad, Long id) {
 
         //Buscar la especialidad existente
-        Especialidad especialidadDB = especialidadRepository.findById(id).get();
+        Especialidad especialidadDB = especialidadRepository.findById(id)
+                .orElseThrow(()->
+                new ResourceNotFoundException("La especialidad indicada no existe")
+                );
 
         //Actualizar nombre si viene con valor
         if (especialidad.getNombre() != null && !especialidad.getNombre().isEmpty()) {

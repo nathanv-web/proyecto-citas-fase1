@@ -1,10 +1,12 @@
 package com.proyectocitas.controller;
 
+import com.proyectocitas.dto.AppointmentRequestDTO;
 import com.proyectocitas.dto.AppointmentResponseDTO;
 import com.proyectocitas.dto.DiagnosisRequestDTO;
 import com.proyectocitas.service.AppointmentService;
+
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,39 +15,59 @@ import org.springframework.web.server.ResponseStatusException;
 import java.security.Principal;
 import java.util.List;
 
+
 @RestController
 @RequestMapping("/api/v1/appointments")
 public class AppointmentController {
 
-    @Autowired
-    private AppointmentService appointmentService;
+    private final AppointmentService appointmentService;
 
 
-    // Método desarrollado por Integrante 4
-    @PostMapping
-    public ResponseEntity<?> crearCita(
-            @RequestBody String datosCita,
-            Principal principal) {
+    public AppointmentController(
+            AppointmentService appointmentService) {
 
-        String emailPaciente = (principal != null)
-                ? principal.getName()
-                : "paciente_anonimo@prueba.com";
-
-        String respuesta = appointmentService
-                .agendarCita(datosCita, emailPaciente);
-
-        return ResponseEntity.ok(respuesta);
+        this.appointmentService = appointmentService;
     }
 
 
-    // Integrante 5 - Registrar diagnóstico y completar cita
-    @PutMapping("/{id}/diagnosis")
-    public ResponseEntity<AppointmentResponseDTO> registrarDiagnostico(
-            @PathVariable("id") Long idCita,
-            @Valid @RequestBody DiagnosisRequestDTO diagnosisRequest,
+    // Crear una nueva cita médica
+    @PostMapping
+    public ResponseEntity<AppointmentResponseDTO> crearCita(
+            @Valid @RequestBody AppointmentRequestDTO request,
             Principal principal) {
 
         if (principal == null) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Usuario no autenticado"
+            );
+        }
+
+        AppointmentResponseDTO cita =
+                appointmentService.agendarCita(
+                        request,
+                        principal.getName()
+                );
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(cita);
+    }
+
+
+    // Registrar diagnóstico y completar cita
+    @PutMapping("/{id}/diagnosis")
+    public ResponseEntity<AppointmentResponseDTO>
+            registrarDiagnostico(
+                    @PathVariable("id") Long idCita,
+                    @Valid
+                    @RequestBody
+                    DiagnosisRequestDTO diagnosisRequest,
+                    Principal principal) {
+
+        if (principal == null) {
+
             throw new ResponseStatusException(
                     HttpStatus.UNAUTHORIZED,
                     "Usuario no autenticado"
@@ -63,12 +85,14 @@ public class AppointmentController {
     }
 
 
-    // Integrante 5 - Historial del paciente autenticado
+    // Historial del paciente autenticado
     @GetMapping("/my-history")
-    public ResponseEntity<List<AppointmentResponseDTO>> obtenerMiHistorial(
-            Principal principal) {
+    public ResponseEntity<List<AppointmentResponseDTO>>
+            obtenerMiHistorial(
+                    Principal principal) {
 
         if (principal == null) {
+
             throw new ResponseStatusException(
                     HttpStatus.UNAUTHORIZED,
                     "Usuario no autenticado"
@@ -82,4 +106,24 @@ public class AppointmentController {
 
         return ResponseEntity.ok(historial);
     }
+            @PutMapping("/{id}/cancel")
+public ResponseEntity<AppointmentResponseDTO> cancelarCita(
+        @PathVariable Long id,
+        Principal principal) {
+
+    if (principal == null) {
+        throw new ResponseStatusException(
+                HttpStatus.UNAUTHORIZED,
+                "Usuario no autenticado"
+        );
+    }
+
+    AppointmentResponseDTO respuesta =
+            appointmentService.cancelarCita(
+                    id,
+                    principal.getName()
+            );
+
+    return ResponseEntity.ok(respuesta);
+}
 }

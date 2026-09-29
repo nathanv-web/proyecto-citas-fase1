@@ -1,5 +1,6 @@
 package com.proyectocitas.service.Impl;
 
+import com.proyectocitas.exception.ResourceNotFoundException;
 import com.proyectocitas.model.Medico;
 import com.proyectocitas.model.Especialidad;
 import com.proyectocitas.model.Usuario;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import org.hibernate.ResourceClosedException;
 
 @Service
 public class MedicoServiceImpl implements MedicoService {
@@ -42,16 +44,12 @@ public class MedicoServiceImpl implements MedicoService {
     public List<Medico> obtenerTodos() {
         return medicoRepository.findAll();
     }
-
-
     //Buscar un médico por su ID
 
     @Override
     public Optional<Medico> obtenerPorId(Long id) {
         return medicoRepository.findById(id);
     }
-
-
     //Buscar un médico por el ID del usuario
 
     @Override
@@ -60,32 +58,32 @@ public class MedicoServiceImpl implements MedicoService {
         return medicoRepository
                 .findByUsuario_IdUsuario(idUsuario);
     }
-
-
     //Guardar un nuevo médico
 
     @Override
     public Medico guardar(Medico medico) {
         return medicoRepository.save(medico);
     }
-
-
     //Actualizar solamente los campos que tengan información
-
     @Override
     public Medico actualizar(Medico medico, Long id) {
 
         //Buscar el médico existente
         Medico medicoDB =
-                medicoRepository.findById(id).get();
-
+                medicoRepository.findById(id)
+                .orElseThrow(()->
+                new ResourceClosedException("El medico indicado no existe")
+);
 
         //Actualizar usuario si viene con información
         if (medico.getUsuario() != null) {
 
             Usuario usuarioDB = usuarioRepository.findById(
                     medico.getUsuario().getIdUsuario()
-            ).get();
+            )
+                    .orElseThrow(()->
+                    new  ResourceNotFoundException("El usuario indicado no existe")
+                    );
 
             medicoDB.setUsuario(usuarioDB);
         }
@@ -98,7 +96,10 @@ public class MedicoServiceImpl implements MedicoService {
                     especialidadRepository.findById(
                             medico.getEspecialidad()
                                     .getIdEspecialidad()
-                    ).get();
+                    )
+                    .orElseThrow(()->
+                    new ResourceNotFoundException("La especialidad indicada no existe")
+                    );
 
             medicoDB.setEspecialidad(especialidadDB);
         }

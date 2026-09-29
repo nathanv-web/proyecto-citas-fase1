@@ -109,12 +109,12 @@ private Set<Rol> roles = new HashSet<>();
         this.telefono = telefono;
     }
 
-    public String getContraseña() {
+    public String getContrasena() {
         return contrasena;
     }
 
-    public void setContraseña(String contraseña) {
-        this.contrasena = contraseña;
+    public void setContraseña(String contrasena) {
+        this.contrasena = contrasena;
     }
 
     public LocalDateTime getFechaRegistro() {
@@ -144,12 +144,43 @@ private Set<Rol> roles = new HashSet<>();
     // METODOS DE USERDETAILS
     // SPRING SECURITY
     
-    @Override // permisos o roles que tiene un usuario
-    public Collection< ? extends GrantedAuthority> getAuthorities(){
-        return roles.stream()
-                .map(rol -> new SimpleGrantedAuthority(rol.getNombre()))
-                .toList();
+@Override
+public Collection<? extends GrantedAuthority> getAuthorities() {
+
+    Set<GrantedAuthority> authorities =
+            new HashSet<>();
+
+    // Recorrer todos los roles del usuario
+    for (Rol rol : roles) {
+
+        // =================================================
+        // AGREGAR ROL
+        // =================================================
+        authorities.add(
+                new SimpleGrantedAuthority(
+                        rol.getNombre()
+                )
+        );
+
+
+        // =================================================
+        // AGREGAR PERMISOS DEL ROL
+        // =================================================
+        if (rol.getPermisos() != null) {
+
+            for (Permiso permiso : rol.getPermisos()) {
+
+                authorities.add(
+                        new SimpleGrantedAuthority(
+                                permiso.name()
+                        )
+                );
+            }
+        }
     }
+
+    return authorities;
+}
     
     @Override
     public String getUsername(){

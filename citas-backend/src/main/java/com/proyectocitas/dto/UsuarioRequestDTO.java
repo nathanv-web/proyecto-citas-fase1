@@ -30,6 +30,7 @@ public class UsuarioRequestDTO {
     private String correo;
 
     //Teléfono del usuario
+    @NotBlank(message = "El teléfono es obligatorio")
     @Size(
         max = 20,
         message = "El teléfono no puede superar los 20 caracteres"

@@ -1,5 +1,6 @@
 package com.proyectocitas.service.Impl;
 
+import com.proyectocitas.exception.ResourceNotFoundException;
 import com.proyectocitas.model.Medico;
 import com.proyectocitas.model.HorarioDisponible;
 import com.proyectocitas.model.HorarioDisponible.EstadoHorario;
@@ -96,16 +97,16 @@ public class HorarioDisponibleServiceImpl
 
             Medico medicoDB = medicoRepository.findById(
                     horario.getMedico().getIdMedico()
-            ).get();
+            )
+                    .orElseThrow(()->
+                    new ResourceNotFoundException("El medico indicado no existe")
+                            );
 
             horario.setMedico(medicoDB);
         }
-
         //Guardar el horario
         return horarioRepository.save(horario);
     }
-
-
     //Actualizar solamente los campos que tengan información
 
     @Override
@@ -115,7 +116,10 @@ public class HorarioDisponibleServiceImpl
 
         //Buscar el horario existente
         HorarioDisponible horarioDB =
-                horarioRepository.findById(id).get();
+                horarioRepository.findById(id)
+                .orElseThrow(()->
+                new ResourceNotFoundException("El Horario indicado no existe")
+                );
 
 
         //Actualizar medico si viene con información
@@ -123,7 +127,11 @@ public class HorarioDisponibleServiceImpl
 
             Medico medicoDB = medicoRepository.findById(
                     horario.getMedico().getIdMedico()
-            ).get();
+            )
+                    .orElseThrow(()->
+                    new ResourceNotFoundException("El medico indicado no existe")
+                    );
+            
 
             horarioDB.setMedico(medicoDB);
         }

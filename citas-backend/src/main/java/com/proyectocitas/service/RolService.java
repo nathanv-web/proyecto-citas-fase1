@@ -1,9 +1,12 @@
 package com.proyectocitas.service;
 
 import com.proyectocitas.model.Rol;
+import com.proyectocitas.dto.RolUpdateDTO;
+import com.proyectocitas.model.Permiso;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface RolService {
 
@@ -13,7 +16,7 @@ public interface RolService {
 
     //Buscar un rol por su ID
 
-    Optional<Rol> obtenerPorId(Long id);
+    Rol obtenerPorId(Long id);
 
     //Buscar un rol por su nombre
 
@@ -25,9 +28,19 @@ public interface RolService {
 
     //Actualizar solo los datos enviados
 
-    Rol actualizar(Rol rol, Long id);
+    Rol actualizar(RolUpdateDTO rol, Long id);
 
     //Eliminar un rol por su ID
 
     void eliminar(Long id);
+
+   //Asignar Permisos
+    
+    Rol asignarPermisos(
+    Long idRol,
+            Set<Permiso> permisos
+                    
+    );
+
+
 }

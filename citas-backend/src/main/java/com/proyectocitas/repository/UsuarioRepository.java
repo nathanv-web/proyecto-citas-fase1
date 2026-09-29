@@ -11,4 +11,10 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     
     // Usaremos esto para el Login: buscar si existe un usuario con un email específico
     Optional<Usuario> findByCorreo(String correo);
+    
+    //Para no tener usuarios duplicados
+    boolean existsByCorreo(String correo);
+    
+    //Para validar si un usuario esta usando un Rol al cual queremos eliminar
+    boolean existsByRoles_IdRol(Long idRol);
 }

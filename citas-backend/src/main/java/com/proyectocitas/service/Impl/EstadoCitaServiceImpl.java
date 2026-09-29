@@ -1,5 +1,6 @@
 package com.proyectocitas.service.Impl;
 
+import com.proyectocitas.exception.ResourceNotFoundException;
 import com.proyectocitas.model.EstadoCita;
 import com.proyectocitas.model.EstadoCita.NombreEstado;
 import com.proyectocitas.repository.EstadoCitaRepository;
@@ -60,7 +61,10 @@ public class EstadoCitaServiceImpl implements EstadoCitaService {
             Long id) {
 
         //Buscar el estado existente
-        EstadoCita estadoDB = estadoCitaRepository.findById(id).get();
+        EstadoCita estadoDB = estadoCitaRepository.findById(id)
+                .orElseThrow(()->
+                new ResourceNotFoundException("El estado indicado no existe")
+                );
 
         //Actualizar nombre si viene con valor
         if (estadoCita.getNombre() != null) {
