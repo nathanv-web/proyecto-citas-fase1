@@ -9,6 +9,7 @@ import org.springframework.validation.FieldError;
 
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -298,6 +299,30 @@ public ResponseEntity<Map<String, Object>>
 
     return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
+            .body(respuesta);
+}
+        
+        // =================================================
+// CREDENCIALES INCORRECTAS
+// =================================================
+
+@ExceptionHandler(BadCredentialsException.class)
+public ResponseEntity<Map<String, Object>>
+        manejarCredencialesInvalidas(
+                BadCredentialsException ex,
+                HttpServletRequest request) {
+
+    Map<String, Object> respuesta =
+            new LinkedHashMap<>();
+
+    respuesta.put("timestamp", LocalDateTime.now());
+    respuesta.put("status", HttpStatus.UNAUTHORIZED.value());
+    respuesta.put("error", HttpStatus.UNAUTHORIZED.getReasonPhrase());
+    respuesta.put("message", "Credenciales inválidas");
+    respuesta.put("path", request.getRequestURI());
+
+    return ResponseEntity
+            .status(HttpStatus.UNAUTHORIZED)
             .body(respuesta);
 }
 
