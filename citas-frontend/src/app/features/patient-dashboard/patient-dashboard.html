@@ -1,0 +1,26 @@
+<div class="dashboard-container">
+  <h2>Panel del Paciente</h2>
+  <p>Bienvenido. Aquí puedes consultar y gestionar tus citas médicas.</p>
+
+  <div class="seccion-medicos">
+    <h3>Nuestros Médicos</h3>
+    <ul>
+ 
+      @for (medico of medicos; track medico.id) {
+        <li>{{ medico.nombre }} {{ medico.apellido }}</li>
+      } @empty {
+        <li>Cargando médicos...</li>
+      }
+    </ul>
+  </div>
+
+  <hr>
+
+    <button style="padding: 10px; background-color: #007bff; color: white; border: none; border-radius: 5px;">
+      Buscar Horarios y Reservar Cita
+    </button>
+  
+  <app-appointment-history></app-appointment-history>
+  <app-schedule-search></app-schedule-search>
+  <app-appointment-form></app-appointment-form>
+</div>

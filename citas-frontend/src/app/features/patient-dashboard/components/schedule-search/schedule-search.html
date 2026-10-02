@@ -1,0 +1,24 @@
+<div class="buscador-container" style="margin-top: 20px; padding: 15px; border: 1px solid #ccc; border-radius: 5px; background-color: #f9f9f9;">
+  <h3>Horarios Disponibles</h3>
+  <p>Selecciona un horario para tu próxima cita:</p>
+
+  @if (horarios.length === 0) {
+    <p>Buscando horarios libres...</p>
+  } @else {
+    <ul style="list-style: none; padding: 0;">
+      @for (horario of horarios; track horario.id) {
+        <li style="margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; background-color: white; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <strong>Fecha y Hora:</strong> {{ horario.fechaHora }} <br>
+            <strong>Médico:</strong> {{ horario.medicoNombre }}
+          </div>
+          
+          
+          <button style="padding: 8px 15px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            Seleccionar
+          </button>
+        </li>
+      }
+    </ul>
+  }
+</div>
