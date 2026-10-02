@@ -28,20 +28,23 @@
         <label for="nombre">Nombre</label>
 
         <input
-          id="nombre"
-          type="text"
-          formControlName="nombre"
-        />
+  id="nombre"
+  type="text"
+  formControlName="nombre"
+  maxlength="50"
+  autocomplete="given-name"
+/>
 
         @if (
-          formulario.controls.nombre.touched &&
-          formulario.controls.nombre.invalid
-        ) {
-          <small>
-            El nombre es obligatorio y debe tener
-            entre 2 y 100 caracteres.
-          </small>
-        }
+  formulario.controls.nombre.touched &&
+  formulario.controls.nombre.invalid
+) {
+  <small>
+    El nombre debe tener entre 3 y 50 caracteres.
+    Solo se permiten letras, espacios y separadores
+    como guiones o apóstrofos.
+  </small>
+}
       </div>
 
       <!-- APELLIDO -->
@@ -49,21 +52,25 @@
       <div>
         <label for="apellido">Apellido</label>
 
-        <input
-          id="apellido"
-          type="text"
-          formControlName="apellido"
-        />
+       <input
+  id="apellido"
+  type="text"
+  formControlName="apellido"
+  maxlength="50"
+  autocomplete="family-name"
+  />
 
-        @if (
-          formulario.controls.apellido.touched &&
-          formulario.controls.apellido.invalid
-        ) {
-          <small>
-            El apellido es obligatorio y debe tener
-            entre 2 y 100 caracteres.
-          </small>
-        }
+
+       @if (
+  formulario.controls.apellido.touched &&
+  formulario.controls.apellido.invalid
+) {
+  <small>
+    El apellido debe tener entre 3 y 50 caracteres.
+    Solo se permiten letras, espacios y separadores
+    como guiones o apóstrofos.
+  </small>
+}
       </div>
 
       <!-- CORREO -->
@@ -93,20 +100,23 @@
         <label for="telefono">Teléfono</label>
 
         <input
-          id="telefono"
-          type="tel"
-          formControlName="telefono"
-        />
+  id="telefono"
+  type="tel"
+  inputmode="numeric"
+  maxlength="20"
+  autocomplete="tel"
+  formControlName="telefono"
+/>
 
         @if (
-          formulario.controls.telefono.touched &&
-          formulario.controls.telefono.invalid
-        ) {
-          <small>
-            El teléfono es obligatorio y no puede
-            superar 20 caracteres.
-          </small>
-        }
+  formulario.controls.telefono.touched &&
+  formulario.controls.telefono.invalid
+) {
+  <small>
+    El teléfono debe contener únicamente números
+    y tener entre 8 y 20 dígitos.
+  </small>
+}
       </div>
 
       <!-- CONTRASEÑA: SOLO CREACIÓN -->

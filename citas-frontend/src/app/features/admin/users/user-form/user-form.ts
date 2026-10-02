@@ -38,37 +38,48 @@ export class UserForm implements OnInit {
   // FORMULARIO REACTIVO
   // ===============================================
 
-  formulario = this.fb.nonNullable.group({
+ // Solo letras, espacios y letras con acentos.
+private readonly patronNombre =
+  /^[\p{L}]+(?:[ '\u2019-][\p{L}]+)*$/u;
 
-    nombre: ['', [
-      Validators.required,
-      Validators.minLength(2),
-      Validators.maxLength(100)
-    ]],
+// Solo números del 0 al 9.
+private readonly patronTelefono = /^[0-9]+$/;
 
-    apellido: ['', [
-      Validators.required,
-      Validators.minLength(2),
-      Validators.maxLength(100)
-    ]],
+formulario = this.fb.nonNullable.group({
 
-    correo: ['', [
-      Validators.required,
-      Validators.email
-    ]],
+  nombre: ['', [
+    Validators.required,
+    Validators.minLength(3),
+    Validators.maxLength(50),
+    Validators.pattern(this.patronNombre)
+  ]],
 
-    telefono: ['', [
-      Validators.required,
-      Validators.maxLength(20)
-    ]],
+  apellido: ['', [
+    Validators.required,
+    Validators.minLength(3),
+    Validators.maxLength(50),
+    Validators.pattern(this.patronNombre)
+  ]],
 
-    contrasena: ['', [
-      Validators.required,
-      Validators.minLength(8),
-      Validators.maxLength(12)
-    ]]
+  correo: ['', [
+    Validators.required,
+    Validators.email
+  ]],
 
-  });
+  telefono: ['', [
+    Validators.required,
+    Validators.minLength(8),
+    Validators.maxLength(20),
+    Validators.pattern(this.patronTelefono)
+  ]],
+
+  contrasena: ['', [
+    Validators.required,
+    Validators.minLength(8),
+    Validators.maxLength(12)
+  ]]
+
+});
 
   // ===============================================
   // INICIALIZAR
