@@ -1,0 +1,124 @@
+/* Contenedor principal */
+.usuario-form-container {
+  max-width: 650px;
+  margin: 40px auto;
+  padding: 35px;
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+}
+
+/* Título */
+.usuario-form-container h2 {
+  margin: 0 0 25px;
+  color: #263238;
+  font-size: 26px;
+  font-weight: 700;
+}
+
+/* Formulario */
+.usuario-form-container form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Cada campo */
+.usuario-form-container form > div {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Etiquetas */
+.usuario-form-container label {
+  color: #334155;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* Entradas */
+.usuario-form-container input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 15px;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.usuario-form-container input:focus {
+  outline: none;
+  border-color: #1976d2;
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.12);
+}
+
+/* Validaciones */
+.usuario-form-container small {
+  color: #dc2626;
+  font-size: 12px;
+}
+
+/* Mensaje de error */
+.usuario-form-container .error {
+  color: #b91c1c;
+  background: #fee2e2;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+/* Botón Guardar */
+.usuario-form-container button[type="submit"] {
+  padding: 12px 20px;
+  background: #1976d2;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.usuario-form-container button[type="submit"]:hover:not(:disabled) {
+  background: #125aa0;
+}
+
+.usuario-form-container button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Enlace Cancelar */
+.usuario-form-container a {
+  padding: 12px 18px;
+  background: #f1f5f9;
+  color: #334155;
+  text-decoration: none;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.usuario-form-container a:hover {
+  background: #e2e8f0;
+}
+
+/* Acciones del formulario */
+.usuario-form-container form > div:last-child {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+/* Móviles */
+@media (max-width: 600px) {
+  .usuario-form-container {
+    margin: 15px;
+    padding: 20px;
+  }
+
+  .usuario-form-container form > div:last-child {
+    flex-direction: column;
+  }
+}

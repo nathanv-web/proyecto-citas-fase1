@@ -1,0 +1,98 @@
+<section class="roles-container">
+
+  <h2>Asignar roles a usuario</h2>
+
+  @if (cargando) {
+    <p>Cargando roles...</p>
+  }
+
+  @if (error) {
+    <p class="error" role="alert">
+      {{ error }}
+    </p>
+  }
+
+  @if (usuario && !cargando) {
+
+    <h3>
+      Usuario:
+      {{ usuario.nombre }}
+      {{ usuario.apellido }}
+    </h3>
+
+    <p>
+      Correo: {{ usuario.correo }}
+    </p>
+
+    <h4>Seleccione los roles</h4>
+
+    @if (roles.length === 0) {
+
+      <p>No existen roles disponibles.</p>
+
+    } @else {
+
+      @for (rol of roles; track rol.idRol) {
+
+        <div class="rol-item">
+
+          <label>
+
+            <input
+              type="checkbox"
+              [checked]="
+                rolesSeleccionados.includes(rol.idRol)
+              "
+              [disabled]="guardando"
+              (change)="
+                cambiarRol(
+                  rol.idRol,
+                  $any($event.target).checked
+                )
+              "
+            />
+
+            {{ rol.nombre }}
+
+          </label>
+
+          <small>
+            {{ rol.descripcion }}
+          </small>
+
+        </div>
+
+      }
+
+    }
+
+    @if (rolesSeleccionados.length === 0) {
+
+      <p class="error">
+        Debe seleccionar al menos un rol.
+      </p>
+
+    }
+
+    <div class="acciones">
+
+      <button
+        type="button"
+        (click)="guardarRoles()"
+        [disabled]="
+          guardando ||
+          rolesSeleccionados.length === 0
+        "
+      >
+        {{ guardando ? 'Guardando...' : 'Guardar roles' }}
+      </button>
+
+      <a routerLink="/admin/users">
+        Cancelar
+      </a>
+
+    </div>
+
+  }
+
+</section>
