@@ -2,34 +2,48 @@ package com.proyectocitas.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Pattern;
 
 public class UsuarioUpdateDTO {
+    
+@Size(
+    min = 2,
+    max = 100,
+    message = "El nombre debe tener entre 3 y 50 caracteres"
+)
+@Pattern(
+    regexp = "\\p{L}+(?:[ '\\u2019-]\\p{L}+)*",
+    message = "El nombre solo puede contener letras y separadores válidos"
+)
+private String nombre;
 
     @Size(
-        min = 2,
-        max = 100,
-        message = "El nombre debe tener entre 2 y 100 caracteres"
-    )
-    private String nombre;
-
-    @Size(
-        min = 2,
-        max = 100,
-        message = "El apellido debe tener entre 2 y 100 caracteres"
-    )
-    private String apellido;
-
+    min = 2,
+    max = 100,
+    message = "El apellido debe tener entre 3 y 50 caracteres"
+)
+@Pattern(
+    regexp = "\\p{L}+(?:[ '\\u2019-]\\p{L}+)*",
+    message = "El apellido solo puede contener letras y separadores válidos"
+)
+private String apellido;
+    
     @Email(
         message = "El correo debe tener un formato válido"
     )
     private String correo;
 
     @Size(
-        max = 20,
-        message = "El teléfono no puede superar los 20 caracteres"
-    )
-    private String telefono;
-
+    min = 8,
+    max = 20,
+    message = "El teléfono debe tener entre 8 y 20 dígitos"
+)
+@Pattern(
+    regexp = "[0-9]+",
+    message = "El teléfono solo puede contener números"
+)
+    
+private String telefono;
     private Boolean activo;
 
 
