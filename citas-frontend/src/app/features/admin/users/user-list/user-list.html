@@ -1,0 +1,160 @@
+<!-- ================================================= -->
+<!-- ADMINISTRACIÓN DE USUARIOS -->
+<!-- ================================================= -->
+
+<section class="usuarios-container">
+
+  <h2>Administración de Usuarios</h2>
+
+  <!-- ================================================= -->
+  <!-- CREAR USUARIO -->
+  <!-- ================================================= -->
+
+  @if (authService.hasPermission('CREAR_USUARIOS')) {
+
+    <a routerLink="/admin/users/new">
+      Nuevo usuario
+    </a>
+
+  }
+
+
+  <!-- ================================================= -->
+  <!-- MENSAJES -->
+  <!-- ================================================= -->
+
+  @if (cargando) {
+
+    <p>Cargando usuarios...</p>
+
+  }
+
+
+  @if (error) {
+
+    <p class="error">
+      {{ error }}
+    </p>
+
+  }
+
+
+  <!-- ================================================= -->
+  <!-- TABLA -->
+  <!-- ================================================= -->
+
+  @if (authService.hasPermission('VER_USUARIOS') && !cargando) {
+
+    @if (usuarios.length === 0 && !error) {
+
+      <p>No hay usuarios registrados.</p>
+
+    } @else if (usuarios.length > 0) {
+
+      <table>
+
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Correo</th>
+            <th>Teléfono</th>
+            <th>Roles</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+          @for (usuario of usuarios; track usuario.idUsuario) {
+
+            <tr>
+
+              <td>{{ usuario.idUsuario }}</td>
+
+              <td>
+                {{ usuario.nombre }}
+                {{ usuario.apellido }}
+              </td>
+
+              <td>{{ usuario.correo }}</td>
+
+              <td>{{ usuario.telefono }}</td>
+
+              <td>
+                {{ usuario.roles.join(', ') || 'Sin roles' }}
+              </td>
+
+              <td>
+                {{ usuario.activo ? 'Activo' : 'Inactivo' }}
+              </td>
+
+              <td>
+
+                <!-- EDITAR -->
+
+                @if (authService.hasPermission('ACTUALIZAR_USUARIOS')) {
+
+                  <a
+                    [routerLink]="[
+                      '/admin/users/edit',
+                      usuario.idUsuario
+                    ]">
+                    Editar
+                  </a>
+
+                }
+
+
+                <!-- ASIGNAR ROLES -->
+
+                @if (authService.hasPermission('ASIGNAR_ROLES')) {
+
+                  <a
+                    [routerLink]="[
+                      '/admin/users/roles',
+                      usuario.idUsuario
+                    ]">
+                    Asignar roles
+                  </a>
+
+                }
+
+
+                <!-- DESACTIVAR -->
+
+                @if (
+                  authService.hasPermission('DESACTIVAR_USUARIOS')
+                  && usuario.activo
+                ) {
+
+                  <button
+                    type="button"
+                    (click)="desactivarUsuario(usuario)">
+
+                    Desactivar
+
+                  </button>
+
+                }
+
+              </td>
+
+            </tr>
+
+          }
+
+        </tbody>
+
+      </table>
+
+    }
+
+  } @else if (!authService.hasPermission('VER_USUARIOS')) {
+
+    <p>No tienes permisos para consultar usuarios.</p>
+
+  }
+
+</section>

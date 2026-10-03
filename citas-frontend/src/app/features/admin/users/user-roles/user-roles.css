@@ -1,0 +1,142 @@
+/* Contenedor principal */
+.roles-container {
+  max-width: 650px;
+  margin: 40px auto;
+  padding: 35px;
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+}
+
+/* Título */
+.roles-container h2 {
+  margin: 0 0 25px;
+  color: #263238;
+  font-size: 26px;
+  font-weight: 700;
+}
+
+/* Información del usuario */
+.roles-container h3 {
+  color: #334155;
+  font-size: 18px;
+  margin-bottom: 8px;
+}
+
+.roles-container h4 {
+  margin: 25px 0 15px;
+  color: #334155;
+  font-size: 16px;
+}
+
+.roles-container p {
+  color: #64748b;
+}
+
+/* Cada rol */
+.rol-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 15px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.rol-item:hover {
+  border-color: #93c5fd;
+  background: #eff6ff;
+}
+
+/* Casilla y nombre del rol */
+.rol-item label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #334155;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.rol-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #1976d2;
+  cursor: pointer;
+}
+
+/* Descripción */
+.rol-item small {
+  margin-left: 30px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+/* Botones */
+.roles-container .acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 25px;
+}
+
+.roles-container button {
+  padding: 12px 20px;
+  background: #1976d2;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.roles-container button:hover:not(:disabled) {
+  background: #125aa0;
+}
+
+.roles-container button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Cancelar */
+.roles-container .acciones a {
+  padding: 12px 18px;
+  background: #f1f5f9;
+  color: #334155;
+  border-radius: 8px;
+  text-decoration: none;
+}
+
+.roles-container .acciones a:hover {
+  background: #e2e8f0;
+}
+
+/* Errores */
+.roles-container .error {
+  color: #b91c1c;
+  background: #fee2e2;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+/* Pantallas pequeñas */
+@media (max-width: 600px) {
+  .roles-container {
+    margin: 15px;
+    padding: 20px;
+  }
+
+  .roles-container .acciones {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .roles-container button,
+  .roles-container .acciones a {
+    text-align: center;
+  }
+}

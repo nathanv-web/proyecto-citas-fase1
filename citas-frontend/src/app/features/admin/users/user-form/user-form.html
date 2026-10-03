@@ -1,0 +1,174 @@
+<section class="usuario-form-container">
+
+  <h2>
+    {{ editando ? 'Editar usuario' : 'Crear usuario' }}
+  </h2>
+
+  @if (cargando) {
+    <p>Cargando información del usuario...</p>
+  }
+
+  @if (error) {
+    <p class="error" role="alert">
+      {{ error }}
+    </p>
+
+    <button type="button" (click)="error = ''">
+      Cerrar mensaje
+    </button>
+  }
+
+  @if (!cargando && !(editando && idUsuario === null)) {
+
+    <form [formGroup]="formulario" (ngSubmit)="guardar()">
+
+      <!-- NOMBRE -->
+
+      <div>
+        <label for="nombre">Nombre</label>
+
+        <input
+  id="nombre"
+  type="text"
+  formControlName="nombre"
+  maxlength="50"
+  autocomplete="given-name"
+/>
+
+        @if (
+  formulario.controls.nombre.touched &&
+  formulario.controls.nombre.invalid
+) {
+  <small>
+    El nombre debe tener entre 3 y 50 caracteres.
+    Solo se permiten letras, espacios y separadores
+    como guiones o apóstrofos.
+  </small>
+}
+      </div>
+
+      <!-- APELLIDO -->
+
+      <div>
+        <label for="apellido">Apellido</label>
+
+       <input
+  id="apellido"
+  type="text"
+  formControlName="apellido"
+  maxlength="50"
+  autocomplete="family-name"
+  />
+
+
+       @if (
+  formulario.controls.apellido.touched &&
+  formulario.controls.apellido.invalid
+) {
+  <small>
+    El apellido debe tener entre 3 y 50 caracteres.
+    Solo se permiten letras, espacios y separadores
+    como guiones o apóstrofos.
+  </small>
+}
+      </div>
+
+      <!-- CORREO -->
+
+      <div>
+        <label for="correo">Correo electrónico</label>
+
+        <input
+          id="correo"
+          type="email"
+          formControlName="correo"
+        />
+
+        @if (
+          formulario.controls.correo.touched &&
+          formulario.controls.correo.invalid
+        ) {
+          <small>
+            Introduce un correo electrónico válido.
+          </small>
+        }
+      </div>
+
+      <!-- TELÉFONO -->
+
+      <div>
+        <label for="telefono">Teléfono</label>
+
+        <input
+  id="telefono"
+  type="tel"
+  inputmode="numeric"
+  maxlength="20"
+  autocomplete="tel"
+  formControlName="telefono"
+/>
+
+        @if (
+  formulario.controls.telefono.touched &&
+  formulario.controls.telefono.invalid
+) {
+  <small>
+    El teléfono debe contener únicamente números
+    y tener entre 8 y 20 dígitos.
+  </small>
+}
+      </div>
+
+      <!-- CONTRASEÑA: SOLO CREACIÓN -->
+
+      @if (!editando) {
+
+        <div>
+          <label for="contrasena">Contraseña</label>
+
+          <input
+            id="contrasena"
+            type="password"
+            formControlName="contrasena"
+            autocomplete="new-password"
+          />
+
+          @if (
+            formulario.controls.contrasena.touched &&
+            formulario.controls.contrasena.invalid
+          ) {
+            <small>
+              La contraseña debe tener entre
+              8 y 12 caracteres.
+            </small>
+          }
+        </div>
+
+      }
+
+      <!-- ACCIONES -->
+
+      <div>
+
+        <button
+          type="submit"
+          [disabled]="
+            formulario.invalid ||
+            guardando ||
+            cargando ||
+            !!error
+          "
+        >
+          {{ guardando ? 'Guardando...' : 'Guardar' }}
+        </button>
+
+        <a routerLink="/admin/users">
+          Cancelar
+        </a>
+
+      </div>
+
+    </form>
+  }
+
+</section>
