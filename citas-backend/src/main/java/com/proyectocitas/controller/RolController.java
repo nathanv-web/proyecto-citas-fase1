@@ -1,77 +1,158 @@
 package com.proyectocitas.controller;
 
-import org.springframework.web.bind.annotation.*;
+import com.proyectocitas.dto.RolDTO;
+import com.proyectocitas.dto.RolRequestDTO;
+import com.proyectocitas.dto.RolUpdateDTO;
+import com.proyectocitas.mapper.RolMapper;
+import com.proyectocitas.model.Rol;
+import com.proyectocitas.service.RolService;
+
+import jakarta.validation.Valid;
 import java.util.List;
-import java.util.Map;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import com.proyectocitas.dto.RolPermisosRequestDTO;
+
 
 @RestController
-@RequestMapping("/api/v1")
-@CrossOrigin(origins = "http://localhost:4300")
+@RequestMapping("/api/v1/roles")
 public class RolController {
 
-    private final List<Map<String, Object>> permissions = List.of(
-        Map.of("id", 1, "name", "VER_USUARIOS", "description", "Permite ver la lista de usuarios"),
-        Map.of("id", 2, "name", "VER_ROLES", "description", "Permite consultar roles"),
-        Map.of("id", 3, "name", "CREAR_ROLES", "description", "Permite crear nuevos roles"),
-        Map.of("id", 4, "name", "ACTUALIZAR_ROLES", "description", "Permite modificar roles"),
-        Map.of("id", 5, "name", "ELIMINAR_ROLES", "description", "Permite eliminar roles"),
-        Map.of("id", 6, "name", "ASIGNAR_PERMISOS", "description", "Permite asignar permisos a roles"),
-        Map.of("id", 7, "name", "REGISTRAR_DIAGNOSTICO", "description", "Permite registrar diagnósticos"),
-        Map.of("id", 8, "name", "CREAR_HORARIOS", "description", "Permite gestionar horarios")
-    );
+    private final RolService rolService;
+    private final RolMapper rolMapper;
 
-    private final List<Map<String, Object>> roles = List.of(
-        Map.of(
-            "id", 1, 
-            "name", "ROLE_JEFE_AREA", 
-            "description", "Encargado del área médica",
-            "permissions", List.of(
-                Map.of("id", 1, "name", "VER_USUARIOS"),
-                Map.of("id", 2, "name", "VER_ROLES"),
-                Map.of("id", 3, "name", "CREAR_ROLES")
-            )
-        ),
-        Map.of(
-            "id", 2, 
-            "name", "MEDICO", 
-            "description", "Gestión de citas y pacientes",
-            "permissions", List.of(
-                Map.of("id", 7, "name", "REGISTRAR_DIAGNOSTICO")
-            )
-        )
-    );
 
-    @GetMapping("/roles")
-    public List<Map<String, Object>> getRoles() {
-        return roles;
+    public RolController(
+            RolService rolService,
+            RolMapper rolMapper) {
+
+        this.rolService = rolService;
+        this.rolMapper = rolMapper;
     }
 
-    @GetMapping("/roles/{id}")
-    public Map<String, Object> getRoleById(@PathVariable Long id) {
-        return roles.stream()
-            .filter(r -> r.get("id").toString().equals(id.toString()))
-            .findFirst()
-            .orElse(roles.get(0));
+
+    // =================================================
+    // CREAR ROL
+    // =================================================
+
+    @PostMapping
+    public ResponseEntity<RolDTO> crearRol(
+            @Valid @RequestBody RolRequestDTO request) {
+
+        Rol rol =
+                rolMapper.toEntity(request);
+
+        Rol rolGuardado =
+                rolService.guardar(rol);
+
+        RolDTO respuesta =
+                rolMapper.toDTO(rolGuardado);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(respuesta);
     }
+    // =================================================
+// LISTAR ROLES
+// =================================================
 
-    @PostMapping("/roles")
-    public Map<String, Object> createRole(@RequestBody Map<String, Object> role) {
-        return role;
-    }
+@GetMapping
+public ResponseEntity<List<RolDTO>> listarRoles() {
 
-    @PutMapping("/roles/{id}")
-    public Map<String, Object> updateRole(@PathVariable Long id, @RequestBody Map<String, Object> role) {
-        return role;
-    }
+    List<RolDTO> roles =
+            rolService.obtenerTodos()
+                    .stream()
+                    .map(rolMapper::toDTO)
+                    .toList();
 
-    @DeleteMapping("/roles/{id}")
-    public void deleteRole(@PathVariable Long id) {}
+    return ResponseEntity
+            .ok(roles);
+}
 
-    @GetMapping("/permissions")
-    public List<Map<String, Object>> getPermissions() {
-        return permissions;
-    }
+ // =================================================
+// BUSCAR POR ID
+// =================================================
 
-    @PutMapping("/roles/{id}/permissions")
-    public void updatePermissions(@PathVariable Long id, @RequestBody List<Long> permissionIds) {}
+@GetMapping("/{id}")
+public ResponseEntity<RolDTO> buscarRolPorId(
+@PathVariable Long id){
+    
+    Rol rol = 
+            rolService.obtenerPorId(id);
+    
+    RolDTO respuesta = 
+            rolMapper.toDTO(rol);
+    
+    return ResponseEntity.
+            ok(respuesta);
+    
+}
+
+// =================================================
+// ACTUALIZAR ROL
+// =================================================
+
+@PutMapping("/{id}")
+public ResponseEntity<RolDTO> actualizarRol(
+        @PathVariable Long id,
+        @Valid @RequestBody RolUpdateDTO request) {
+
+    Rol rolActualizado =
+            rolService.actualizar(request,id );
+
+    RolDTO respuesta =
+            rolMapper.toDTO(rolActualizado);
+
+    return ResponseEntity
+            .ok(respuesta);
+}
+// =================================================
+// ELIMINAR ROL
+// =================================================
+
+@DeleteMapping("/{id}")
+public ResponseEntity<Void> eliminarRol(
+        @PathVariable Long id) {
+
+    rolService.eliminar(id);
+
+    return ResponseEntity
+            .noContent()
+            .build();
+}
+
+// =================================================
+// ASIGNAR PERMISOS A UN ROL
+// =================================================
+
+@PutMapping("/{id}/permissions")
+public ResponseEntity<RolDTO> asignarPermisos(
+        @PathVariable Long id,
+        @Valid @RequestBody RolPermisosRequestDTO request) {
+
+    Rol rolActualizado =
+            rolService.asignarPermisos(
+                    id,
+                    request.getPermisos()
+            );
+
+    RolDTO respuesta =
+            rolMapper.toDTO(
+                    rolActualizado
+            );
+
+    return ResponseEntity
+            .ok(respuesta);
+}
+
 }
