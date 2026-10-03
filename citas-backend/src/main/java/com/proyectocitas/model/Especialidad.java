@@ -5,16 +5,21 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "especialidades")
 public class Especialidad {
+    
+    //ATRIBUTOS
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "id_especialidad")
+    private Long idEspecialidad;
 
-    @Column(nullable = false, unique = true)
     private String nombre;
 
     private String descripcion;
 
+    private Boolean activo = true;
+    
+    // CONSTRUCTORES
     public Especialidad() {
     }
 
@@ -22,13 +27,15 @@ public class Especialidad {
         this.nombre = nombre;
         this.descripcion = descripcion;
     }
+    
+    //GETTER Y SETTERS
 
-    public Long getId() {
-        return id;
+    public Long getIdEspecialidad() {
+        return idEspecialidad;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setIdEspecialidad(Long idEspecialidad) {
+        this.idEspecialidad = idEspecialidad;
     }
 
     public String getNombre() {
@@ -45,5 +52,13 @@ public class Especialidad {
 
     public void setDescripcion(String descripcion) {
         this.descripcion = descripcion;
+    }
+
+    public Boolean getActivo() {
+        return activo;
+    }
+
+    public void setActivo(Boolean activo) {
+        this.activo = activo;
     }
 }

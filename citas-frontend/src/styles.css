@@ -1,0 +1,76 @@
+/* =====================================================
+   PALETA GLOBAL - SISTEMA DE CITAS MÉDICAS
+   Coral Amanecer Acento
+   ===================================================== */
+
+:root {
+
+  /* ===== COLORES PRINCIPALES ===== */
+
+  /* Fondo principal de la aplicación */
+  --color-background: #FFF5F2;
+
+  /* Fondos secundarios */
+  --color-secondary: #FFD4C9;
+
+  /* Acentos, iconos y elementos seleccionados */
+  --color-accent: #FF8A7A;
+
+  /* Botones y acciones principales */
+  --color-primary: #D94A3A;
+
+  /* Navbar, sidebar, títulos importantes */
+  --color-primary-dark: #5A1F1A;
+
+
+  /* ===== SUPERFICIES ===== */
+
+  /* Tarjetas, formularios, modales */
+  --color-surface: #FFFFFF;
+
+
+  /* ===== TEXTO ===== */
+
+  /* Texto principal */
+  --color-text: #5A1F1A;
+
+  /* Texto sobre fondos oscuros */
+  --color-text-light: #FFFFFF;
+
+  /* Texto secundario */
+  --color-text-secondary: #6D5A57;
+
+
+  /* ===== ESTADOS DEL SISTEMA ===== */
+
+  /* Cita confirmada, operación exitosa, disponible */
+  --color-success: #2E7D32;
+
+  /* Cita pendiente, advertencia */
+  --color-warning: #EF6C00;
+
+  /* Error, eliminar, cancelar */
+  --color-danger: #C62828;
+
+  /* Información */
+  --color-info: #1565C0;
+
+
+  /* ===== BORDES ===== */
+
+  --color-border: #E6D5D1;
+}
+
+
+/* ===== ESTILO BASE ===== */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-background);
+  color: var(--color-text);
+  font-family: Arial, Helvetica, sans-serif;
+}

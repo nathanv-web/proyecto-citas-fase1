@@ -4,46 +4,121 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "citas")
+@Table(name = "citas_medicas")
 public class Cita {
+    
+    //ATRIBUTOS
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(nullable = false)
-    private String pacienteNombre;
-
-    @Column(nullable = false)
-    private LocalDateTime fechaHora;
-
-    private String estado; // Ejemplo: "PENDIENTE", "CONFIRMADA", "CANCELADA"
+    @Column(name = "id_cita")
+    private Long idCita;
+    
+    //RELACIONES 
+    
+    @OneToOne
+    @JoinColumn(name = "id_horario")
+    private HorarioDisponible horario;
 
     @ManyToOne
-    @JoinColumn(name = "medico_id", nullable = false)
-    private Medico medico;
+    @JoinColumn(name = "id_paciente")
+    private Usuario paciente;
 
-    public Cita() {}
+    @ManyToOne
+    @JoinColumn(name = "id_estado")
+    private EstadoCita estado;
 
-    public Cita(String pacienteNombre, LocalDateTime fechaHora, String estado, Medico medico) {
-        this.pacienteNombre = pacienteNombre;
-        this.fechaHora = fechaHora;
-        this.estado = estado;
-        this.medico = medico;
+    // ATRIBUTOS
+    
+    private String motivo;
+
+    @Column(name = "diagnostico_receta")
+    private String diagnosticoReceta;
+
+    @Column(name = "fecha_creacion")
+    private LocalDateTime fechaCreacion;
+
+    private String observaciones;
+    
+    //CONSTRUCTOR
+
+
+    public Cita() {
+    }
+    
+    // Antes de insertar la cita en la base de datos, si no tiene fecha de creación, coloca la fecha y hora actual.
+
+    @PrePersist
+    public void prePersist() {
+        if (fechaCreacion == null) {
+            fechaCreacion = LocalDateTime.now();
+        }
+    }
+    
+    //GETTERS Y SETTERS
+
+
+    public Long getIdCita() {
+        return idCita;
     }
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public void setIdCita(Long idCita) {
+        this.idCita = idCita;
+    }
 
-    public String getPacienteNombre() { return pacienteNombre; }
-    public void setPacienteNombre(String pacienteNombre) { this.pacienteNombre = pacienteNombre; }
+    public HorarioDisponible getHorario() {
+        return horario;
+    }
 
-    public LocalDateTime getFechaHora() { return fechaHora; }
-    public void setFechaHora(LocalDateTime fechaHora) { this.fechaHora = fechaHora; }
+    public void setHorario(HorarioDisponible horario) {
+        this.horario = horario;
+    }
 
-    public String getEstado() { return estado; }
-    public void setEstado(String estado) { this.estado = estado; }
+    public Usuario getPaciente() {
+        return paciente;
+    }
 
-    public Medico getMedico() { return medico; }
-    public void setMedico(Medico medico) { this.medico = medico; }
+    public void setPaciente(Usuario paciente) {
+        this.paciente = paciente;
+    }
+
+    public EstadoCita getEstado() {
+        return estado;
+    }
+
+    public void setEstado(EstadoCita estado) {
+        this.estado = estado;
+    }
+
+    public String getMotivo() {
+        return motivo;
+    }
+
+    public void setMotivo(String motivo) {
+        this.motivo = motivo;
+    }
+
+    public String getDiagnosticoReceta() {
+        return diagnosticoReceta;
+    }
+
+    public void setDiagnosticoReceta(String diagnosticoReceta) {
+        this.diagnosticoReceta = diagnosticoReceta;
+    }
+
+    public LocalDateTime getFechaCreacion() {
+        return fechaCreacion;
+    }
+
+    public void setFechaCreacion(LocalDateTime fechaCreacion) {
+        this.fechaCreacion = fechaCreacion;
+    }
+
+    public String getObservaciones() {
+        return observaciones;
+    }
+
+    public void setObservaciones(String observaciones) {
+        this.observaciones = observaciones;
+    }
 }
