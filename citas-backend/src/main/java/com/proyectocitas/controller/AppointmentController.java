@@ -126,4 +126,22 @@ public ResponseEntity<AppointmentResponseDTO> cancelarCita(
 
     return ResponseEntity.ok(respuesta);
 }
+@GetMapping("/doctor")
+public ResponseEntity<List<AppointmentResponseDTO>> obtenerCitasDelDoctor(
+        Principal principal) {
+
+    if (principal == null) {
+        throw new ResponseStatusException(
+                HttpStatus.UNAUTHORIZED,
+                "Usuario no autenticado"
+        );
+    }
+
+    List<AppointmentResponseDTO> citas =
+            appointmentService.obtenerCitasDelDoctor(
+                    principal.getName()
+            );
+
+    return ResponseEntity.ok(citas);
+}
 }

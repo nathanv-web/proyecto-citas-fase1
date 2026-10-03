@@ -1,0 +1,61 @@
+﻿<div class="page">
+
+  <div class="header">
+    <h1>Crear horario</h1>
+    <p>Registra un nuevo horario de atención médica.</p>
+  </div>
+
+  <form class="form" (ngSubmit)="crearHorario()">
+
+    <label>
+      ID del médico
+      <input
+        type="number"
+        name="idMedico"
+        [(ngModel)]="schedule.idMedico"
+        min="1"
+        required>
+    </label>
+
+    <label>
+      Fecha
+      <input
+        type="date"
+        name="fecha"
+        [(ngModel)]="schedule.fecha"
+        required>
+    </label>
+
+    <label>
+      Hora de inicio
+      <input
+        type="time"
+        name="horaInicio"
+        [(ngModel)]="schedule.horaInicio"
+        required>
+    </label>
+
+    <label>
+      Hora de fin
+      <input
+        type="time"
+        name="horaFin"
+        [(ngModel)]="schedule.horaFin"
+        required>
+    </label>
+
+    <button type="submit" [disabled]="guardando">
+      {{ guardando ? 'Guardando...' : 'Crear horario' }}
+    </button>
+
+  </form>
+
+  @if (mensaje) {
+    <div class="success">{{ mensaje }}</div>
+  }
+
+  @if (error) {
+    <div class="error">{{ error }}</div>
+  }
+
+</div>

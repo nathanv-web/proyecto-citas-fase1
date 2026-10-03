@@ -9,22 +9,15 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface CitaRepository
-        extends JpaRepository<Cita, Long> {
+public interface CitaRepository extends JpaRepository<Cita, Long> {
 
-    //Buscar citas de un paciente
-    
     List<Cita> findByPaciente_IdUsuario(Long idUsuario);
 
-    //Buscar citas por el estado de la cita
-    
     List<Cita> findByEstado_Nombre(NombreEstado nombre);
-    
-    //Buscar la cita por horario
-    
+
     Optional<Cita> findByHorario_IdHorario(Long idHorario);
-    
-    //Saber si un horario ya fue reservado
 
     boolean existsByHorario_IdHorario(Long idHorario);
+
+    List<Cita> findByHorario_Medico_Usuario_IdUsuario(Long idUsuario);
 }

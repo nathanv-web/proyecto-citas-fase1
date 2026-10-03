@@ -360,4 +360,25 @@ public AppointmentResponseDTO cancelarCita(
 
     return appointmentMapper.toDTO(guardada);
 }
+    @Transactional(readOnly = true)
+    public List<AppointmentResponseDTO> obtenerCitasDelDoctor(
+            String emailMedico) {
+
+        Usuario medico = usuarioRepository
+                .findByCorreo(emailMedico)
+                .orElseThrow(() ->
+                        new ResponseStatusException(
+                                HttpStatus.UNAUTHORIZED,
+                                "Usuario autenticado no encontrado"
+                        )
+                );
+
+        return citaRepository
+                .findByHorario_Medico_Usuario_IdUsuario(
+                        medico.getIdUsuario()
+                )
+                .stream()
+                .map(appointmentMapper::toDTO)
+                .toList();
+    }
 }

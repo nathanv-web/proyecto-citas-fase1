@@ -1,0 +1,51 @@
+﻿<div class="page">
+
+  <div class="header">
+    <h1>Registrar diagnóstico</h1>
+    <p>Cita médica #{{ appointmentId }}</p>
+  </div>
+
+  <form class="form" (ngSubmit)="registrarDiagnostico()">
+
+    <label>
+      Diagnóstico y receta
+      <textarea
+        name="diagnosticoReceta"
+        [(ngModel)]="diagnosis.diagnosticoReceta"
+        rows="7"
+        required
+        placeholder="Escribe el diagnóstico y la receta...">
+      </textarea>
+    </label>
+
+    <label>
+      Observaciones
+      <textarea
+        name="observaciones"
+        [(ngModel)]="diagnosis.observaciones"
+        rows="5"
+        placeholder="Observaciones adicionales...">
+      </textarea>
+    </label>
+
+    <div class="actions">
+      <a routerLink="/doctor/appointments">
+        Volver a citas
+      </a>
+
+      <button type="submit" [disabled]="guardando">
+        {{ guardando ? 'Guardando...' : 'Registrar diagnóstico' }}
+      </button>
+    </div>
+
+  </form>
+
+  @if (mensaje) {
+    <div class="success">{{ mensaje }}</div>
+  }
+
+  @if (error) {
+    <div class="error">{{ error }}</div>
+  }
+
+</div>

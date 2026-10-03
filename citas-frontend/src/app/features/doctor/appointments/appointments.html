@@ -1,0 +1,76 @@
+﻿<div class="page">
+
+  <div class="header">
+    <h1>Mis citas</h1>
+    <p>Consulta las citas asignadas al médico.</p>
+  </div>
+
+  @if (cargando) {
+    <p>Cargando citas...</p>
+  }
+
+  @if (error) {
+    <div class="error">{{ error }}</div>
+  }
+
+  @if (!cargando && appointments.length === 0) {
+    <div class="empty">
+      No tienes citas registradas.
+    </div>
+  }
+
+  @if (!cargando && appointments.length > 0) {
+
+    <div class="appointments">
+
+      @for (appointment of appointments; track appointment.idCita) {
+
+        <div class="appointment">
+
+          <div>
+            <h2>Cita #{{ appointment.idCita }}</h2>
+
+            <p>
+              <strong>Paciente:</strong>
+              {{ appointment.paciente }}
+            </p>
+
+            <p>
+              <strong>Fecha:</strong>
+              {{ appointment.fecha }}
+            </p>
+
+            <p>
+              <strong>Horario:</strong>
+              {{ appointment.horaInicio }} -
+              {{ appointment.horaFin }}
+            </p>
+
+            <p>
+              <strong>Motivo:</strong>
+              {{ appointment.motivo }}
+            </p>
+
+            <p>
+              <strong>Estado:</strong>
+              {{ appointment.estado }}
+            </p>
+          </div>
+
+          @if (appointment.estado === 'PENDIENTE') {
+            <a
+              [routerLink]="['/doctor/diagnosis', appointment.idCita]"
+              class="button">
+              Registrar diagnóstico
+            </a>
+          }
+
+        </div>
+
+      }
+
+    </div>
+
+  }
+
+</div>

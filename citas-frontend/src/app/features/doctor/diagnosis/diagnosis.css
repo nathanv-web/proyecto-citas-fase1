@@ -1,0 +1,87 @@
+﻿.page {
+  max-width: 1000px;
+  margin: 40px auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+.header {
+  margin-bottom: 30px;
+}
+
+.header h1 {
+  margin-bottom: 8px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 600px;
+}
+
+.form label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-weight: 600;
+}
+
+input,
+textarea {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font: inherit;
+}
+
+button,
+.button {
+  display: inline-block;
+  padding: 11px 18px;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.appointments {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.appointment {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.success,
+.error,
+.empty {
+  margin-top: 20px;
+  padding: 14px;
+  border-radius: 6px;
+}
+
+.success {
+  background: #e8f5e9;
+}
+
+.error {
+  background: #ffebee;
+}
+
+.empty {
+  background: #f5f5f5;
+}
+
+.actions {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
