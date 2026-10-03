@@ -3,11 +3,13 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 
-import { UsuarioService } from '../services/usuario';
-import { RolConsultaService } from '../services/rol-consulta';
+import { UserService } from '../../services/user.service';
+import { RoleService } from '../../services/role.service';
 
-import { Usuario } from '../models/usuario.model';
-import { Rol } from '../models/rol.model';
+import { User } from '../../models/user.model';
+import { Role } from '../../models/role.model';
+
+
 
 @Component({
   selector: 'app-user-roles',
@@ -18,14 +20,14 @@ import { Rol } from '../models/rol.model';
 })
 export class UserRoles implements OnInit {
 
-  private usuarioService = inject(UsuarioService);
-  private rolService = inject(RolConsultaService);
+  private usuarioService = inject(UserService);
+  private rolService = inject(RoleService);
   private cdr = inject(ChangeDetectorRef);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
-  usuario: Usuario | null = null;
-  roles: Rol[] = [];
+  usuario: User | null = null;
+  roles: Role[] = [];
 
   rolesSeleccionados: number[] = [];
 

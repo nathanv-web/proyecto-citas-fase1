@@ -2,9 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 
-import { LoginRequest } from '../models/login-request';
-import { LoginResponse, LoginUsuario } from '../models/login-response';
-
+import { LoginRequest } from '../models/login-request.model';
+import { LoginResponse, LoginUsuario } from '../models/login-response.model';
 @Injectable({
   providedIn: 'root'
 })

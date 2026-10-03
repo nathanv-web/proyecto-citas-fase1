@@ -1,8 +1,7 @@
 import { Routes } from '@angular/router';
 
-import { authGuard } from '../../../core/guards/auth.guard';
-import { permissionGuard } from '../../../core/guards/permission.guard';
-
+import { authGuard } from '../../../core/auth/guards/auth.guard';
+import { permissionGuard } from '../../../core/auth/guards/permission.guard';
 // =================================================
 // RUTAS DE ADMINISTRACIÓN DE USUARIOS
 // =================================================
@@ -17,7 +16,7 @@ export const USERS_ROUTES: Routes = [
   {
     path: '',
     loadComponent: () =>
-      import('./user-list/user-list')
+      import('./pages/user-list/user-list')
         .then(m => m.UserList),
 
     canActivate: [authGuard, permissionGuard],
@@ -36,7 +35,7 @@ export const USERS_ROUTES: Routes = [
   {
     path: 'new',
     loadComponent: () =>
-      import('./user-form/user-form')
+     import('./pages/user-form/user-form')
         .then(m => m.UserForm),
 
     canActivate: [authGuard, permissionGuard],
@@ -55,7 +54,7 @@ export const USERS_ROUTES: Routes = [
   {
     path: 'edit/:id',
     loadComponent: () =>
-      import('./user-form/user-form')
+      import('./pages/user-form/user-form')
         .then(m => m.UserForm),
 
     canActivate: [authGuard, permissionGuard],
@@ -74,7 +73,7 @@ export const USERS_ROUTES: Routes = [
   {
     path: 'roles/:id',
     loadComponent: () =>
-      import('./user-roles/user-roles')
+      import('./pages/user-roles/user-roles')
         .then(m => m.UserRoles),
 
     canActivate: [authGuard, permissionGuard],

@@ -1,7 +1,7 @@
 ﻿import { Routes } from '@angular/router';
 
-import { Login } from './features/auth/login/login';
-import { AccessDenied } from './features/auth/access-denied/access-denied';
+import { Login } from './features/auth/pages/login/login';
+import { AccessDenied } from './features/auth/pages/access-denied/access-denied';
 
 export const routes: Routes = [
 

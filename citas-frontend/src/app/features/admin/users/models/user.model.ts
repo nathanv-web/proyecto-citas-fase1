@@ -4,7 +4,7 @@
 // Representa los datos que devuelve el backend.
 // Nunca contiene la contraseña del usuario.
 
-export interface Usuario {
+export interface User {
 
   idUsuario: number;
 

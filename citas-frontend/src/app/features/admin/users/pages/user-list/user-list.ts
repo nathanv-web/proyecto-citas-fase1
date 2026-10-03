@@ -2,9 +2,9 @@ import { Component, OnInit, inject,ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 
-import { UsuarioService } from '../services/usuario';
-import { Usuario } from '../models/usuario.model';
-import { AuthService } from '../../../../core/services/auth.service';
+import { UserService } from '../../services/user.service';
+import { User } from '../../models/user.model';
+import { AuthService } from '../../../../../core/auth/services/auth.service';
 
 @Component({
   selector: 'app-user-list',
@@ -19,7 +19,7 @@ export class UserList implements OnInit {
   // SERVICIOS
   // =================================================
 
-  private usuarioService = inject(UsuarioService);
+  private usuarioService = inject(UserService);
 
   public authService = inject(AuthService);
 
@@ -30,7 +30,7 @@ export class UserList implements OnInit {
   // VARIABLES
   // =================================================
 
-  usuarios: Usuario[] = [];
+  usuarios: User[] = [];
 
   cargando = false;
 
@@ -90,7 +90,7 @@ export class UserList implements OnInit {
   // DESACTIVAR USUARIO
   // =================================================
 
-  desactivarUsuario(usuario: Usuario): void {
+  desactivarUsuario(usuario: User): void {
 
     if (!this.authService.hasPermission('DESACTIVAR_USUARIOS')) {
       return;

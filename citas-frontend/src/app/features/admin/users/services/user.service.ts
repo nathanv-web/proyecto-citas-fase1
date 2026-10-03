@@ -6,16 +6,16 @@ import { Observable } from 'rxjs';
 // MODELOS
 // =================================================
 
-import { Usuario } from '../models/usuario.model';
-import { UsuarioRequest } from '../models/usuario-request.model';
-import { UsuarioUpdate } from '../models/usuario-update.model';
-import { UsuarioRolesRequest } from '../models/usuario-roles-request.model';
+import { User } from '../models/user.model';
+import { UserRequest } from '../models/user-request.model';
+import { UserUpdate } from '../models/user-update.model';
+import { UserRolesRequest } from '../models/user-roles-request.model';
 
 
 @Injectable({
   providedIn: 'root'
 })
-export class UsuarioService {
+export class UserService {
 
   // =================================================
   // DEPENDENCIAS
@@ -36,9 +36,9 @@ export class UsuarioService {
   // =================================================
   // Permiso requerido: VER_USUARIOS
 
-  listarUsuarios(): Observable<Usuario[]> {
+  listarUsuarios(): Observable<User[]> {
 
-    return this.http.get<Usuario[]>(
+    return this.http.get<User[]>(
       this.apiUrl
     );
 
@@ -50,9 +50,9 @@ export class UsuarioService {
   // =================================================
   // Permiso requerido: VER_USUARIOS
 
-  buscarUsuario(id: number): Observable<Usuario> {
+  buscarUsuario(id: number): Observable<User> {
 
-    return this.http.get<Usuario>(
+    return this.http.get<User>(
       `${this.apiUrl}/${id}`
     );
 
@@ -65,10 +65,10 @@ export class UsuarioService {
   // Permiso requerido: CREAR_USUARIOS
 
   crearUsuario(
-    usuario: UsuarioRequest
-  ): Observable<Usuario> {
+    usuario: UserRequest
+  ): Observable<User> {
 
-    return this.http.post<Usuario>(
+    return this.http.post<User>(
       this.apiUrl,
       usuario
     );
@@ -83,10 +83,10 @@ export class UsuarioService {
 
   actualizarUsuario(
     id: number,
-    usuario: UsuarioUpdate
-  ): Observable<Usuario> {
+    usuario: UserUpdate
+  ): Observable<User> {
 
-    return this.http.put<Usuario>(
+    return this.http.put<User>(
       `${this.apiUrl}/${id}`,
       usuario
     );
@@ -118,10 +118,10 @@ export class UsuarioService {
 
   asignarRol(
     idUsuario: number,
-    request: UsuarioRolesRequest
-  ): Observable<Usuario> {
+    request: UserRolesRequest
+  ): Observable<User> {
 
-    return this.http.put<Usuario>(
+    return this.http.put<User>(
       `${this.apiUrl}/${idUsuario}/roles`,
       request
     );

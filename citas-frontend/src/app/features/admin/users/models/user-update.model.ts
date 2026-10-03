@@ -3,7 +3,7 @@
 // =================================================
 // Los campos son opcionales para permitir actualizaciones parciales.
 
-export interface UsuarioUpdate {
+export interface UserUpdate {
 
   nombre?: string;
 

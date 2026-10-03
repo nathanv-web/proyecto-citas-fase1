@@ -8,9 +8,10 @@ import {
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 
-import { UsuarioService } from '../services/usuario';
-import { UsuarioRequest } from '../models/usuario-request.model';
-import { UsuarioUpdate } from '../models/usuario-update.model';
+import { UserService } from '../../services/user.service';
+import { UserRequest } from '../../models/user-request.model';
+import { UserUpdate } from '../../models/user-update.model';
+
 
 @Component({
   selector: 'app-user-form',
@@ -22,7 +23,7 @@ import { UsuarioUpdate } from '../models/usuario-update.model';
 export class UserForm implements OnInit {
 
   private fb = inject(FormBuilder);
-  private usuarioService = inject(UsuarioService);
+  private usuarioService = inject(UserService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
@@ -123,7 +124,7 @@ formulario = this.fb.nonNullable.group({
 
     next: (usuario) => {
 
-      console.log('Usuario cargado:', usuario.idUsuario);
+      console.log('User cargado:', usuario.idUsuario);
 
       this.formulario.patchValue({
         nombre: usuario.nombre,
@@ -191,7 +192,7 @@ formulario = this.fb.nonNullable.group({
 
     if (this.editando && this.idUsuario !== null) {
 
-      const request: UsuarioUpdate = base;
+      const request: UserUpdate = base;
 
       this.usuarioService
         .actualizarUsuario(this.idUsuario, request)
@@ -202,7 +203,7 @@ formulario = this.fb.nonNullable.group({
 
     } else if (!this.editando) {
 
-      const request: UsuarioRequest = {
+      const request: UserRequest = {
         ...base,
         contrasena: datos.contrasena
       };

@@ -3,7 +3,7 @@
 // =================================================
 // Los nombres deben coincidir con UsuarioRequestDTO del backend.
 
-export interface UsuarioRequest {
+export interface UserRequest {
 
   nombre: string;
 

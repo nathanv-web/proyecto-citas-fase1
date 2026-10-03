@@ -2,7 +2,7 @@
 // ASIGNAR ROL A USUARIO
 // =================================================
 
-export interface UsuarioRolesRequest {
+export interface UserRolesRequest {
 
   idRol: number[];
 

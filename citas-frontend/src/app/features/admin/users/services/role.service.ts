@@ -2,19 +2,19 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-import { Rol } from '../models/rol.model';
+import { Role } from '../models/role.model';
 
 @Injectable({
   providedIn: 'root'
 })
-export class RolConsultaService {
+export class RoleService {
 
   private http = inject(HttpClient);
 
   private readonly apiUrl =
     'http://localhost:8081/api/v1/roles';
 
-  listarRoles(): Observable<Rol[]> {
-    return this.http.get<Rol[]>(this.apiUrl);
+  listarRoles(): Observable<Role[]> {
+    return this.http.get<Role[]>(this.apiUrl);
   }
 }
