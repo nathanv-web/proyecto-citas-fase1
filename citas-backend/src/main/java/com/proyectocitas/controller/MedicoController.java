@@ -116,4 +116,101 @@ public class MedicoController {
                         medicoMapper.toDTO(guardado)
                 );
     }
+    
+    
+    // =================================================
+// BUSCAR MÉDICO POR ID
+// =================================================
+
+@GetMapping("/{id}")
+public ResponseEntity<MedicoDTO> obtenerMedicoPorId(
+        @PathVariable Long id) {
+
+    Medico medico = medicoRepository
+            .findById(id)
+            .orElseThrow(() ->
+                    new ResourceNotFoundException(
+                            "El médico indicado no existe"
+                    )
+            );
+
+    return ResponseEntity.ok(
+            medicoMapper.toDTO(medico)
+    );
+}
+
+
+// =================================================
+// ACTUALIZAR MÉDICO
+// =================================================
+
+@PutMapping("/{id}")
+public ResponseEntity<MedicoDTO> actualizarMedico(
+        @PathVariable Long id,
+        @Valid @RequestBody MedicoRequestDTO request) {
+
+    Medico medico = medicoRepository
+            .findById(id)
+            .orElseThrow(() ->
+                    new ResourceNotFoundException(
+                            "El médico indicado no existe"
+                    )
+            );
+
+    Usuario usuario = usuarioRepository
+            .findById(request.getIdUsuario())
+            .orElseThrow(() ->
+                    new ResourceNotFoundException(
+                            "El usuario indicado no existe"
+                    )
+            );
+
+    Especialidad especialidad =
+            especialidadRepository
+                    .findById(request.getIdEspecialidad())
+                    .orElseThrow(() ->
+                            new ResourceNotFoundException(
+                                    "La especialidad indicada no existe"
+                            )
+                    );
+
+    medico.setUsuario(usuario);
+    medico.setEspecialidad(especialidad);
+    medico.setColegiado(request.getColegiado());
+    medico.setAniosExperiencia(
+            request.getAniosExperiencia()
+    );
+    medico.setBiografia(
+            request.getBiografia()
+    );
+
+    Medico actualizado =
+            medicoRepository.save(medico);
+
+    return ResponseEntity.ok(
+            medicoMapper.toDTO(actualizado)
+    );
+}
+
+
+// =================================================
+// ELIMINAR MÉDICO
+// =================================================
+
+@DeleteMapping("/{id}")
+public ResponseEntity<Void> eliminarMedico(
+        @PathVariable Long id) {
+
+    Medico medico = medicoRepository
+            .findById(id)
+            .orElseThrow(() ->
+                    new ResourceNotFoundException(
+                            "El médico indicado no existe"
+                    )
+            );
+
+    medicoRepository.delete(medico);
+
+    return ResponseEntity.noContent().build();
+}
 }

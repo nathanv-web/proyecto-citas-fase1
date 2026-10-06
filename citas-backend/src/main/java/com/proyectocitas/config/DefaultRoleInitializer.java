@@ -84,6 +84,8 @@ public class DefaultRoleInitializer
 
                             Permiso.CREAR_ESPECIALIDADES,
                             Permiso.VER_ESPECIALIDADES,
+                            Permiso.ACTUALIZAR_ESPECIALIDADES,
+                            Permiso.ELIMINAR_ESPECIALIDADES,
 
                             Permiso.CREAR_HORARIOS,
                             Permiso.VER_HORARIOS_DISPONIBLES,

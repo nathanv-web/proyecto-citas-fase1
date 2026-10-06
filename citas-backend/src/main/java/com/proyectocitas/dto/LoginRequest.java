@@ -1,4 +1,4 @@
-package com.proyectocitas.dto; // <--- CAMBIA ESTO por tu paquete real + .dto
+package com.proyectocitas.dto; 
 
 public class LoginRequest {
 

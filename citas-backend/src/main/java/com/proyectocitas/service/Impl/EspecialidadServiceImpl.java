@@ -1,89 +1,317 @@
 package com.proyectocitas.service.Impl;
 
+import com.proyectocitas.exception.DuplicateResourceException;
+import com.proyectocitas.exception.ResourceConflictException;
 import com.proyectocitas.exception.ResourceNotFoundException;
+
 import com.proyectocitas.model.Especialidad;
+
 import com.proyectocitas.repository.EspecialidadRepository;
+
 import com.proyectocitas.service.EspecialidadService;
+
+import org.springframework.dao.DataIntegrityViolationException;
+
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
-public class EspecialidadServiceImpl implements EspecialidadService {
+public class EspecialidadServiceImpl
+        implements EspecialidadService {
 
     private final EspecialidadRepository especialidadRepository;
 
-    //Constructor para el repositorio
 
-    public EspecialidadServiceImpl(EspecialidadRepository especialidadRepository) {
-        this.especialidadRepository = especialidadRepository;
+    // =================================================
+    // CONSTRUCTOR
+    // =================================================
+
+    public EspecialidadServiceImpl(
+            EspecialidadRepository especialidadRepository
+    ) {
+
+        this.especialidadRepository =
+                especialidadRepository;
     }
 
-    //Obtener todas las especialidades
+
+    // =================================================
+    // LISTAR TODAS
+    // =================================================
 
     @Override
     public List<Especialidad> obtenerTodos() {
+
         return especialidadRepository.findAll();
     }
 
-    //Buscar una especialidad por su ID
+
+    // =================================================
+    // BUSCAR POR ID
+    // =================================================
 
     @Override
     public Optional<Especialidad> obtenerPorId(Long id) {
+
         return especialidadRepository.findById(id);
     }
 
-    //Buscar una especialidad por su nombre
+
+    // =================================================
+    // BUSCAR POR NOMBRE
+    // =================================================
 
     @Override
-    public Optional<Especialidad> obtenerPorNombre(String nombre) {
-        return especialidadRepository.findByNombre(nombre);
-    }
+    public Optional<Especialidad> obtenerPorNombre(
+            String nombre
+    ) {
 
-    //Guardar una nueva especialidad
+        if (
+                nombre == null ||
+                nombre.isBlank()
+        ) {
 
-    @Override
-    public Especialidad guardar(Especialidad especialidad) {
-        return especialidadRepository.save(especialidad);
-    }
+            throw new IllegalArgumentException(
+                    "El nombre de la especialidad es obligatorio"
+            );
+        }
 
-    //Actualizar solamente los campos que tengan información
-
-    @Override
-    public Especialidad actualizar(Especialidad especialidad, Long id) {
-
-        //Buscar la especialidad existente
-        Especialidad especialidadDB = especialidadRepository.findById(id)
-                .orElseThrow(()->
-                new ResourceNotFoundException("La especialidad indicada no existe")
+        return especialidadRepository
+                .findFirstByNombreIgnoreCase(
+                        nombre.trim()
                 );
-
-        //Actualizar nombre si viene con valor
-        if (especialidad.getNombre() != null && !especialidad.getNombre().isEmpty()) {
-
-            especialidadDB.setNombre(especialidad.getNombre());
-        }
-
-        //Actualizar descripción si viene con valor
-        if (especialidad.getDescripcion() != null && !especialidad.getDescripcion().isEmpty()) {
-
-            especialidadDB.setDescripcion(especialidad.getDescripcion());
-        }
-
-        //Actualizar estado activo si viene con valor
-        if (especialidad.getActivo() != null) {
-            especialidadDB.setActivo(especialidad.getActivo());
-        }
-
-        //Guardar los cambios realizados
-        return especialidadRepository.save(especialidadDB);
     }
 
-    //Eliminar una especialidad por su ID
+
+    // =================================================
+    // CREAR ESPECIALIDAD
+    // =================================================
 
     @Override
+    public Especialidad guardar(
+            Especialidad especialidad
+    ) {
+
+        // Validar objeto
+        if (especialidad == null) {
+
+            throw new IllegalArgumentException(
+                    "Los datos de la especialidad son obligatorios"
+            );
+        }
+
+
+        // Validar nombre
+        if (
+                especialidad.getNombre() == null ||
+                especialidad.getNombre().isBlank()
+        ) {
+
+            throw new IllegalArgumentException(
+                    "El nombre de la especialidad es obligatorio"
+            );
+        }
+
+
+        // Limpiar nombre
+        String nombre =
+                especialidad
+                        .getNombre()
+                        .trim();
+
+
+        // Verificar duplicado
+        if (
+                especialidadRepository
+                        .existsByNombreIgnoreCase(nombre)
+        ) {
+
+            throw new DuplicateResourceException(
+                    "Ya existe una especialidad con el nombre: "
+                            + nombre
+            );
+        }
+
+
+        especialidad.setNombre(nombre);
+
+
+        // Limpiar descripción si existe
+        if (
+                especialidad.getDescripcion() != null
+        ) {
+
+            especialidad.setDescripcion(
+                    especialidad
+                            .getDescripcion()
+                            .trim()
+            );
+        }
+
+
+        return especialidadRepository
+                .save(especialidad);
+    }
+
+
+    // =================================================
+    // ACTUALIZAR ESPECIALIDAD
+    // =================================================
+
+    @Override
+    public Especialidad actualizar(
+            Especialidad especialidad,
+            Long id
+    ) {
+
+        // Validar ID
+        if (id == null) {
+
+            throw new IllegalArgumentException(
+                    "El ID de la especialidad es obligatorio"
+            );
+        }
+
+
+        // Validar body
+        if (especialidad == null) {
+
+            throw new IllegalArgumentException(
+                    "Los datos de la especialidad son obligatorios"
+            );
+        }
+
+
+        // Buscar especialidad actual
+        Especialidad especialidadDB =
+                especialidadRepository
+                        .findById(id)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "No existe la especialidad con ID: "
+                                                + id
+                                )
+                        );
+
+
+        // =================================================
+        // ACTUALIZAR NOMBRE
+        // =================================================
+
+        if (
+                especialidad.getNombre() != null &&
+                !especialidad.getNombre().isBlank()
+        ) {
+
+            String nombre =
+                    especialidad
+                            .getNombre()
+                            .trim();
+
+
+            // Comprobar que otra especialidad
+            // no tenga el mismo nombre.
+            if (
+                    especialidadRepository
+                            .existsByNombreIgnoreCaseAndIdEspecialidadNot(
+                                    nombre,
+                                    id
+                            )
+            ) {
+
+                throw new DuplicateResourceException(
+                        "Ya existe una especialidad con el nombre: "
+                                + nombre
+                );
+            }
+
+
+            especialidadDB.setNombre(nombre);
+        }
+
+
+        // =================================================
+        // ACTUALIZAR DESCRIPCIÓN
+        // =================================================
+
+        if (
+                especialidad.getDescripcion() != null
+        ) {
+
+            especialidadDB.setDescripcion(
+                    especialidad
+                            .getDescripcion()
+                            .trim()
+            );
+        }
+
+
+        // =================================================
+        // ACTUALIZAR ESTADO
+        // =================================================
+
+        if (
+                especialidad.getActivo() != null
+        ) {
+
+            especialidadDB.setActivo(
+                    especialidad.getActivo()
+            );
+        }
+
+
+        return especialidadRepository
+                .save(especialidadDB);
+    }
+
+
+    // =================================================
+    // ELIMINAR ESPECIALIDAD
+    // =================================================
+
+    @Override
+    @Transactional
     public void eliminar(Long id) {
-        especialidadRepository.deleteById(id);
+
+        if (id == null) {
+
+            throw new IllegalArgumentException(
+                    "El ID de la especialidad es obligatorio"
+            );
+        }
+
+
+        Especialidad especialidad =
+                especialidadRepository
+                        .findById(id)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "No existe la especialidad con ID: "
+                                                + id
+                                )
+                        );
+
+
+        try {
+
+            especialidadRepository
+                    .delete(especialidad);
+
+            /*
+             * Fuerza a Hibernate a ejecutar el DELETE aquí,
+             * para poder capturar errores de llave foránea.
+             */
+            especialidadRepository.flush();
+
+        } catch (DataIntegrityViolationException ex) {
+
+            throw new ResourceConflictException(
+                    "No se puede eliminar la especialidad "
+                            + "porque está siendo utilizada por uno o más médicos"
+            );
+        }
     }
 }

@@ -320,29 +320,54 @@ public class SecurityConfig {
                         )
 
 
-                        // =================================================
-                        // ESPECIALIDADES
-                        // =================================================
+// =================================================
+// ESPECIALIDADES
+// =================================================
 
-                        // Crear una especialidad.
-                        .requestMatchers(
-                                HttpMethod.POST,
-                                "/api/v1/especialidades"
-                        )
-                        .hasAuthority(
-                                Permiso.CREAR_ESPECIALIDADES.name()
-                        )
+// Crear especialidad
+.requestMatchers(
+        HttpMethod.POST,
+        "/api/v1/especialidades"
+)
+.hasAuthority(
+        Permiso.CREAR_ESPECIALIDADES.name()
+)
 
+// Listar especialidades
+.requestMatchers(
+        HttpMethod.GET,
+        "/api/v1/especialidades"
+)
+.hasAuthority(
+        Permiso.VER_ESPECIALIDADES.name()
+)
 
-                        // Consultar especialidades.
-                        .requestMatchers(
-                                HttpMethod.GET,
-                                "/api/v1/especialidades/**"
-                        )
-                        .hasAuthority(
-                                Permiso.VER_ESPECIALIDADES.name()
-                        )
+// Buscar especialidad por ID
+.requestMatchers(
+        HttpMethod.GET,
+        "/api/v1/especialidades/*"
+)
+.hasAuthority(
+        Permiso.VER_ESPECIALIDADES.name()
+)
 
+// Actualizar especialidad
+.requestMatchers(
+        HttpMethod.PUT,
+        "/api/v1/especialidades/*"
+)
+.hasAuthority(
+        Permiso.ACTUALIZAR_ESPECIALIDADES.name()
+)
+
+// Eliminar especialidad
+.requestMatchers(
+        HttpMethod.DELETE,
+        "/api/v1/especialidades/*"
+)
+.hasAuthority(
+        Permiso.ELIMINAR_ESPECIALIDADES.name()
+)
 
                         // =================================================
                         // MÉDICOS
@@ -366,6 +391,25 @@ public class SecurityConfig {
                         .hasAuthority(
                                 Permiso.VER_MEDICOS.name()
                         )
+                        
+                        // Actualizar médico
+.requestMatchers(
+        HttpMethod.PUT,
+        "/api/v1/medicos/*"
+)
+.hasAuthority(
+        Permiso.ACTUALIZAR_MEDICOS.name()
+)
+
+
+// Eliminar médico
+.requestMatchers(
+        HttpMethod.DELETE,
+        "/api/v1/medicos/*"
+)
+.hasAuthority(
+        Permiso.ELIMINAR_MEDICOS.name()
+)
 
 
                         // =================================================
@@ -452,14 +496,15 @@ public class SecurityConfig {
                         //
                         // my-history ya fue declarado antes para que
                         // el paciente solamente necesite VER_HISTORIAL.
-
+                        
                         .requestMatchers(
-                                HttpMethod.GET,
-                                "/api/v1/appointments/**"
-                        )
-                        .hasAuthority(
-                                Permiso.VER_CITAS.name()
-                        )
+        HttpMethod.GET,
+        "/api/v1/appointments",
+        "/api/v1/appointments/**"
+)
+.hasAuthority(
+        Permiso.VER_CITAS.name()
+)
 
 
                         // =================================================

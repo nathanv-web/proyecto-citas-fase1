@@ -360,4 +360,19 @@ public AppointmentResponseDTO cancelarCita(
 
     return appointmentMapper.toDTO(guardada);
 }
+
+
+// =================================================
+// LISTAR TODAS LAS CITAS
+// =================================================
+
+@Transactional(readOnly = true)
+public List<AppointmentResponseDTO> obtenerTodasLasCitas() {
+
+    return citaRepository
+            .findAll()
+            .stream()
+            .map(appointmentMapper::toDTO)
+            .toList();
+}
 }

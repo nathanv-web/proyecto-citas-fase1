@@ -7,27 +7,24 @@ import java.util.Optional;
 
 public interface EspecialidadService {
 
-    //Obtener todas las especialidades
-
+    // Obtener todas las especialidades
     List<Especialidad> obtenerTodos();
 
-    //Buscar una especialidad por su ID
-
+    // Buscar por ID
     Optional<Especialidad> obtenerPorId(Long id);
 
-    //Buscar una especialidad por su nombre
-
+    // Buscar por nombre
     Optional<Especialidad> obtenerPorNombre(String nombre);
 
-    //Guardar una nueva especialidad
-
+    // Crear
     Especialidad guardar(Especialidad especialidad);
 
-    //Actualizar solo los datos enviados
+    // Actualizar
+    Especialidad actualizar(
+            Especialidad especialidad,
+            Long id
+    );
 
-    Especialidad actualizar(Especialidad especialidad, Long id);
-
-    //Eliminar una especialidad por su ID
-
+    // Eliminar
     void eliminar(Long id);
 }
