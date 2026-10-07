@@ -1,0 +1,232 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="schedules-toolbar">
+
+    <ion-buttons slot="start">
+      <ion-back-button
+        defaultHref="/doctors">
+      </ion-back-button>
+    </ion-buttons>
+
+    <ion-title>Horarios disponibles</ion-title>
+
+  </ion-toolbar>
+</ion-header>
+
+<ion-content
+  [fullscreen]="true"
+  class="schedules-content">
+
+  <div class="schedules-container">
+
+    <section class="page-intro">
+
+      <p class="eyebrow">
+        Portal del paciente
+      </p>
+
+      <h1>
+        Consultá disponibilidad
+      </h1>
+
+      <p>
+        Seleccioná un médico y una fecha para conocer
+        los horarios disponibles.
+      </p>
+
+    </section>
+
+    <div
+      class="state-card"
+      *ngIf="loadingMedicos">
+
+      <ion-spinner name="crescent"></ion-spinner>
+
+      <p>
+        Cargando médicos...
+      </p>
+
+    </div>
+
+    <div
+      class="search-card"
+      *ngIf="!loadingMedicos">
+
+      <div class="form-group">
+
+        <ion-label>
+          Médico
+        </ion-label>
+
+        <ion-select
+          [(ngModel)]="idMedicoSeleccionado"
+          placeholder="Seleccioná un médico"
+          interface="action-sheet">
+
+          <ion-select-option
+            *ngFor="let medico of medicos"
+            [value]="medico.idMedico">
+
+            {{ medico.nombre }} -
+            {{ medico.especialidad }}
+
+          </ion-select-option>
+
+        </ion-select>
+
+      </div>
+
+      <div class="form-group">
+
+        <ion-label>
+          Fecha
+        </ion-label>
+
+        <ion-input
+          type="date"
+          [(ngModel)]="fechaSeleccionada"
+          [min]="fechaMinima">
+        </ion-input>
+
+      </div>
+
+      <ion-button
+        expand="block"
+        class="search-button"
+        [disabled]="loadingHorarios"
+        (click)="buscarHorarios()">
+
+        <ion-spinner
+          *ngIf="loadingHorarios"
+          name="crescent">
+        </ion-spinner>
+
+        <span *ngIf="!loadingHorarios">
+          Consultar horarios
+        </span>
+
+      </ion-button>
+
+    </div>
+
+    <div
+      class="state-card error"
+      *ngIf="
+        !loadingHorarios &&
+        errorMessage
+      ">
+
+      <ion-icon
+        name="alert-circle-outline">
+      </ion-icon>
+
+      <p>
+        {{ errorMessage }}
+      </p>
+
+    </div>
+
+    <div
+      class="state-card"
+      *ngIf="
+        !loadingHorarios &&
+        !errorMessage &&
+        busquedaRealizada &&
+        horarios.length === 0
+      ">
+
+      <ion-icon
+        name="calendar-outline">
+      </ion-icon>
+
+      <strong>
+        Sin horarios disponibles
+      </strong>
+
+      <p>
+        No hay horarios disponibles para el médico
+        y la fecha seleccionados.
+      </p>
+
+    </div>
+
+    <section
+      class="results-section"
+      *ngIf="
+        !loadingHorarios &&
+        !errorMessage &&
+        horarios.length > 0
+      ">
+
+      <div class="results-header">
+
+        <div>
+          <p class="eyebrow">
+            Resultados
+          </p>
+
+          <h2>
+            Horarios disponibles
+          </h2>
+        </div>
+
+        <ion-badge color="success">
+          {{ horarios.length }}
+        </ion-badge>
+
+      </div>
+
+      <div class="schedule-list">
+
+        <ion-card
+          class="schedule-card"
+          *ngFor="let horario of horarios">
+
+          <ion-card-content>
+
+            <div class="schedule-icon">
+              <ion-icon
+                name="time-outline">
+              </ion-icon>
+            </div>
+
+            <div class="schedule-info">
+
+              <h3>
+                {{ horario.horaInicio }}
+                -
+                {{ horario.horaFin }}
+              </h3>
+
+              <p>
+                {{ horario.medico }}
+              </p>
+
+              <div class="schedule-meta">
+
+                <span>
+                  <ion-icon
+                    name="calendar-outline">
+                  </ion-icon>
+
+                  {{ horario.fecha }}
+                </span>
+
+                <ion-badge color="success">
+                  {{ horario.estado }}
+                </ion-badge>
+
+              </div>
+
+            </div>
+
+          </ion-card-content>
+
+        </ion-card>
+
+      </div>
+
+    </section>
+
+  </div>
+
+</ion-content>

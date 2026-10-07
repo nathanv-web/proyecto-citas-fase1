@@ -1,0 +1,124 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="specialties-toolbar">
+    <ion-buttons slot="start">
+      <ion-back-button
+        defaultHref="/home">
+      </ion-back-button>
+    </ion-buttons>
+
+    <ion-title>Especialidades</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="specialties-content">
+
+  <div class="specialties-container">
+
+    <section class="page-intro">
+      <p class="eyebrow">Portal del paciente</p>
+
+      <h1>Especialidades médicas</h1>
+
+      <p>
+        Explorá las áreas de atención disponibles y conocé
+        qué tipo de servicio ofrece cada una.
+      </p>
+    </section>
+
+    <div
+      class="state-card"
+      *ngIf="loading">
+
+      <ion-spinner name="crescent"></ion-spinner>
+
+      <p>Cargando especialidades...</p>
+    </div>
+
+    <div
+      class="state-card error"
+      *ngIf="!loading && errorMessage">
+
+      <ion-icon name="alert-circle-outline"></ion-icon>
+
+      <p>{{ errorMessage }}</p>
+
+      <ion-button
+        fill="outline"
+        size="small"
+        (click)="cargarEspecialidades()">
+        Intentar de nuevo
+      </ion-button>
+    </div>
+
+    <div
+      class="state-card"
+      *ngIf="
+        !loading &&
+        !errorMessage &&
+        especialidades.length === 0
+      ">
+
+      <ion-icon name="heart-outline"></ion-icon>
+
+      <p>
+        No hay especialidades disponibles en este momento.
+      </p>
+    </div>
+
+    <div
+      class="specialties-list"
+      *ngIf="
+        !loading &&
+        !errorMessage &&
+        especialidades.length > 0
+      ">
+
+      <ion-card
+        class="specialty-card"
+        *ngFor="let especialidad of especialidades">
+
+        <ion-card-content>
+
+          <div class="specialty-header">
+
+            <div class="specialty-icon">
+              <ion-icon name="medical-outline"></ion-icon>
+            </div>
+
+            <div class="specialty-main">
+              <h2>
+                {{ especialidad.nombre }}
+              </h2>
+
+              <ion-badge
+                [color]="
+                  especialidad.activo
+                    ? 'success'
+                    : 'medium'
+                ">
+                {{
+                  especialidad.activo
+                    ? 'Disponible'
+                    : 'No disponible'
+                }}
+              </ion-badge>
+            </div>
+
+          </div>
+
+          <p class="description">
+            {{
+              especialidad.descripcion ||
+              'Sin descripción disponible.'
+            }}
+          </p>
+
+        </ion-card-content>
+
+      </ion-card>
+
+    </div>
+
+  </div>
+
+</ion-content>

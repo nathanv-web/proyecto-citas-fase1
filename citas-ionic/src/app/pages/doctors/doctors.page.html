@@ -1,0 +1,150 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="doctors-toolbar">
+    <ion-buttons slot="start">
+      <ion-back-button
+        defaultHref="/home">
+      </ion-back-button>
+    </ion-buttons>
+
+    <ion-title>Médicos</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="doctors-content">
+
+  <div class="doctors-container">
+
+    <section class="page-intro">
+      <p class="eyebrow">Portal del paciente</p>
+      <h1>Elegí un médico</h1>
+      <p>
+        Consultá los profesionales disponibles y revisá su especialidad.
+      </p>
+    </section>
+
+    <div
+      class="state-card"
+      *ngIf="loading">
+
+      <ion-spinner name="crescent"></ion-spinner>
+
+      <p>Cargando médicos...</p>
+    </div>
+
+    <div
+      class="state-card error"
+      *ngIf="!loading && errorMessage">
+
+      <ion-icon name="alert-circle-outline"></ion-icon>
+
+      <p>{{ errorMessage }}</p>
+
+      <ion-button
+        fill="outline"
+        size="small"
+        (click)="cargarMedicos()">
+        Intentar de nuevo
+      </ion-button>
+    </div>
+
+    <div
+      class="state-card"
+      *ngIf="
+        !loading &&
+        !errorMessage &&
+        medicos.length === 0
+      ">
+
+      <ion-icon name="medkit-outline"></ion-icon>
+
+      <p>No hay médicos disponibles en este momento.</p>
+    </div>
+
+    <div
+      class="doctors-list"
+      *ngIf="
+        !loading &&
+        !errorMessage &&
+        medicos.length > 0
+      ">
+
+      <ion-card
+      class="doctor-card"
+      *ngFor="let medico of medicos"
+      [routerLink]="['/schedules']"
+      [queryParams]="{ idMedico: medico.idMedico }"
+      button="true">
+
+        <ion-card-content>
+
+          <div class="doctor-header">
+
+            <div class="doctor-avatar">
+              <ion-icon name="person-outline"></ion-icon>
+            </div>
+
+            <div class="doctor-main">
+              <h2>{{ medico.nombre }}</h2>
+
+              <p class="specialty">
+                {{ medico.especialidad }}
+              </p>
+            </div>
+
+          </div>
+
+          <div class="doctor-info">
+
+            <div class="info-row">
+              <ion-icon name="mail-outline"></ion-icon>
+
+              <span>
+                {{ medico.correo }}
+              </span>
+            </div>
+
+            <div class="info-row">
+              <ion-icon name="ribbon-outline"></ion-icon>
+
+              <span>
+                Colegiado: {{ medico.colegiado }}
+              </span>
+            </div>
+
+            <div class="info-row">
+              <ion-icon name="time-outline"></ion-icon>
+
+              <span>
+                {{ medico.aniosExperiencia }}
+                años de experiencia
+              </span>
+            </div>
+
+          </div>
+
+          <p
+            class="biography"
+            *ngIf="medico.biografia">
+            {{ medico.biografia }}
+          </p>
+
+          <div class="status-row">
+            <ion-badge
+              [color]="
+                medico.estado === 'ACTIVO'
+                  ? 'success'
+                  : 'medium'
+              ">
+              {{ medico.estado }}
+            </ion-badge>
+          </div>
+
+        </ion-card-content>
+
+      </ion-card>
+
+    </div>
+
+  </div>
+
+</ion-content>  

@@ -1,0 +1,89 @@
+<ion-content [fullscreen]="true" class="login-content">
+
+  <div class="login-container">
+
+    <div class="brand-section">
+      <div class="medical-icon">+</div>
+
+      <h1>Sistema de Citas Médicas</h1>
+      <p>Bienvenido</p>
+      <span>Ingresa a tu cuenta para continuar</span>
+    </div>
+
+    <div class="login-card">
+
+      <form [formGroup]="loginForm" (ngSubmit)="iniciarSesion()">
+
+        <div class="form-group">
+          <ion-label>Correo electrónico</ion-label>
+
+          <ion-input
+            type="email"
+            formControlName="email"
+            placeholder="correo@ejemplo.com"
+            fill="outline">
+          </ion-input>
+
+          <ion-note
+            color="danger"
+            *ngIf="
+              loginForm.controls['email'].touched &&
+              loginForm.controls['email'].invalid
+            ">
+            Ingresa un correo electrónico válido.
+          </ion-note>
+        </div>
+
+        <div class="form-group">
+          <ion-label>Contraseña</ion-label>
+
+          <ion-input
+            type="password"
+            formControlName="password"
+            placeholder="Ingresa tu contraseña"
+            fill="outline">
+          </ion-input>
+
+          <ion-note
+            color="danger"
+            *ngIf="
+              loginForm.controls['password'].touched &&
+              loginForm.controls['password'].invalid
+            ">
+            La contraseña es obligatoria.
+          </ion-note>
+        </div>
+
+        <div
+          class="error-message"
+          *ngIf="errorMessage">
+          {{ errorMessage }}
+        </div>
+
+        <ion-button
+          expand="block"
+          type="submit"
+          [disabled]="loading">
+
+          <ion-spinner
+            *ngIf="loading"
+            name="crescent">
+          </ion-spinner>
+
+          <span *ngIf="!loading">
+            Iniciar sesión
+          </span>
+
+        </ion-button>
+
+      </form>
+
+    </div>
+
+    <p class="footer-text">
+      Portal móvil del paciente
+    </p>
+
+  </div>
+
+</ion-content>

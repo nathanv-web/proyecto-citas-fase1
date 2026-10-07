@@ -1,0 +1,111 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="home-toolbar">
+    <ion-title>Portal del Paciente</ion-title>
+
+    <ion-buttons slot="end">
+      <ion-button
+        aria-label="Cerrar sesión"
+        (click)="cerrarSesion()">
+        <ion-icon
+          slot="icon-only"
+          name="log-out-outline">
+        </ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="home-content">
+
+  <div class="home-container">
+
+    <section class="welcome-card">
+      <div class="welcome-icon">
+        <ion-icon name="person-circle-outline"></ion-icon>
+      </div>
+
+      <div>
+        <p class="welcome-label">Bienvenido</p>
+
+        <h1>
+          {{ usuario?.nombre }} {{ usuario?.apellido }}
+        </h1>
+
+        <p>
+          Gestioná tu atención médica de forma rápida y sencilla.
+        </p>
+      </div>
+    </section>
+
+    <section class="section-header">
+      <h2>¿Qué necesitás hacer?</h2>
+      <p>Seleccioná una opción para continuar.</p>
+    </section>
+
+    <div class="options-grid">
+
+      <ion-card
+        class="option-card"
+        routerLink="/doctors"
+        button="true">
+
+        <ion-card-content>
+          <div class="option-icon">
+            <ion-icon name="medkit-outline"></ion-icon>
+          </div>
+
+          <h3>Médicos</h3>
+
+          <p>
+            Consultá los médicos disponibles y elegí con quién atenderte.
+          </p>
+
+          <div class="option-link">
+            Ver médicos
+            <ion-icon name="arrow-forward-outline"></ion-icon>
+          </div>
+        </ion-card-content>
+
+      </ion-card>
+
+      <ion-card
+        class="option-card"
+        routerLink="/specialties"
+        button="true">
+
+        <ion-card-content>
+          <div class="option-icon">
+            <ion-icon name="heart-outline"></ion-icon>
+          </div>
+
+          <h3>Especialidades</h3>
+
+          <p>
+            Explorá las especialidades médicas disponibles.
+          </p>
+
+          <div class="option-link">
+            Ver especialidades
+            <ion-icon name="arrow-forward-outline"></ion-icon>
+          </div>
+        </ion-card-content>
+
+      </ion-card>
+
+    </div>
+
+    <div class="info-card">
+      <ion-icon name="information-circle-outline"></ion-icon>
+
+      <div>
+        <strong>Tu salud, más cerca</strong>
+        <p>
+          Desde este portal podrás encontrar médicos y consultar
+          horarios disponibles para solicitar una cita.
+        </p>
+      </div>
+    </div>
+
+  </div>
+
+</ion-content>
