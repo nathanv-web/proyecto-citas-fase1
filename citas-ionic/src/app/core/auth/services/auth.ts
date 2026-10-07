@@ -5,6 +5,9 @@ import { Observable, tap } from 'rxjs';
 import { LoginRequest } from '../models/login-request';
 import { LoginResponse, LoginUsuario } from '../models/login-response';
 
+import { RegisterRequest } from '../models/register-request';
+import { RegisterResponse } from '../models/register-response';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -17,18 +20,25 @@ export class Auth {
   constructor(private http: HttpClient) {}
 
   login(credentials: LoginRequest): Observable<LoginResponse> {
-    return this.http
-      .post<LoginResponse>(`${this.apiUrl}/login`, credentials)
-      .pipe(
-        tap(response => {
-          localStorage.setItem(this.tokenKey, response.token);
-          localStorage.setItem(
-            this.userKey,
-            JSON.stringify(response.usuario)
-          );
-        })
-      );
-  }
+  return this.http
+    .post<LoginResponse>(`${this.apiUrl}/login`, credentials)
+    .pipe(
+      tap(response => {
+        localStorage.setItem(this.tokenKey, response.token);
+        localStorage.setItem(
+          this.userKey,
+          JSON.stringify(response.usuario)
+        );
+      })
+    );
+}
+
+register(data: RegisterRequest): Observable<RegisterResponse> {
+  return this.http.post<RegisterResponse>(
+    `${this.apiUrl}/register`,
+    data
+  );
+}
 
   logout(): void {
     localStorage.removeItem(this.tokenKey);

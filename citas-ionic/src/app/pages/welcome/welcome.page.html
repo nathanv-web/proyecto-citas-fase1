@@ -1,0 +1,59 @@
+<ion-content [fullscreen]="true" class="welcome-content">
+
+  <div class="welcome-container">
+
+    <div class="brand-section">
+      <div class="medical-icon">
+        <ion-icon name="medical"></ion-icon>
+      </div>
+
+      <h1>Sistema de Citas Médicas</h1>
+
+      <p class="subtitle">
+        Tu salud, más cerca de ti
+      </p>
+
+      <p class="description">
+        Agenda tus citas, consulta médicos y encuentra horarios disponibles
+        de una forma rápida y sencilla.
+      </p>
+    </div>
+
+    <div class="welcome-card">
+
+      <h2>Bienvenido</h2>
+
+      <p>
+        Ingresa a tu cuenta para administrar tus citas médicas.
+      </p>
+
+      <ion-button
+        expand="block"
+        shape="round"
+        routerLink="/login">
+        <ion-icon name="log-in-outline" slot="start"></ion-icon>
+        Iniciar sesión
+      </ion-button>
+
+      <div class="divider">
+        <span>o</span>
+      </div>
+
+      <ion-button
+      expand="block"
+      shape="round"
+      fill="outline"
+      routerLink="/register">
+        <ion-icon name="person-add-outline" slot="start"></ion-icon>
+        Crear cuenta
+      </ion-button>
+
+    </div>
+
+    <p class="footer-text">
+      Atención médica al alcance de todos
+    </p>
+
+  </div>
+
+</ion-content>

@@ -10,9 +10,9 @@ const routes: Routes = [
   canActivate: [AuthGuard]
 },
   {
-    path: '',
-    redirectTo: 'login',
-    pathMatch: 'full'
+  path: '',
+  redirectTo: 'welcome',
+  pathMatch: 'full'
   },
   {
     path: 'login',
@@ -34,6 +34,14 @@ const routes: Routes = [
   path: 'schedules',
   loadChildren: () => import('./pages/schedules/schedules.module').then(m => m.SchedulesPageModule),
   canActivate: [AuthGuard]
+  },
+  {
+    path: 'welcome',
+    loadChildren: () => import('./pages/welcome/welcome.module').then( m => m.WelcomePageModule)
+  },
+  {
+    path: 'register',
+    loadChildren: () => import('./pages/register/register.module').then( m => m.RegisterPageModule)
   },
 ];
 
