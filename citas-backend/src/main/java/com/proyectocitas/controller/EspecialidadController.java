@@ -1,14 +1,16 @@
 package com.proyectocitas.controller;
 
+import com.proyectocitas.dto.EspecialidadDTO;
+import com.proyectocitas.dto.EspecialidadRequestDTO;
 import com.proyectocitas.exception.ResourceNotFoundException;
-
+import com.proyectocitas.mapper.EspecialidadMapper;
 import com.proyectocitas.model.Especialidad;
-
 import com.proyectocitas.service.EspecialidadService;
+
+import jakarta.validation.Valid;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,14 +20,15 @@ import java.util.List;
 public class EspecialidadController {
 
     private final EspecialidadService especialidadService;
+    private final EspecialidadMapper especialidadMapper;
 
 
-    public EspecialidadController(
-            EspecialidadService especialidadService
-    ) {
-
-        this.especialidadService =
-                especialidadService;
+    public EspecialidadController( EspecialidadService especialidadService,
+            EspecialidadMapper especialidadMapper
+            ) {
+        this.especialidadMapper = especialidadMapper;
+        this.especialidadService = especialidadService;
+        
     }
 
 
@@ -34,11 +37,18 @@ public class EspecialidadController {
     // =================================================
 
     @GetMapping
-    public ResponseEntity<List<Especialidad>>
+    public ResponseEntity<List<EspecialidadDTO>>
             obtenerTodas() {
 
+        List<EspecialidadDTO> especialidades =
+                especialidadService
+                        .obtenerTodos()
+                        .stream()
+                        .map(especialidadMapper::toDTO)
+                        .toList();
+
         return ResponseEntity.ok(
-                especialidadService.obtenerTodos()
+                especialidades
         );
     }
 
@@ -48,7 +58,7 @@ public class EspecialidadController {
     // =================================================
 
     @GetMapping("/{id}")
-    public ResponseEntity<Especialidad>
+    public ResponseEntity<EspecialidadDTO>
             obtenerPorId(
                     @PathVariable Long id
             ) {
@@ -63,9 +73,10 @@ public class EspecialidadController {
                                 )
                         );
 
-
         return ResponseEntity.ok(
-                especialidad
+                especialidadMapper.toDTO(
+                        especialidad
+                )
         );
     }
 
@@ -75,19 +86,27 @@ public class EspecialidadController {
     // =================================================
 
     @PostMapping
-    public ResponseEntity<Especialidad>
+    public ResponseEntity<EspecialidadDTO>
             guardar(
-                    @RequestBody Especialidad especialidad
+                    @Valid
+                    @RequestBody
+                    EspecialidadRequestDTO request
             ) {
+
+        Especialidad especialidad =
+                especialidadMapper
+                        .toEntity(request);
 
         Especialidad nueva =
                 especialidadService
                         .guardar(especialidad);
 
-
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(nueva);
+                .body(
+                        especialidadMapper
+                                .toDTO(nueva)
+                );
     }
 
 
@@ -96,11 +115,18 @@ public class EspecialidadController {
     // =================================================
 
     @PutMapping("/{id}")
-    public ResponseEntity<Especialidad>
+    public ResponseEntity<EspecialidadDTO>
             actualizar(
                     @PathVariable Long id,
-                    @RequestBody Especialidad especialidad
+
+                    @Valid
+                    @RequestBody
+                    EspecialidadRequestDTO request
             ) {
+
+        Especialidad especialidad =
+                especialidadMapper
+                        .toEntity(request);
 
         Especialidad actualizada =
                 especialidadService
@@ -109,9 +135,9 @@ public class EspecialidadController {
                                 id
                         );
 
-
         return ResponseEntity.ok(
-                actualizada
+                especialidadMapper
+                        .toDTO(actualizada)
         );
     }
 
@@ -128,7 +154,6 @@ public class EspecialidadController {
 
         especialidadService
                 .eliminar(id);
-
 
         return ResponseEntity
                 .noContent()

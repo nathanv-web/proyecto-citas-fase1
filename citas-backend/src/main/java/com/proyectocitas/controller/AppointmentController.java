@@ -3,6 +3,7 @@ package com.proyectocitas.controller;
 import com.proyectocitas.dto.AppointmentRequestDTO;
 import com.proyectocitas.dto.AppointmentResponseDTO;
 import com.proyectocitas.dto.DiagnosisRequestDTO;
+import com.proyectocitas.dto.DoctorAgendaDTO;
 import com.proyectocitas.service.AppointmentService;
 
 import jakarta.validation.Valid;
@@ -14,6 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.security.Principal;
 import java.util.List;
+import org.springframework.http.HttpStatusCode;
 
 
 @RestController
@@ -106,6 +108,31 @@ public class AppointmentController {
 
         return ResponseEntity.ok(historial);
     }
+            
+// ================================================
+// AGENDA DEL DOCTOR
+// ================================================
+
+@GetMapping("/my-agenda")
+public ResponseEntity<List<DoctorAgendaDTO>>
+        obtenerMiAgenda(
+                Principal principal) {
+
+    if (principal == null) {
+
+        throw new ResponseStatusException(
+                HttpStatus.UNAUTHORIZED,
+                "Usuario no autenticado"
+        );
+    }
+
+    return ResponseEntity.ok(
+            appointmentService.obtenerMiAgenda(
+                    principal.getName()
+            )
+    );
+}
+            
             @PutMapping("/{id}/cancel")
 public ResponseEntity<AppointmentResponseDTO> cancelarCita(
         @PathVariable Long id,

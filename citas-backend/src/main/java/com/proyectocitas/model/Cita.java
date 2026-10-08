@@ -32,12 +32,12 @@ public class Cita {
     
     private String motivo;
 
-    @Column(name = "diagnostico_receta")
+    @Column(name = "diagnostico_receta", columnDefinition = "TEXT")
     private String diagnosticoReceta;
 
     @Column(name = "fecha_creacion")
     private LocalDateTime fechaCreacion;
-
+    @Column(columnDefinition = "TEXT")
     private String observaciones;
     
     //CONSTRUCTOR

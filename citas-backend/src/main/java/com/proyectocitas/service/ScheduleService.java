@@ -174,4 +174,62 @@ public class ScheduleService {
             );
         }
     }
+    public boolean validarHorarioActualizado(
+        Long idHorario,
+        Long idMedico,
+        LocalDate fecha,
+        LocalTime horaInicio,
+        LocalTime horaFin) {
+
+    if (idHorario == null) {
+        throw new IllegalArgumentException(
+                "El identificador del horario es obligatorio"
+        );
+    }
+
+    if (idMedico == null) {
+        throw new IllegalArgumentException(
+                "El identificador del medico es obligatorio"
+        );
+    }
+
+    if (fecha == null || horaInicio == null || horaFin == null) {
+        throw new IllegalArgumentException(
+                "La fecha y las horas son obligatorias"
+        );
+    }
+
+    if (!horaFin.isAfter(horaInicio)) {
+        throw new IllegalArgumentException(
+                "La hora de fin debe ser posterior a la hora de inicio"
+        );
+    }
+
+    List<HorarioDisponible> horarios =
+            horarioRepository
+                    .findByMedico_IdMedicoAndFecha(
+                            idMedico,
+                            fecha
+                    );
+
+    return horarios
+            .stream()
+
+            // Ignoramos el horario que estamos editando
+            .filter(horario ->
+                    !horario
+                            .getIdHorario()
+                            .equals(idHorario)
+            )
+
+            // Verificar si se cruza con otro
+            .noneMatch(horario ->
+                    hayTraslape(
+                            horaInicio,
+                            horaFin,
+                            horario.getHoraInicio(),
+                            horario.getHoraFin()
+                    )
+            );
+}
 }

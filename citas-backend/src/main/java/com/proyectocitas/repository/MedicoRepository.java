@@ -10,5 +10,7 @@ import java.util.Optional;
 public interface MedicoRepository extends JpaRepository<Medico, Long> {
 
     Optional<Medico> findByUsuario_IdUsuario(Long idUsuario);
+    Optional<Medico> findByColegiadoIgnoreCase(String colegiado);
+    Optional<Medico> findByUsuario_Correo(String correo);
 
 }

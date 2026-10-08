@@ -2,6 +2,7 @@ package com.proyectocitas.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
@@ -24,10 +25,15 @@ public class MedicoRequestDTO {
         max = 50,
         message = "El colegiado no puede superar los 50 caracteres"
     )
+    @Pattern(
+            regexp = "^[A-Za-z0-9-]+$",
+            message = "El colegiado solo puede contener letras, números y guiones"
+    )
     private String colegiado;
 
     //Años de experiencia profesional
     @PositiveOrZero(message = "Los años de experiencia no pueden ser negativos")
+    @NotNull(message = "Los años de experiencia son boligatorios")
     private Integer aniosExperiencia;
 
     //Descripción o información profesional del medico

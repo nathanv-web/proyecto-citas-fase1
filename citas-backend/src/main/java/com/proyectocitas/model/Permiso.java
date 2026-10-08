@@ -1,13 +1,6 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
+
 package com.proyectocitas.model;
 
-/**
- *
- * @author centinel
- */
 public enum Permiso {
 
     CREAR_USUARIOS,
@@ -24,8 +17,9 @@ public enum Permiso {
 
     CREAR_MEDICOS,
     VER_MEDICOS,
-    ACTUALIZAR_MEDICOS,  
+    ACTUALIZAR_MEDICOS,
     ELIMINAR_MEDICOS,
+
     CREAR_ESPECIALIDADES,
     VER_ESPECIALIDADES,
     ACTUALIZAR_ESPECIALIDADES,
@@ -33,6 +27,8 @@ public enum Permiso {
 
     CREAR_HORARIOS,
     VER_HORARIOS_DISPONIBLES,
+    ACTUALIZAR_HORARIOS,
+    ELIMINAR_HORARIOS,
 
     CREAR_CITA,
     VER_CITAS,

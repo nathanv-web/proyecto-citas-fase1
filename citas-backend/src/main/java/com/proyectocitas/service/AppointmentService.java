@@ -18,6 +18,9 @@ import com.proyectocitas.repository.CitaRepository;
 import com.proyectocitas.repository.EstadoCitaRepository;
 import com.proyectocitas.repository.HorarioDisponibleRepository;
 import com.proyectocitas.repository.UsuarioRepository;
+import java.time.LocalDate;
+import com.proyectocitas.dto.DoctorAgendaDTO;
+import java.time.LocalDate;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -25,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import org.springframework.http.HttpStatusCode;
 
 
 @Service
@@ -361,6 +365,47 @@ public AppointmentResponseDTO cancelarCita(
     return appointmentMapper.toDTO(guardada);
 }
 
+// ================================================
+// AGEBDA DEL MÉDICO AUTENTICADO
+// ================================================
+@Transactional(readOnly = true)
+public List<DoctorAgendaDTO> obtenerMiAgenda(
+        String correoMedico) {
+
+    usuarioRepository
+            .findByCorreo(correoMedico)
+            .orElseThrow(() ->
+                    new ResponseStatusException(
+                            HttpStatus.UNAUTHORIZED,
+                            "Usuario autenticado no encontrado"
+                    )
+            );
+
+    LocalDate hoy = LocalDate.now();
+    System.out.println("FECHA DE AGENDA:" +  hoy);
+
+    return citaRepository
+            .findAgendaByCorreoMedicoAndFecha(
+                    correoMedico,
+                    hoy
+            )
+            .stream()
+            .map(cita -> {
+
+                AppointmentResponseDTO citaDTO =
+                        appointmentMapper.toDTO(cita);
+
+                return new DoctorAgendaDTO(
+                        citaDTO.getIdCita(),
+                        citaDTO.getPaciente(),
+                        citaDTO.getHoraInicio(),
+                        citaDTO.getHoraFin(),
+                        citaDTO.getMotivo(),
+                        citaDTO.getEstado()
+                );
+            })
+            .toList();
+}
 
 // =================================================
 // LISTAR TODAS LAS CITAS

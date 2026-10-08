@@ -1,42 +1,22 @@
 package com.proyectocitas.dto;
 
-import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-public class HorarioDisponibleRequestDTO {
+public class HorarioUpdateRequestDTO {
 
-    //ID del medico al que pertenece el horario
-    @NotNull(message = "El medico es obligatorio")
-    @Positive(message = "El ID del medico debe ser mayor que cero")
-    private Long idMedico;
-
-    //La fecha debe ser hoy o una fecha futura
     @NotNull(message = "La fecha es obligatoria")
     private LocalDate fecha;
 
-    //Hora de inicio del horario
     @NotNull(message = "La hora de inicio es obligatoria")
     private LocalTime horaInicio;
 
-    //Hora de finalización del horario
-    @NotNull(message = "La hora de finalización es obligatoria")
+    @NotNull(message = "La hora de fin es obligatoria")
     private LocalTime horaFin;
 
-
-    public HorarioDisponibleRequestDTO() {
-    }
-
-
-    public Long getIdMedico() {
-        return idMedico;
-    }
-
-    public void setIdMedico(Long idMedico) {
-        this.idMedico = idMedico;
+    public HorarioUpdateRequestDTO() {
     }
 
     public LocalDate getFecha() {

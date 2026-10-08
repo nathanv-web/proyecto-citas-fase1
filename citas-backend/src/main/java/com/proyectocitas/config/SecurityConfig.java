@@ -410,6 +410,8 @@ public class SecurityConfig {
 .hasAuthority(
         Permiso.ELIMINAR_MEDICOS.name()
 )
+                        
+                        
 
 
                         // =================================================
@@ -434,6 +436,20 @@ public class SecurityConfig {
                         .hasAuthority(
                                 Permiso.VER_HORARIOS_DISPONIBLES.name()
                         )
+                        
+                        //Actualizar horarios
+                        
+                        .requestMatchers(HttpMethod.PUT,
+                                "/api/v1/schedules/**").
+                        hasAuthority(Permiso.ACTUALIZAR_HORARIOS.name()
+                        )
+                        
+                        //Eliminar Horarios
+                        
+                        .requestMatchers(HttpMethod.DELETE,
+                                "/api/v1/schedules/*"
+                        )
+                        .hasAuthority(Permiso.ELIMINAR_HORARIOS.name())
 
 
                         // =================================================
@@ -505,7 +521,13 @@ public class SecurityConfig {
 .hasAuthority(
         Permiso.VER_CITAS.name()
 )
-
+                        // ================================================
+                        // VER AGENDA DEL DOCTOR
+                        // ================================================
+                        
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/v1/appointments/my-agenda")
+                        .hasAuthority(Permiso.VER_CITAS.name())
 
                         // =================================================
                         // RESTO DE ENDPOINTS

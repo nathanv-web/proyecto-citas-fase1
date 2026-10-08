@@ -18,7 +18,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+
 class MedicoControllerTest {
+
+
+    // =================================================
+    // USUARIO YA TIENE PERFIL MÉDICO
+    // =================================================
 
     @Test
     void debeLanzarDuplicateResourceCuandoUsuarioYaTienePerfilMedico() {
@@ -50,6 +56,8 @@ class MedicoControllerTest {
 
         request.setIdUsuario(5L);
         request.setIdEspecialidad(2L);
+        request.setColegiado("COL-001");
+        request.setAniosExperiencia(5);
 
 
         when(
@@ -66,133 +74,174 @@ class MedicoControllerTest {
                 () -> controller.crearMedico(request)
         );
     }
+
+
+    // =================================================
+    // USUARIO NO EXISTE
+    // =================================================
+
     @Test
-void debeLanzarResourceNotFoundCuandoUsuarioNoExiste() {
+    void debeLanzarResourceNotFoundCuandoUsuarioNoExiste() {
 
-    MedicoRepository medicoRepository =
-            mock(MedicoRepository.class);
+        MedicoRepository medicoRepository =
+                mock(MedicoRepository.class);
 
-    UsuarioRepository usuarioRepository =
-            mock(UsuarioRepository.class);
+        UsuarioRepository usuarioRepository =
+                mock(UsuarioRepository.class);
 
-    EspecialidadRepository especialidadRepository =
-            mock(EspecialidadRepository.class);
+        EspecialidadRepository especialidadRepository =
+                mock(EspecialidadRepository.class);
 
-    MedicoMapper medicoMapper =
-            mock(MedicoMapper.class);
-
-
-    MedicoController controller =
-            new MedicoController(
-                    medicoRepository,
-                    usuarioRepository,
-                    especialidadRepository,
-                    medicoMapper
-            );
+        MedicoMapper medicoMapper =
+                mock(MedicoMapper.class);
 
 
-    MedicoRequestDTO request =
-            new MedicoRequestDTO();
-
-    request.setIdUsuario(99L);
-    request.setIdEspecialidad(2L);
-
-
-    // El usuario todavía NO tiene perfil de médico
-    when(
-            medicoRepository
-                    .findByUsuario_IdUsuario(99L)
-    )
-            .thenReturn(
-                    Optional.empty()
-            );
+        MedicoController controller =
+                new MedicoController(
+                        medicoRepository,
+                        usuarioRepository,
+                        especialidadRepository,
+                        medicoMapper
+                );
 
 
-    // Pero el usuario 99 NO existe
-    when(
-            usuarioRepository.findById(99L)
-    )
-            .thenReturn(
-                    Optional.empty()
-            );
+        MedicoRequestDTO request =
+                new MedicoRequestDTO();
+
+        request.setIdUsuario(99L);
+        request.setIdEspecialidad(2L);
+        request.setColegiado("COL-002");
+        request.setAniosExperiencia(3);
 
 
-    assertThrows(
-            ResourceNotFoundException.class,
-            () -> controller.crearMedico(request)
-    );
-}
-
-@Test
-void debeLanzarResourceNotFoundCuandoEspecialidadNoExiste() {
-
-    MedicoRepository medicoRepository =
-            mock(MedicoRepository.class);
-
-    UsuarioRepository usuarioRepository =
-            mock(UsuarioRepository.class);
-
-    EspecialidadRepository especialidadRepository =
-            mock(EspecialidadRepository.class);
-
-    MedicoMapper medicoMapper =
-            mock(MedicoMapper.class);
+        // El usuario todavía no tiene perfil médico
+        when(
+                medicoRepository
+                        .findByUsuario_IdUsuario(99L)
+        )
+                .thenReturn(
+                        Optional.empty()
+                );
 
 
-    MedicoController controller =
-            new MedicoController(
-                    medicoRepository,
-                    usuarioRepository,
-                    especialidadRepository,
-                    medicoMapper
-            );
+        // El colegiado tampoco está registrado
+        when(
+                medicoRepository
+                        .findByColegiadoIgnoreCase(
+                                "COL-002"
+                        )
+        )
+                .thenReturn(
+                        Optional.empty()
+                );
 
 
-    MedicoRequestDTO request =
-            new MedicoRequestDTO();
-
-    request.setIdUsuario(5L);
-    request.setIdEspecialidad(99L);
-
-
-    // El usuario no tiene perfil médico todavía
-    when(
-            medicoRepository
-                    .findByUsuario_IdUsuario(5L)
-    )
-            .thenReturn(
-                    Optional.empty()
-            );
+        // El usuario no existe
+        when(
+                usuarioRepository
+                        .findById(99L)
+        )
+                .thenReturn(
+                        Optional.empty()
+                );
 
 
-    // El usuario sí existe
-    Usuario usuario =
-            new Usuario();
-
-    usuario.setIdUsuario(5L);
-
-
-    when(
-            usuarioRepository.findById(5L)
-    )
-            .thenReturn(
-                    Optional.of(usuario)
-            );
+        assertThrows(
+                ResourceNotFoundException.class,
+                () -> controller.crearMedico(request)
+        );
+    }
 
 
-    // Pero la especialidad 99 NO existe
-    when(
-            especialidadRepository.findById(99L)
-    )
-            .thenReturn(
-                    Optional.empty()
-            );
+    // =================================================
+    // ESPECIALIDAD NO EXISTE
+    // =================================================
+
+    @Test
+    void debeLanzarResourceNotFoundCuandoEspecialidadNoExiste() {
+
+        MedicoRepository medicoRepository =
+                mock(MedicoRepository.class);
+
+        UsuarioRepository usuarioRepository =
+                mock(UsuarioRepository.class);
+
+        EspecialidadRepository especialidadRepository =
+                mock(EspecialidadRepository.class);
+
+        MedicoMapper medicoMapper =
+                mock(MedicoMapper.class);
 
 
-    assertThrows(
-            ResourceNotFoundException.class,
-            () -> controller.crearMedico(request)
-    );
-}
-    
+        MedicoController controller =
+                new MedicoController(
+                        medicoRepository,
+                        usuarioRepository,
+                        especialidadRepository,
+                        medicoMapper
+                );
+
+
+        MedicoRequestDTO request =
+                new MedicoRequestDTO();
+
+        request.setIdUsuario(5L);
+        request.setIdEspecialidad(99L);
+        request.setColegiado("COL-003");
+        request.setAniosExperiencia(4);
+
+
+        // El usuario todavía no tiene perfil médico
+        when(
+                medicoRepository
+                        .findByUsuario_IdUsuario(5L)
+        )
+                .thenReturn(
+                        Optional.empty()
+                );
+
+
+        // El colegiado no está registrado
+        when(
+                medicoRepository
+                        .findByColegiadoIgnoreCase(
+                                "COL-003"
+                        )
+        )
+                .thenReturn(
+                        Optional.empty()
+                );
+
+
+        // El usuario sí existe
+        Usuario usuario =
+                new Usuario();
+
+        usuario.setIdUsuario(5L);
+
+
+        when(
+                usuarioRepository
+                        .findById(5L)
+        )
+                .thenReturn(
+                        Optional.of(usuario)
+                );
+
+
+        // La especialidad no existe
+        when(
+                especialidadRepository
+                        .findById(99L)
+        )
+                .thenReturn(
+                        Optional.empty()
+                );
+
+
+        assertThrows(
+                ResourceNotFoundException.class,
+                () -> controller.crearMedico(request)
+        );
+    }
 }
