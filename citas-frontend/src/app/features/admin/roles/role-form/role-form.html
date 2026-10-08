@@ -1,0 +1,69 @@
+<h2>
+  {{ id ? 'Editar Rol' : 'Crear Rol' }}
+</h2>
+
+<form
+  [formGroup]="form"
+  (ngSubmit)="save()"
+>
+
+  <div>
+
+    <label>
+      Nombre
+    </label>
+
+    <input
+      type="text"
+      formControlName="nombre"
+    >
+
+  </div>
+
+  <div>
+
+    <label>
+      Descripción
+    </label>
+
+    <input
+      type="text"
+      formControlName="descripcion"
+    >
+
+  </div>
+
+  <h3>Permisos</h3>
+
+  @for (
+    permission of permissions();
+    track permission
+  ) {
+
+    <label>
+
+      <input
+        type="checkbox"
+        [checked]="
+          selectedPermissions()
+            .includes(permission)
+        "
+        (change)="
+          togglePermission(permission)
+        "
+      >
+
+      {{ permission }}
+
+    </label>
+
+    <br>
+  }
+
+  <br>
+
+  <button type="submit">
+    Guardar
+  </button>
+
+</form>

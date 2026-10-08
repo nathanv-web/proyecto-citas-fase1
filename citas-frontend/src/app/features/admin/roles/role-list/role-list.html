@@ -1,0 +1,39 @@
+<h2>Roles</h2>
+
+<a routerLink="/admin/roles/new">
+  Crear rol
+</a>
+
+<hr>
+
+@for (role of roles(); track role.idRol) {
+
+  <div>
+
+    <h3>
+      {{ role.nombre }}
+    </h3>
+
+    <p>
+      {{ role.descripcion }}
+    </p>
+
+    <a
+      [routerLink]="[
+        '/admin/roles/edit',
+        role.idRol
+      ]"
+    >
+      Editar
+    </a>
+
+    <button
+      (click)="deleteRole(role.idRol)"
+    >
+      Eliminar
+    </button>
+
+  </div>
+
+  <hr>
+}

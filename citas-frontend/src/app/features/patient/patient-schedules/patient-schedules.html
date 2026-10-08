@@ -1,0 +1,71 @@
+<h2>Horarios disponibles</h2>
+
+<label>ID Médico</label>
+
+<input
+  type="number"
+  [(ngModel)]="idMedico"
+>
+
+<br><br>
+
+<label>Fecha</label>
+
+<input
+  type="date"
+  [(ngModel)]="fecha"
+>
+
+<br><br>
+
+<button
+  (click)="search()"
+>
+  Buscar horarios
+</button>
+
+<p>{{ message }}</p>
+
+<hr>
+
+@for (
+  schedule of schedules();
+  track schedule.idHorario
+) {
+
+  <div>
+
+    <p>
+      ID Horario:
+      {{ schedule.idHorario }}
+    </p>
+
+    <p>
+      Médico:
+      {{ schedule.medico }}
+    </p>
+
+    <p>
+      Fecha:
+      {{ schedule.fecha }}
+    </p>
+
+    <p>
+      Inicio:
+      {{ schedule.horaInicio }}
+    </p>
+
+    <p>
+      Fin:
+      {{ schedule.horaFin }}
+    </p>
+
+    <p>
+      Estado:
+      {{ schedule.estado }}
+    </p>
+
+  </div>
+
+  <hr>
+}

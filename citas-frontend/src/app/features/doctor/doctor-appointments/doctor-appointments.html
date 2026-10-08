@@ -1,0 +1,29 @@
+<h3>Registrar diagnóstico</h3>
+
+<input
+  type="number"
+  [(ngModel)]="appointmentId"
+  placeholder="ID Cita"
+>
+
+<br><br>
+
+<textarea
+  [(ngModel)]="diagnosticoReceta"
+  placeholder="Diagnóstico y receta"
+></textarea>
+
+<br><br>
+
+<textarea
+  [(ngModel)]="observaciones"
+  placeholder="Observaciones"
+></textarea>
+
+<br><br>
+
+<button
+  (click)="saveDiagnosis()"
+>
+  Guardar diagnóstico
+</button>

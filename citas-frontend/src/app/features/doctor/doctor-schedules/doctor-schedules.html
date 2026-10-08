@@ -1,0 +1,43 @@
+<h2>Crear horario</h2>
+
+<form
+  [formGroup]="form"
+  (ngSubmit)="save()"
+>
+
+  <input
+    type="number"
+    placeholder="ID Médico"
+    formControlName="idMedico"
+  >
+
+  <br><br>
+
+  <input
+    type="date"
+    formControlName="fecha"
+  >
+
+  <br><br>
+
+  <input
+    type="time"
+    formControlName="horaInicio"
+  >
+
+  <br><br>
+
+  <input
+    type="time"
+    formControlName="horaFin"
+  >
+
+  <br><br>
+
+  <button type="submit">
+    Crear horario
+  </button>
+
+</form>
+
+<p>{{ message }}</p>

@@ -1,0 +1,47 @@
+<h2>Médicos disponibles</h2>
+
+@for (
+  doctor of doctors();
+  track doctor.idMedico
+) {
+
+  <div>
+
+    <h3>
+      {{ doctor.nombre }}
+    </h3>
+
+    <p>
+      ID Médico:
+      {{ doctor.idMedico }}
+    </p>
+
+    <p>
+      Correo:
+      {{ doctor.correo }}
+    </p>
+
+    <p>
+      Colegiado:
+      {{ doctor.colegiado }}
+    </p>
+
+    <p>
+      Especialidad:
+      {{ doctor.especialidad }}
+    </p>
+
+    <p>
+      Años de experiencia:
+      {{ doctor.aniosExperiencia }}
+    </p>
+
+    <p>
+      Estado:
+      {{ doctor.estado }}
+    </p>
+
+  </div>
+
+  <hr>
+}

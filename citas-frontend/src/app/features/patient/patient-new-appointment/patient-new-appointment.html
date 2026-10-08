@@ -1,0 +1,31 @@
+<h2>Nueva cita</h2>
+
+<form
+  [formGroup]="form"
+  (ngSubmit)="save()"
+>
+
+  <label>ID Horario</label>
+
+  <input
+    type="number"
+    formControlName="idHorario"
+  >
+
+  <br><br>
+
+  <label>Motivo</label>
+
+  <textarea
+    formControlName="motivo"
+  ></textarea>
+
+  <br><br>
+
+  <button type="submit">
+    Crear cita
+  </button>
+
+</form>
+
+<p>{{ message }}</p>
