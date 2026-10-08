@@ -11,10 +11,12 @@ import { DoctorSchedules } from './features/doctor/doctor-schedules/doctor-sched
 import { DoctorAppointments } from './features/doctor/doctor-appointments/doctor-appointments';
 
 import { PatientDashboard } from './features/patient/patient-dashboard/patient-dashboard';
-import { PatientDoctors } from './features/patient/ patient-doctors/patient-doctors';
+import { PatientDoctors } from './features/patient/patient-doctors/patient-doctors';
 import { PatientSchedules } from './features/patient/patient-schedules/patient-schedules';
 import { PatientNewAppointment } from './features/patient/patient-new-appointment/patient-new-appointment';
 import { PatientHistory } from './features/patient/patient-history/patient-history';
+
+import { Welcome } from './features/public/welcome/welcome';
 
 export const routes: Routes = [
 
@@ -117,7 +119,7 @@ export const routes: Routes = [
 
   {
     path: '',
-    redirectTo: 'login',
+    component: Welcome,
     pathMatch: 'full'
   }
 

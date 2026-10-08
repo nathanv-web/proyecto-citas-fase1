@@ -1,76 +1,49 @@
-/* =====================================================
-   PALETA GLOBAL - SISTEMA DE CITAS MÉDICAS
-   Coral Amanecer Acento
-   ===================================================== */
+
+/* ==========================================
+   NORD BLUE - SISTEMA DE CITAS MÉDICAS
+   Paleta oficial del frontend
+   ========================================== */
 
 :root {
 
-  /* ===== COLORES PRINCIPALES ===== */
+  /* COLORES PRINCIPALES */
+  --app-primary: #356F9F;
+  --app-primary-hover: #284D73;
+  --app-primary-light: #DDECF6;
 
-  /* Fondo principal de la aplicación */
-  --color-background: #FFF5F2;
+  --app-secondary: #5C91B8;
+  --app-accent: #88BBD4;
 
-  /* Fondos secundarios */
-  --color-secondary: #FFD4C9;
+  /* COLORES OSCUROS */
+  --app-navy: #1B304B;
+  --app-navy-light: #284D73;
 
-  /* Acentos, iconos y elementos seleccionados */
-  --color-accent: #FF8A7A;
+  /* FONDOS */
+  --app-bg: #F4F8FC;
+  --app-surface: #FFFFFF;
+  --app-surface-alt: #EAF2F9;
 
-  /* Botones y acciones principales */
-  --color-primary: #D94A3A;
+  /* TEXTOS */
+  --app-text: #20374D;
+  --app-text-muted: #536B80;
+  --app-text-light: #FFFFFF;
 
-  /* Navbar, sidebar, títulos importantes */
-  --color-primary-dark: #5A1F1A;
+  /* BORDES */
+  --app-border: #CFDFEA;
 
+  /* ESTADOS */
+  --app-success: #327B71;
+  --app-warning: #B77928;
+  --app-danger: #B74E60;
+  --app-info: #356F9F;
 
-  /* ===== SUPERFICIES ===== */
+  /* DISEÑO GENERAL */
+  --app-radius: 12px;
+  --app-radius-lg: 20px;
 
-  /* Tarjetas, formularios, modales */
-  --color-surface: #FFFFFF;
+  --app-shadow:
+    0 8px 24px rgba(27, 48, 75, 0.08);
 
-
-  /* ===== TEXTO ===== */
-
-  /* Texto principal */
-  --color-text: #5A1F1A;
-
-  /* Texto sobre fondos oscuros */
-  --color-text-light: #FFFFFF;
-
-  /* Texto secundario */
-  --color-text-secondary: #6D5A57;
-
-
-  /* ===== ESTADOS DEL SISTEMA ===== */
-
-  /* Cita confirmada, operación exitosa, disponible */
-  --color-success: #2E7D32;
-
-  /* Cita pendiente, advertencia */
-  --color-warning: #EF6C00;
-
-  /* Error, eliminar, cancelar */
-  --color-danger: #C62828;
-
-  /* Información */
-  --color-info: #1565C0;
-
-
-  /* ===== BORDES ===== */
-
-  --color-border: #E6D5D1;
-}
-
-
-/* ===== ESTILO BASE ===== */
-
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  background-color: var(--color-background);
-  color: var(--color-text);
-  font-family: Arial, Helvetica, sans-serif;
+  --app-shadow-hover:
+    0 12px 30px rgba(27, 48, 75, 0.14);
 }
