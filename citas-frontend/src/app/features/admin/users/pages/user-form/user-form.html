@@ -1,0 +1,200 @@
+﻿<div class="page">
+
+  <div class="page-header">
+    <div>
+      <h1>
+        {{ isEdit ? 'Editar usuario' : 'Nuevo usuario' }}
+      </h1>
+
+      <p>
+        {{ isEdit
+          ? 'Actualiza los datos del usuario.'
+          : 'Registra un nuevo usuario en el sistema.'
+        }}
+      </p>
+    </div>
+
+    <a
+      routerLink="/admin/users"
+      class="btn btn-secondary">
+      Volver
+    </a>
+  </div>
+
+  @if (loading) {
+    <div class="message">
+      Cargando usuario...
+    </div>
+  }
+
+  @if (error) {
+    <div class="alert error">
+      {{ error }}
+    </div>
+  }
+
+  @if (success) {
+    <div class="alert success">
+      {{ success }}
+    </div>
+  }
+
+  @if (!loading) {
+
+    <form
+      class="form-card"
+      #userForm="ngForm"
+      (ngSubmit)="save()">
+
+      <div class="form-grid">
+
+        <div class="field">
+
+          <label for="nombre">
+            Nombre *
+          </label>
+
+          <input
+            id="nombre"
+            type="text"
+            name="nombre"
+            [(ngModel)]="form.nombre"
+            #nombre="ngModel"
+            required
+            minlength="2"
+            maxlength="100">
+
+          @if (nombre.invalid && nombre.touched) {
+            <small class="validation">
+              El nombre debe tener entre 2 y 100 caracteres.
+            </small>
+          }
+
+        </div>
+
+        <div class="field">
+
+          <label for="apellido">
+            Apellido *
+          </label>
+
+          <input
+            id="apellido"
+            type="text"
+            name="apellido"
+            [(ngModel)]="form.apellido"
+            #apellido="ngModel"
+            required
+            minlength="2"
+            maxlength="100">
+
+          @if (apellido.invalid && apellido.touched) {
+            <small class="validation">
+              El apellido debe tener entre 2 y 100 caracteres.
+            </small>
+          }
+
+        </div>
+
+        <div class="field">
+
+          <label for="correo">
+            Correo *
+          </label>
+
+          <input
+            id="correo"
+            type="email"
+            name="correo"
+            [(ngModel)]="form.correo"
+            #correo="ngModel"
+            required>
+
+          @if (correo.invalid && correo.touched) {
+            <small class="validation">
+              Ingresa un correo válido.
+            </small>
+          }
+
+        </div>
+
+        <div class="field">
+
+          <label for="telefono">
+            Teléfono *
+          </label>
+
+          <input
+            id="telefono"
+            type="text"
+            name="telefono"
+            [(ngModel)]="form.telefono"
+            #telefono="ngModel"
+            required
+            maxlength="20">
+
+          @if (telefono.invalid && telefono.touched) {
+            <small class="validation">
+              El teléfono es obligatorio y admite máximo 20 caracteres.
+            </small>
+          }
+
+        </div>
+
+        @if (!isEdit) {
+
+          <div class="field full">
+
+            <label for="contrasena">
+              Contraseña *
+            </label>
+
+            <input
+              id="contrasena"
+              type="password"
+              name="contrasena"
+              [(ngModel)]="form.contrasena"
+              #contrasena="ngModel"
+              required
+              minlength="8"
+              maxlength="12">
+
+            @if (contrasena.invalid && contrasena.touched) {
+              <small class="validation">
+                La contraseña debe tener entre 8 y 12 caracteres.
+              </small>
+            }
+
+          </div>
+
+        }
+
+      </div>
+
+      <div class="form-actions">
+
+        <a
+          routerLink="/admin/users"
+          class="btn btn-secondary">
+          Cancelar
+        </a>
+
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="userForm.invalid || saving">
+
+          {{ saving
+            ? 'Guardando...'
+            : (isEdit ? 'Guardar cambios' : 'Crear usuario')
+          }}
+
+        </button>
+
+      </div>
+
+    </form>
+
+  }
+
+</div>

@@ -1,0 +1,261 @@
+﻿<div class="page">
+
+  <div class="page-header">
+
+    <div>
+      <h1>Médicos</h1>
+      <p>Administra los perfiles médicos del sistema.</p>
+    </div>
+
+  </div>
+
+  @if (error) {
+    <div class="alert error">
+      {{ error }}
+    </div>
+  }
+
+  @if (success) {
+    <div class="alert success">
+      {{ success }}
+    </div>
+  }
+
+  <form
+    class="form-card"
+    #doctorForm="ngForm"
+    (ngSubmit)="createDoctor()">
+
+    <h2>Nuevo médico</h2>
+
+    <div class="form-grid">
+
+      <div class="field">
+
+        <label for="usuario">
+          Usuario *
+        </label>
+
+        <select
+          id="usuario"
+          name="usuario"
+          [(ngModel)]="form.idUsuario"
+          required>
+
+          <option [ngValue]="0">
+            Selecciona un usuario
+          </option>
+
+          @for (user of users; track user.idUsuario) {
+
+            <option [ngValue]="user.idUsuario">
+              {{ user.nombre }}
+              {{ user.apellido }}
+              - {{ user.correo }}
+            </option>
+
+          }
+
+        </select>
+
+      </div>
+
+      <div class="field">
+
+        <label for="especialidad">
+          Especialidad *
+        </label>
+
+        <select
+          id="especialidad"
+          name="especialidad"
+          [(ngModel)]="form.idEspecialidad"
+          required>
+
+          <option [ngValue]="0">
+            Selecciona una especialidad
+          </option>
+
+          @for (
+            specialty of specialties;
+            track specialty.idEspecialidad
+          ) {
+
+            <option
+              [ngValue]="specialty.idEspecialidad">
+
+              {{ specialty.nombre }}
+
+            </option>
+
+          }
+
+        </select>
+
+      </div>
+
+      <div class="field">
+
+        <label for="colegiado">
+          Número de colegiado *
+        </label>
+
+        <input
+          id="colegiado"
+          type="text"
+          name="colegiado"
+          [(ngModel)]="form.colegiado"
+          #colegiado="ngModel"
+          required
+          maxlength="50">
+
+        @if (
+          colegiado.invalid &&
+          colegiado.touched
+        ) {
+
+          <small class="validation">
+            El número de colegiado es obligatorio.
+          </small>
+
+        }
+
+      </div>
+
+      <div class="field">
+
+        <label for="experiencia">
+          Años de experiencia
+        </label>
+
+        <input
+          id="experiencia"
+          type="number"
+          name="experiencia"
+          [(ngModel)]="form.aniosExperiencia"
+          min="0">
+
+      </div>
+
+      <div class="field full">
+
+        <label for="biografia">
+          Biografía
+        </label>
+
+        <textarea
+          id="biografia"
+          name="biografia"
+          [(ngModel)]="form.biografia"
+          maxlength="1000"
+          rows="4">
+        </textarea>
+
+      </div>
+
+    </div>
+
+    <button
+      type="submit"
+      class="btn btn-primary"
+      [disabled]="doctorForm.invalid || saving">
+
+      {{ saving
+        ? 'Guardando...'
+        : 'Crear médico'
+      }}
+
+    </button>
+
+  </form>
+
+  <section class="list-section">
+
+    <h2>Médicos registrados</h2>
+
+    @if (loading) {
+
+      <div class="message">
+        Cargando médicos...
+      </div>
+
+    } @else if (doctors.length === 0) {
+
+      <div class="message">
+        No hay médicos registrados.
+      </div>
+
+    } @else {
+
+      <div class="table-container">
+
+        <table>
+
+          <thead>
+
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>Correo</th>
+              <th>Especialidad</th>
+              <th>Colegiado</th>
+              <th>Experiencia</th>
+              <th>Estado</th>
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            @for (
+              doctor of doctors;
+              track doctor.idMedico
+            ) {
+
+              <tr>
+
+                <td>
+                  {{ doctor.idMedico }}
+                </td>
+
+                <td>
+                  {{ doctor.nombre }}
+                </td>
+
+                <td>
+                  {{ doctor.correo }}
+                </td>
+
+                <td>
+                  {{ doctor.especialidad }}
+                </td>
+
+                <td>
+                  {{ doctor.colegiado }}
+                </td>
+
+                <td>
+                  {{ doctor.aniosExperiencia }} años
+                </td>
+
+                <td>
+                  <span class="status">
+                    {{ doctor.estado }}
+                  </span>
+                </td>
+
+              </tr>
+
+            }
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    }
+
+  </section>
+
+</div>

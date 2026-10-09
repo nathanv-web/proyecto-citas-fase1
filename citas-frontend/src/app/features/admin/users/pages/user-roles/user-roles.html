@@ -1,0 +1,100 @@
+﻿<div class="page">
+
+  <div class="page-header">
+
+    <div>
+      <h1>Asignar roles</h1>
+
+      @if (user) {
+        <p>
+          {{ user.nombre }} {{ user.apellido }}
+          · {{ user.correo }}
+        </p>
+      }
+    </div>
+
+    <a
+      routerLink="/admin/users"
+      class="btn btn-secondary">
+      Volver
+    </a>
+
+  </div>
+
+  @if (loading) {
+    <div class="message">
+      Cargando roles...
+    </div>
+  }
+
+  @if (error) {
+    <div class="alert error">
+      {{ error }}
+    </div>
+  }
+
+  @if (success) {
+    <div class="alert success">
+      {{ success }}
+    </div>
+  }
+
+  @if (!loading && roles.length === 0) {
+    <div class="message">
+      No hay roles disponibles.
+    </div>
+  }
+
+  @if (!loading && roles.length > 0) {
+
+    <div class="roles-card">
+
+      <h2>Roles disponibles</h2>
+
+      <div class="roles-list">
+
+        @for (role of roles; track role.idRol) {
+
+          <label class="role-option">
+
+            <input
+              type="checkbox"
+              [checked]="isSelected(role.idRol)"
+              (change)="toggleRole(role.idRol)">
+
+            <div>
+              <strong>{{ role.nombre }}</strong>
+
+              <p>
+                {{ role.descripcion || 'Sin descripción' }}
+              </p>
+            </div>
+
+          </label>
+
+        }
+
+      </div>
+
+      <div class="actions">
+
+        <button
+          type="button"
+          class="btn btn-primary"
+          [disabled]="saving"
+          (click)="saveRoles()">
+
+          {{ saving
+            ? 'Guardando...'
+            : 'Guardar roles'
+          }}
+
+        </button>
+
+      </div>
+
+    </div>
+
+  }
+
+</div>

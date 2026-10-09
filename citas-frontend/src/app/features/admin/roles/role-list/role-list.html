@@ -1,0 +1,138 @@
+﻿<div class="page">
+
+  <div class="page-header">
+
+    <div>
+      <h1>Roles y permisos</h1>
+      <p>Administra los roles disponibles en el sistema.</p>
+    </div>
+
+    <a
+      routerLink="/admin/roles/new"
+      class="btn btn-primary">
+      Nuevo rol
+    </a>
+
+  </div>
+
+  @if (success) {
+    <div class="alert success">
+      {{ success }}
+    </div>
+  }
+
+  @if (error) {
+    <div class="alert error">
+      {{ error }}
+    </div>
+  }
+
+  @if (loading) {
+    <div class="message">
+      Cargando roles...
+    </div>
+  }
+
+  @if (!loading && !error && roles.length === 0) {
+    <div class="message">
+      No hay roles registrados.
+    </div>
+  }
+
+  @if (!loading && roles.length > 0) {
+
+    <div class="table-container">
+
+      <table>
+
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Rol</th>
+            <th>Descripción</th>
+            <th>Permisos</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+          @for (role of roles; track role.idRol) {
+
+            <tr>
+
+              <td>
+                {{ role.idRol }}
+              </td>
+
+              <td>
+                <strong>{{ role.nombre }}</strong>
+              </td>
+
+              <td>
+                {{ role.descripcion || 'Sin descripción' }}
+              </td>
+
+              <td>
+
+                @if (role.permisos && role.permisos.length > 0) {
+
+                  <div class="permissions">
+
+                    @for (permission of role.permisos; track permission) {
+
+                      <span class="permission">
+                        {{ permission }}
+                      </span>
+
+                    }
+
+                  </div>
+
+                } @else {
+
+                  <span class="muted">
+                    Sin permisos
+                  </span>
+
+                }
+
+              </td>
+
+              <td>
+
+                <div class="actions">
+
+                  <a
+                    [routerLink]="[
+                      '/admin/roles/edit',
+                      role.idRol
+                    ]"
+                    class="btn btn-edit">
+                    Editar / Permisos
+                  </a>
+
+                  <button
+                    type="button"
+                    class="btn btn-danger"
+                    (click)="deleteRole(role)">
+                    Eliminar
+                  </button>
+
+                </div>
+
+              </td>
+
+            </tr>
+
+          }
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  }
+
+</div>

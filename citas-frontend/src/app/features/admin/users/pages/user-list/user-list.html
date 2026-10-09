@@ -1,0 +1,161 @@
+﻿<div class="page">
+
+  <div class="page-header">
+    <div>
+      <h1>Usuarios</h1>
+      <p>Administración de usuarios del sistema.</p>
+    </div>
+
+    <a
+      routerLink="/admin/users/new"
+      class="btn btn-primary">
+      Nuevo usuario
+    </a>
+  </div>
+
+  @if (success) {
+    <div class="alert success">
+      {{ success }}
+    </div>
+  }
+
+  @if (error) {
+    <div class="alert error">
+      {{ error }}
+    </div>
+  }
+
+  @if (loading) {
+    <div class="loading">
+      Cargando usuarios...
+    </div>
+  }
+
+  @if (!loading && !error && users.length === 0) {
+    <div class="empty">
+      No hay usuarios registrados.
+    </div>
+  }
+
+  @if (!loading && users.length > 0) {
+
+    <div class="table-container">
+
+      <table>
+
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Correo</th>
+            <th>Teléfono</th>
+            <th>Roles</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+          @for (user of users; track user.idUsuario) {
+
+            <tr>
+
+              <td>{{ user.idUsuario }}</td>
+
+              <td>
+                {{ user.nombre }} {{ user.apellido }}
+              </td>
+
+              <td>
+                {{ user.correo }}
+              </td>
+
+              <td>
+                {{ user.telefono }}
+              </td>
+
+              <td>
+
+                @if (user.roles && user.roles.length > 0) {
+
+                  <div class="roles">
+                    @for (role of user.roles; track role) {
+                      <span class="role">
+                        {{ role }}
+                      </span>
+                    }
+                  </div>
+
+                } @else {
+
+                  <span>Sin roles</span>
+
+                }
+
+              </td>
+
+              <td>
+
+                @if (user.activo) {
+                  <span class="status active">
+                    Activo
+                  </span>
+                } @else {
+                  <span class="status inactive">
+                    Inactivo
+                  </span>
+                }
+
+              </td>
+
+              <td>
+
+                <div class="actions">
+
+                  <a
+                    [routerLink]="[
+                      '/admin/users/edit',
+                      user.idUsuario
+                    ]"
+                    class="btn btn-edit">
+                    Editar
+                  </a>
+
+                  <a
+                    [routerLink]="[
+                      '/admin/users/roles',
+                      user.idUsuario
+                    ]"
+                    class="btn btn-role">
+                    Roles
+                  </a>
+
+                  @if (user.activo) {
+
+                    <button
+                      type="button"
+                      class="btn btn-danger"
+                      (click)="deactivateUser(user)">
+                      Desactivar
+                    </button>
+
+                  }
+
+                </div>
+
+              </td>
+
+            </tr>
+
+          }
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  }
+
+</div>
