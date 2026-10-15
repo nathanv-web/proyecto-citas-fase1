@@ -1,7 +1,25 @@
-﻿<div class="login-page">
-  <div class="login-card">
-    <h1>Iniciar sesión</h1>
-    <p class="subtitle">Sistema de Citas Médicas</p>
+<main class="login-page">
+  <section class="login-intro" aria-labelledby="login-intro-title">
+    <a class="app-brand" routerLink="/" aria-label="CitaNova, inicio">
+      <span class="brand-symbol" aria-hidden="true">✚</span>
+      <span class="brand-copy">
+        <strong>Cita<span>Nova</span></strong>
+        <small>Tu salud en un clic</small>
+      </span>
+    </a>
+    <span class="eyebrow">Todo en un solo lugar</span>
+    <h2 id="login-intro-title">Tu atención médica,<span>más organizada.</span></h2>
+    <p>Accede a tu cuenta para consultar los servicios de CitaNova y gestionar tus citas.</p>
+    <ul class="login-benefits">
+      <li><span aria-hidden="true">✓</span> Médicos y especialidades</li>
+      <li><span aria-hidden="true">✓</span> Horarios disponibles</li>
+      <li><span aria-hidden="true">✓</span> Todas tus citas a mano</li>
+    </ul>
+  </section>
+  <section class="login-card" aria-labelledby="login-title">
+    <span class="eyebrow">Bienvenido a CitaNova</span>
+    <h1 id="login-title">Iniciar sesión</h1>
+    <p class="subtitle">Ingresa tus datos para continuar.</p>
 
     <form [formGroup]="loginForm" (ngSubmit)="iniciarSesion()">
       <div class="form-group">
@@ -11,12 +29,11 @@
           type="email"
           formControlName="email"
           placeholder="correo@ejemplo.com"
+          autocomplete="username"
         />
 
         @if (loginForm.controls.email.touched && loginForm.controls.email.invalid) {
-          <small class="field-error">
-            Ingresa un correo electrónico válido.
-          </small>
+          <small class="field-error"> Ingresa un correo electrónico válido. </small>
         }
       </div>
 
@@ -27,30 +44,33 @@
           type="password"
           formControlName="password"
           placeholder="Ingresa tu contraseña"
+          autocomplete="current-password"
         />
 
         @if (loginForm.controls.password.touched && loginForm.controls.password.invalid) {
-          <small class="field-error">
-            La contraseña es obligatoria.
-          </small>
+          <small class="field-error"> La contraseña es obligatoria. </small>
         }
       </div>
 
       @if (errorMessage()) {
-        <div class="message error-message">
+        <div class="message error-message" role="alert">
           {{ errorMessage() }}
         </div>
       }
 
       @if (successMessage()) {
-        <div class="message success-message">
+        <div class="message success-message" role="status">
           {{ successMessage() }}
         </div>
       }
 
-      <button type="submit" [disabled]="loading()">
+      <button class="btn btn-primary" type="submit" [disabled]="loading()">
         {{ loading() ? 'Ingresando...' : 'Ingresar' }}
       </button>
     </form>
-  </div>
-</div>
+    <p class="login-links">
+      <a routerLink="/">Volver al inicio</a> ·
+      <a routerLink="/register">Crear cuenta</a>
+    </p>
+  </section>
+</main>

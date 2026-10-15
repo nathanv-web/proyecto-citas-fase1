@@ -1,0 +1,24 @@
+@if (definition; as selectedPanel) {
+  <main class="dashboard">
+    <header class="dashboard-header">
+      <span class="eyebrow">CitaNova · {{ selectedPanel.label }}</span>
+      <h1>{{ selectedPanel.title }}</h1>
+      <p>Todo lo que necesitas para trabajar en esta área, en un solo lugar.</p>
+    </header>
+    <div class="cards">
+      @for (feature of functions; track feature.id) {
+        <a class="card" [routerLink]="feature.route" [fragment]="feature.fragment">
+          <span class="record-icon" aria-hidden="true">{{
+            feature.id.toLowerCase().includes('new') ? '+' : '☷'
+          }}</span>
+          <h2>{{ feature.label }}</h2>
+          <p>{{ feature.description }}</p>
+          <span class="card-action">Abrir función <span aria-hidden="true">→</span></span>
+        </a>
+      } @empty {
+        <p class="empty-state" role="status">No tienes funciones disponibles en este panel.</p>
+      }
+    </div>
+    <a class="back-link" routerLink="/panels">Cambiar de panel</a>
+  </main>
+}

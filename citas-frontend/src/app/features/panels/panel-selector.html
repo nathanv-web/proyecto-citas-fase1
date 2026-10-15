@@ -1,0 +1,30 @@
+<main class="dashboard">
+  <header class="dashboard-header">
+    <span class="eyebrow">Tu espacio de trabajo</span>
+    <h1>Elige un panel</h1>
+    <p>
+      Selecciona el área en la que quieres trabajar. Aquí aparecen los paneles disponibles para tu
+      cuenta.
+    </p>
+  </header>
+  <div class="cards">
+    @for (panel of panels; track panel.id) {
+      <a class="card" [routerLink]="panel.route">
+        <span class="record-icon" aria-hidden="true">{{
+          panel.id === 'admin' ? '☷' : panel.id === 'doctor' ? '✚' : '♡'
+        }}</span>
+        <h2>{{ panel.label }}</h2>
+        <p>{{ panel.description }}</p>
+        <span class="card-action">Abrir panel <span aria-hidden="true">→</span></span>
+      </a>
+    } @empty {
+      <section class="empty-state" role="status">
+        <h2>No tienes funciones disponibles</h2>
+        <p>
+          Solicita al administrador que revise los permisos de acceso a paneles y las funciones de
+          tu cuenta.
+        </p>
+      </section>
+    }
+  </div>
+</main>

@@ -1,31 +1,23 @@
-import {
-  Component,
-  inject,
-  signal
-} from '@angular/core';
+import { ChangeDetectorRef, Component, inject, signal } from '@angular/core';
 
-import {
-  FormsModule
-} from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 
-import {
-  AppointmentService,
-  Horario
-} from '../appointment.service';
+import { AppointmentService, Horario } from '../appointment.service';
+import { finalize } from 'rxjs';
 
+/** El componente busca horarios disponibles para un médico y una fecha. */
 @Component({
   selector: 'app-patient-schedules',
   standalone: true,
   imports: [FormsModule],
-  templateUrl: './patient-schedules.html'
+  templateUrl: './patient-schedules.html',
 })
 export class PatientSchedules {
+  private readonly changeDetector = inject(ChangeDetectorRef);
 
-  private service =
-    inject(AppointmentService);
+  private service = inject(AppointmentService);
 
-  schedules =
-    signal<Horario[]>([]);
+  schedules = signal<Horario[]>([]);
 
   idMedico?: number;
 
@@ -34,44 +26,27 @@ export class PatientSchedules {
   message = '';
 
   search() {
-
-    if (
-      !this.idMedico ||
-      !this.fecha
-    ) {
-
-      this.message =
-        'Ingrese médico y fecha';
+    if (!this.idMedico || !this.fecha) {
+      this.message = 'Ingrese médico y fecha';
 
       return;
     }
 
     this.service
-      .getAvailableSchedules(
-        this.idMedico,
-        this.fecha
-      )
+      .getAvailableSchedules(this.idMedico, this.fecha)
+      .pipe(finalize(() => this.changeDetector.markForCheck()))
       .subscribe({
-
-        next: data => {
-
+        next: (data) => {
           this.schedules.set(data);
 
-          this.message =
-            data.length === 0
-              ? 'No hay horarios disponibles'
-              : '';
+          this.message = data.length === 0 ? 'No hay horarios disponibles' : '';
         },
 
-        error: error => {
-
+        error: (error) => {
           console.error(error);
 
-          this.message =
-            error.error?.message
-            ?? 'No se pudieron consultar los horarios';
-        }
-
+          this.message = error.error?.message ?? 'No se pudieron consultar los horarios';
+        },
       });
   }
 }

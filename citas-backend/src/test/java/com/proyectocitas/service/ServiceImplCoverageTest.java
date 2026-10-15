@@ -255,10 +255,7 @@ class ServiceImplCoverageTest {
         service.eliminar(1L);
 
 
-        verify(repo)
-                .delete(especialidad);
-
-        verify(repo)
-                .flush();
+        assertFalse(especialidad.getActivo());
+        verify(repo, never()).delete(any());
     }
 }

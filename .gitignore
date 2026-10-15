@@ -1,0 +1,10 @@
+# Cache de Angular
+.angular/
+
+# Configuracion local de KDE
+.directory
+
+# Archivos temporales y respaldos
+*.zip
+*.log
+error-spring.txt

@@ -1,246 +1,185 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import {
-  FormBuilder,
-  ReactiveFormsModule,
-  Validators
-} from '@angular/forms';
+import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { HttpErrorResponse } from '@angular/common/http';
 
 import { UserService } from '../../services/user.service';
 import { UserRequest } from '../../models/user-request.model';
 import { UserUpdate } from '../../models/user-update.model';
+import { AuthService } from '../../../../../core/auth/services/auth.service';
 
+import { finalize } from 'rxjs';
 
+/** El formulario gestiona el registro público, la creación y la edición de usuarios según la ruta. */
 @Component({
   selector: 'app-user-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [FormsModule, RouterLink],
   templateUrl: './user-form.html',
-  styleUrl: './user-form.css'
+  styleUrl: './user-form.css',
 })
 export class UserForm implements OnInit {
+  private readonly changeDetector = inject(ChangeDetectorRef);
 
-  private fb = inject(FormBuilder);
-  private usuarioService = inject(UserService);
-  private route = inject(ActivatedRoute);
-  private router = inject(Router);
-  private cdr = inject(ChangeDetectorRef);
+  private readonly userService = inject(UserService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly authService = inject(AuthService);
 
-  editando = false;
-  idUsuario: number | null = null;
+  readonly isRegistration = this.route.snapshot.data['publicRegistration'] === true;
+  readonly backLink = this.isRegistration
+    ? '/login'
+    : this.authService.hasPermission('VER_USUARIOS')
+      ? '/admin/users'
+      : '/admin';
 
-  cargando = false;
-  guardando = false;
+  userId = 0;
+  isEdit = false;
+
+  loading = false;
+  saving = false;
   error = '';
+  success = '';
 
-  // ===============================================
-  // FORMULARIO REACTIVO
-  // ===============================================
-
- // Solo letras, espacios y letras con acentos.
-private readonly patronNombre =
-  /^[\p{L}]+(?:[ '\u2019-][\p{L}]+)*$/u;
-
-// Solo números del 0 al 9.
-private readonly patronTelefono = /^[0-9]+$/;
-
-formulario = this.fb.nonNullable.group({
-
-  nombre: ['', [
-    Validators.required,
-    Validators.minLength(3),
-    Validators.maxLength(50),
-    Validators.pattern(this.patronNombre)
-  ]],
-
-  apellido: ['', [
-    Validators.required,
-    Validators.minLength(3),
-    Validators.maxLength(50),
-    Validators.pattern(this.patronNombre)
-  ]],
-
-  correo: ['', [
-    Validators.required,
-    Validators.email
-  ]],
-
-  telefono: ['', [
-    Validators.required,
-    Validators.minLength(8),
-    Validators.maxLength(20),
-    Validators.pattern(this.patronTelefono)
-  ]],
-
-  contrasena: ['', [
-    Validators.required,
-    Validators.minLength(8),
-    Validators.maxLength(12)
-  ]]
-
-});
-
-  // ===============================================
-  // INICIALIZAR
-  // ===============================================
+  form = {
+    nombre: '',
+    apellido: '',
+    correo: '',
+    telefono: '',
+    contrasena: '',
+    activo: true,
+  };
 
   ngOnInit(): void {
-
     const id = this.route.snapshot.paramMap.get('id');
 
-    if (id === null) {
-      return;
+    if (id) {
+      this.userId = Number(id);
+      this.isEdit = true;
+      this.loadUser();
     }
-
-    const idNumerico = Number(id);
-
-    if (!Number.isSafeInteger(idNumerico) || idNumerico <= 0) {
-      this.error = 'El ID del usuario no es válido.';
-      return;
-    }
-
-    this.editando = true;
-    this.idUsuario = idNumerico;
-
-    // En edición no modificamos la contraseña.
-    this.formulario.controls.contrasena.clearValidators();
-    this.formulario.controls.contrasena.updateValueAndValidity();
-
-    this.cargarUsuario(idNumerico);
   }
 
-  // ===============================================
-  // CARGAR USUARIO PARA EDITAR
-  // ===============================================
+  loadUser(): void {
+    this.loading = true;
+    this.error = '';
 
-  cargarUsuario(id: number): void {
+    this.userService
+      .getById(this.userId)
+      .pipe(finalize(() => this.changeDetector.markForCheck()))
+      .subscribe({
+        next: (user) => {
+          this.form.nombre = user.nombre;
+          this.form.apellido = user.apellido;
+          this.form.correo = user.correo;
+          this.form.telefono = user.telefono;
+          this.form.activo = user.activo;
 
-  this.cargando = true;
-  this.error = '';
+          this.loading = false;
+        },
 
-  this.usuarioService.buscarUsuario(id).subscribe({
+        error: (error) => {
+          this.error = error?.error?.message || 'No se pudo cargar el usuario.';
 
-    next: (usuario) => {
-
-      console.log('User cargado:', usuario.idUsuario);
-
-      this.formulario.patchValue({
-        nombre: usuario.nombre,
-        apellido: usuario.apellido,
-        correo: usuario.correo,
-        telefono: usuario.telefono
+          this.loading = false;
+        },
       });
+  }
 
-      this.cargando = false;
-
-      // Actualizar la vista después de recibir HTTP.
-      this.cdr.detectChanges();
-    },
-
-    error: (err: HttpErrorResponse) => {
-
-      this.error = this.obtenerError(
-        err,
-        'No se pudo cargar el usuario.'
-      );
-
-      this.cargando = false;
-
-      this.cdr.detectChanges();
-    }
-
-  });
-}
-  // ===============================================
-  // GUARDAR
-  // ===============================================
-
-  guardar(): void {
-
-    if (this.guardando || this.cargando || this.error) {
-      return;
-    }
-
-    if (this.formulario.invalid) {
-      this.formulario.markAllAsTouched();
-      return;
-    }
-
-    const datos = this.formulario.getRawValue();
-
-    const base = {
-      nombre: datos.nombre.trim(),
-      apellido: datos.apellido.trim(),
-      correo: datos.correo.trim(),
-      telefono: datos.telefono.trim()
-    };
+  save(): void {
+    this.error = '';
+    this.success = '';
 
     if (
-      !base.nombre ||
-      !base.apellido ||
-      !base.correo ||
-      !base.telefono
+      !this.form.nombre.trim() ||
+      !this.form.apellido.trim() ||
+      !this.form.correo.trim() ||
+      !this.form.telefono.trim()
     ) {
-      this.formulario.markAllAsTouched();
-      this.error = 'Los campos no pueden contener solo espacios.';
+      this.error = 'Completa los campos obligatorios.';
       return;
     }
 
-    this.guardando = true;
+    this.saving = true;
 
-    if (this.editando && this.idUsuario !== null) {
-
-      const request: UserUpdate = base;
-
-      this.usuarioService
-        .actualizarUsuario(this.idUsuario, request)
-        .subscribe({
-          next: () => this.finalizarGuardado(),
-          error: err => this.manejarError(err)
-        });
-
-    } else if (!this.editando) {
-
-      const request: UserRequest = {
-        ...base,
-        contrasena: datos.contrasena
-      };
-
-      this.usuarioService.crearUsuario(request).subscribe({
-        next: () => this.finalizarGuardado(),
-        error: err => this.manejarError(err)
-      });
+    if (this.isEdit) {
+      this.updateUser();
+    } else {
+      this.createUser();
     }
   }
 
-  // ===============================================
-  // RESPUESTAS HTTP
-  // ===============================================
+  private createUser(): void {
+    if (this.form.contrasena.length < 8 || this.form.contrasena.length > 12) {
+      this.error = 'La contraseña debe tener entre 8 y 12 caracteres.';
 
-  finalizarGuardado(): void {
-    this.guardando = false;
-    this.router.navigate(['/admin/users']);
+      this.saving = false;
+      return;
+    }
+
+    const request: UserRequest = {
+      nombre: this.form.nombre.trim(),
+      apellido: this.form.apellido.trim(),
+      correo: this.form.correo.trim(),
+      telefono: this.form.telefono.trim(),
+      contrasena: this.form.contrasena,
+    };
+
+    const operation = this.isRegistration
+      ? this.authService.register(request)
+      : this.userService.create(request);
+
+    operation.pipe(finalize(() => this.changeDetector.markForCheck())).subscribe({
+      next: () => {
+        this.success = 'Usuario creado correctamente.';
+        this.saving = false;
+
+        if (this.isRegistration) {
+          this.router.navigate(['/login'], { queryParams: { registered: true } });
+          return;
+        }
+
+        setTimeout(() => {
+          this.router.navigate([
+            this.authService.hasPermission('VER_USUARIOS') ? '/admin/users' : '/admin',
+          ]);
+        }, 800);
+      },
+
+      error: (error) => {
+        this.error = error?.error?.message || 'No se pudo crear el usuario.';
+
+        this.saving = false;
+      },
+    });
   }
 
-  manejarError(err: HttpErrorResponse): void {
-  this.guardando = false;
-  this.error = this.obtenerError(
-    err,
-    'No se pudo guardar el usuario.'
-  );
-  this.cdr.detectChanges();
-}
+  private updateUser(): void {
+    const request: UserUpdate = {
+      nombre: this.form.nombre.trim(),
+      apellido: this.form.apellido.trim(),
+      correo: this.form.correo.trim(),
+      telefono: this.form.telefono.trim(),
+      activo: this.form.activo,
+    };
 
-  obtenerError(
-    err: HttpErrorResponse,
-    mensaje: string
-  ): string {
+    this.userService
+      .update(this.userId, request)
+      .pipe(finalize(() => this.changeDetector.markForCheck()))
+      .subscribe({
+        next: () => {
+          this.success = 'Usuario actualizado correctamente.';
+          this.saving = false;
 
-    return typeof err.error?.message === 'string'
-      ? err.error.message
-      : mensaje;
+          setTimeout(() => {
+            this.router.navigate(['/admin/users']);
+          }, 800);
+        },
+
+        error: (error) => {
+          this.error = error?.error?.message || 'No se pudo actualizar el usuario.';
+
+          this.saving = false;
+        },
+      });
   }
-
 }

@@ -1,187 +1,141 @@
-import { Component, OnInit, inject,ChangeDetectorRef  } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { forkJoin } from 'rxjs';
-
-import { UserService } from '../../services/user.service';
-import { RoleService } from '../../services/role.service';
 
 import { User } from '../../models/user.model';
-import { Role } from '../../models/role.model';
+import { UserService } from '../../services/user.service';
+import { Role } from '../../../roles/models/role.model';
+import { RoleService } from '../../../roles/services/role.service';
 
+import { finalize } from 'rxjs';
 
-
+/** El componente consulta los roles disponibles y guarda la selección asignada a un usuario. */
 @Component({
   selector: 'app-user-roles',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [RouterLink],
   templateUrl: './user-roles.html',
-  styleUrl: './user-roles.css'
+  styleUrl: './user-roles.css',
 })
 export class UserRoles implements OnInit {
+  private readonly changeDetector = inject(ChangeDetectorRef);
 
-  private usuarioService = inject(UserService);
-  private rolService = inject(RoleService);
-  private cdr = inject(ChangeDetectorRef);
-  private route = inject(ActivatedRoute);
-  private router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
-  usuario: User | null = null;
+  private readonly userService = inject(UserService);
+  private readonly roleService = inject(RoleService);
+
+  userId = 0;
+
+  user: User | null = null;
   roles: Role[] = [];
 
-  rolesSeleccionados: number[] = [];
+  selectedRoleIds: number[] = [];
 
-  cargando = false;
-  guardando = false;
-
+  loading = true;
+  saving = false;
   error = '';
-
-  // ==============================================
-  // CARGAR DATOS
-  // ==============================================
+  success = '';
 
   ngOnInit(): void {
+    const id = this.route.snapshot.paramMap.get('id');
 
-    const id = Number(
-      this.route.snapshot.paramMap.get('id')
-    );
-
-    if (!Number.isSafeInteger(id) || id <= 0) {
-      this.error = 'El ID del usuario no es válido.';
+    if (!id) {
+      this.error = 'No se encontró el usuario.';
+      this.loading = false;
       return;
     }
 
-    this.cargarDatos(id);
+    this.userId = Number(id);
+
+    this.loadData();
   }
 
-cargarDatos(id: number): void {
-
-  this.cargando = true;
-  this.error = '';
-
-  forkJoin({
-    usuario: this.usuarioService.buscarUsuario(id),
-    roles: this.rolService.listarRoles()
-  }).subscribe({
-
-    next: ({ usuario, roles }) => {
-
-      this.usuario = usuario;
-      this.roles = roles;
-
-      // Identificar los roles actuales del usuario.
-      this.rolesSeleccionados = roles
-        .filter(rol =>
-          usuario.roles.includes(rol.nombre)
-        )
-        .map(rol => rol.idRol);
-
-      this.cargando = false;
-
-      // Actualizar la interfaz.
-      this.cdr.detectChanges();
-    },
-
-    error: err => {
-
-      this.error =
-        typeof err.error?.message === 'string'
-          ? err.error.message
-          : 'No se pudieron cargar los roles.';
-
-      this.cargando = false;
-
-      // Mostrar el error si la petición falla.
-      this.cdr.detectChanges();
-    }
-
-  });
-}
-  // ==============================================
-  // SELECCIONAR O QUITAR ROL
-  // ==============================================
-
-  cambiarRol(idRol: number, seleccionado: boolean): void {
-
-    if (seleccionado) {
-
-      if (!this.rolesSeleccionados.includes(idRol)) {
-        this.rolesSeleccionados = [
-          ...this.rolesSeleccionados,
-          idRol
-        ];
-      }
-
-    } else {
-
-      this.rolesSeleccionados =
-        this.rolesSeleccionados.filter(
-          id => id !== idRol
-        );
-    }
-  }
-
-  // ==============================================
-  // GUARDAR ROLES
-  // ==============================================
-
-  guardarRoles(): void {
-
-    if (
-      !this.usuario ||
-      this.guardando ||
-      this.cargando ||
-      this.rolesSeleccionados.length === 0
-    ) {
-      return;
-    }
-
-    // Evitamos enviar una selección incompleta si
-    // los nombres existentes no aparecen en el
-    // catálogo de roles.
-
-    const nombresDisponibles =
-      new Set(this.roles.map(rol => rol.nombre));
-
-    const algunRolDesconocido =
-      this.usuario.roles.some(
-        nombre => !nombresDisponibles.has(nombre)
-      );
-
-    if (algunRolDesconocido) {
-      this.error =
-        'Hay roles actuales que no aparecen en el catálogo.';
-      return;
-    }
-
-    this.guardando = true;
+  loadData(): void {
+    this.loading = true;
     this.error = '';
 
-    this.usuarioService.asignarRol(
-      this.usuario.idUsuario,
-      {
-        idRol: this.rolesSeleccionados
-      }
-    ).subscribe({
+    this.userService
+      .getById(this.userId)
+      .pipe(finalize(() => this.changeDetector.markForCheck()))
+      .subscribe({
+        next: (user) => {
+          this.user = user;
 
-      next: () => {
-        this.guardando = false;
-        this.router.navigate(['/admin/users']);
-      },
+          this.roleService
+            .getAll()
+            .pipe(finalize(() => this.changeDetector.markForCheck()))
+            .subscribe({
+              next: (roles) => {
+                this.roles = roles;
 
-     error: err => {
+                this.selectedRoleIds = roles
+                  .filter((role) => user.roles.includes(role.nombre))
+                  .map((role) => role.idRol);
 
-  this.guardando = false;
+                this.loading = false;
+              },
 
-  this.error =
-    typeof err.error?.message === 'string'
-      ? err.error.message
-      : 'No se pudieron asignar los roles.';
+              error: (error) => {
+                this.error = error?.error?.message || 'No se pudieron cargar los roles.';
 
-  this.cdr.detectChanges();
-}
+                this.loading = false;
+              },
+            });
+        },
 
-    });
+        error: (error) => {
+          this.error = error?.error?.message || 'No se pudo cargar el usuario.';
+
+          this.loading = false;
+        },
+      });
   }
 
+  isSelected(idRol: number): boolean {
+    return this.selectedRoleIds.includes(idRol);
+  }
+
+  toggleRole(idRol: number): void {
+    if (this.isSelected(idRol)) {
+      this.selectedRoleIds = this.selectedRoleIds.filter((id) => id !== idRol);
+    } else {
+      this.selectedRoleIds = [...this.selectedRoleIds, idRol];
+    }
+  }
+
+  saveRoles(): void {
+    this.error = '';
+    this.success = '';
+
+    if (this.selectedRoleIds.length === 0) {
+      this.error = 'Debe seleccionar al menos un rol.';
+      return;
+    }
+
+    this.saving = true;
+
+    this.userService
+      .assignRoles(this.userId, {
+        idRol: this.selectedRoleIds,
+      })
+      .pipe(finalize(() => this.changeDetector.markForCheck()))
+      .subscribe({
+        next: () => {
+          this.success = 'Roles asignados correctamente.';
+
+          this.saving = false;
+
+          setTimeout(() => {
+            this.router.navigate(['/admin/users']);
+          }, 800);
+        },
+
+        error: (error) => {
+          this.error = error?.error?.message || 'No se pudieron asignar los roles.';
+
+          this.saving = false;
+        },
+      });
+  }
 }

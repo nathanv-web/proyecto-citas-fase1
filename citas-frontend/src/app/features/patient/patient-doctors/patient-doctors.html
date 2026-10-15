@@ -1,0 +1,39 @@
+<main class="page">
+  <header class="page-header">
+    <div>
+      <span class="eyebrow">CitaNova · Directorio médico</span>
+      <h1>Médicos disponibles</h1>
+      <p>Conoce a los profesionales y encuentra una especialidad para tu consulta.</p>
+    </div>
+  </header>
+  <section class="record-grid" aria-label="Directorio de médicos">
+    @for (doctor of doctors(); track doctor.idMedico) {
+      <article class="record-card">
+        <div class="record-header">
+          <span class="record-icon" aria-hidden="true">✚</span>
+          <span
+            class="status"
+            [class.active]="doctor.estado === 'ACTIVO'"
+            [class.inactive]="doctor.estado === 'INACTIVO'"
+            >{{ doctor.estado }}</span
+          >
+        </div>
+        <h2>{{ doctor.nombre }}</h2>
+        <p>{{ doctor.especialidad }}</p>
+        <dl class="record-details">
+          <dt>ID Médico</dt>
+          <dd>{{ doctor.idMedico }}</dd>
+          <dt>Correo</dt>
+          <dd>{{ doctor.correo }}</dd>
+          <dt>Colegiado</dt>
+          <dd>{{ doctor.colegiado }}</dd>
+          <dt>Años de experiencia</dt>
+          <dd>{{ doctor.aniosExperiencia }} años</dd>
+        </dl>
+        @if (doctor.biografia) {
+          <p>{{ doctor.biografia }}</p>
+        }
+      </article>
+    }
+  </section>
+</main>

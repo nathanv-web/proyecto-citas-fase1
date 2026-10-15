@@ -452,7 +452,7 @@ class EspecialidadServiceImplTest {
     // =================================================
 
     @Test
-    void debeEliminarEspecialidad() {
+    void debeDesactivarEspecialidadSinBorrarElRegistro() {
 
         Especialidad especialidad =
                 new Especialidad();
@@ -472,11 +472,11 @@ class EspecialidadServiceImplTest {
         service.eliminar(1L);
 
 
-        verify(repo)
-                .delete(especialidad);
-
-        verify(repo)
-                .flush();
+        assertFalse(especialidad.getActivo());
+        assertEquals("Cardiologia", especialidad.getNombre());
+        verify(repo).save(especialidad);
+        verify(repo, never()).delete(any());
+        verify(repo, never()).flush();
     }
 
 

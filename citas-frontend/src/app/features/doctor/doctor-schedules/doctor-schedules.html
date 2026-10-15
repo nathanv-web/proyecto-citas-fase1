@@ -1,43 +1,46 @@
-<h2>Crear horario</h2>
+<main class="page page-narrow">
+  <header class="page-header">
+    <div>
+      <span class="eyebrow">CitaNova · Horarios médicos</span>
+      <h1>Crear horario</h1>
+      <p>Organiza la disponibilidad para las próximas consultas.</p>
+    </div>
+  </header>
 
-<form
-  [formGroup]="form"
-  (ngSubmit)="save()"
->
-
-  <input
-    type="number"
-    placeholder="ID Médico"
-    formControlName="idMedico"
-  >
-
-  <br><br>
-
-  <input
-    type="date"
-    formControlName="fecha"
-  >
-
-  <br><br>
-
-  <input
-    type="time"
-    formControlName="horaInicio"
-  >
-
-  <br><br>
-
-  <input
-    type="time"
-    formControlName="horaFin"
-  >
-
-  <br><br>
-
-  <button type="submit">
-    Crear horario
-  </button>
-
-</form>
-
-<p>{{ message }}</p>
+  <form class="form-card" [formGroup]="form" (ngSubmit)="save()">
+    <h2>Horario de atención</h2>
+    <div class="form-grid">
+      <div class="field">
+        <label for="schedule-doctor">ID Médico</label>
+        <input
+          id="schedule-doctor"
+          type="number"
+          placeholder="Ej. 2"
+          formControlName="idMedico"
+          aria-describedby="schedule-doctor-help"
+        />
+        <small class="helper-text" id="schedule-doctor-help"
+          >El identificador se encuentra en el listado de médicos.</small
+        >
+      </div>
+      <div class="field">
+        <label for="schedule-date">Fecha de atención</label>
+        <input id="schedule-date" type="date" formControlName="fecha" />
+      </div>
+      <div class="field">
+        <label for="schedule-start">Hora de inicio</label>
+        <input id="schedule-start" type="time" formControlName="horaInicio" />
+      </div>
+      <div class="field">
+        <label for="schedule-end">Hora de fin</label>
+        <input id="schedule-end" type="time" formControlName="horaFin" />
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit">Crear horario</button>
+    </div>
+  </form>
+  @if (message) {
+    <p class="message" role="status">{{ message }}</p>
+  }
+</main>

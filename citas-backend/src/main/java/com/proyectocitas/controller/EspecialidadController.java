@@ -1,6 +1,7 @@
 package com.proyectocitas.controller;
 
 import com.proyectocitas.dto.EspecialidadDTO;
+import com.proyectocitas.dto.EspecialidadEstadoDTO;
 import com.proyectocitas.dto.EspecialidadRequestDTO;
 import com.proyectocitas.exception.ResourceNotFoundException;
 import com.proyectocitas.mapper.EspecialidadMapper;
@@ -143,7 +144,22 @@ public class EspecialidadController {
 
 
     // =================================================
-    // ELIMINAR
+    // CAMBIAR SOLO EL ESTADO, CONSERVANDO LOS DEMÁS DATOS
+    // =================================================
+
+    @PatchMapping("/{id}/estado")
+    public ResponseEntity<EspecialidadDTO> actualizarEstado(
+            @PathVariable Long id,
+            @Valid @RequestBody EspecialidadEstadoDTO request
+    ) {
+        Especialidad cambios = new Especialidad();
+        cambios.setActivo(request.activo());
+        Especialidad actualizada = especialidadService.actualizar(cambios, id);
+        return ResponseEntity.ok(especialidadMapper.toDTO(actualizada));
+    }
+
+    // =================================================
+    // DESACTIVAR (NO BORRAR)
     // =================================================
 
     @DeleteMapping("/{id}")

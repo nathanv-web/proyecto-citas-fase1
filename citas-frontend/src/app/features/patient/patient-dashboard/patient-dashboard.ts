@@ -1,39 +1,12 @@
-import {
-  Component
-} from '@angular/core';
+import { Component } from '@angular/core';
 
-import {
-  RouterLink
-} from '@angular/router';
+import { PanelMenu } from '../../../shared/panel-menu/panel-menu';
 
+/** El panel del paciente presenta las funciones de consulta y reserva autorizadas. */
 @Component({
   selector: 'app-patient-dashboard',
   standalone: true,
-  imports: [RouterLink],
-  template: `
-    <h1>Panel del Paciente</h1>
-
-    <a routerLink="/patient/doctors">
-      Médicos
-    </a>
-
-    <br><br>
-
-    <a routerLink="/patient/schedules">
-      Horarios disponibles
-    </a>
-
-    <br><br>
-
-    <a routerLink="/patient/appointment/new">
-      Crear cita
-    </a>
-
-    <br><br>
-
-    <a routerLink="/patient/history">
-      Historial de citas
-    </a>
-  `
+  imports: [PanelMenu],
+  template: ` <app-panel-menu panel="patient" /> `,
 })
 export class PatientDashboard {}

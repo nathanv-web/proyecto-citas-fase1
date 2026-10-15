@@ -1,64 +1,87 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { Role, RoleService } from '../role.service';
 
+import { Role } from '../models/role.model';
+import { RoleService } from '../services/role.service';
+import { AuthService } from '../../../../core/auth/services/auth.service';
+
+import { finalize } from 'rxjs';
+
+/** El listado presenta los roles con sus permisos y las acciones de administración disponibles. */
 @Component({
   selector: 'app-role-list',
   standalone: true,
   imports: [RouterLink],
-  templateUrl: './role-list.html'
+  templateUrl: './role-list.html',
+  styleUrl: './role-list.css',
 })
 export class RoleList implements OnInit {
+  private readonly changeDetector = inject(ChangeDetectorRef);
 
-  private roleService = inject(RoleService);
+  private readonly roleService = inject(RoleService);
+  private readonly authService = inject(AuthService);
 
-  roles = signal<Role[]>([]);
+  readonly canCreateRole = this.authService.hasPermission('CREAR_ROLES');
+  readonly canEditRole = this.authService.hasPermission('ACTUALIZAR_ROLES');
+  readonly canDeleteRole = this.authService.hasPermission('ELIMINAR_ROLES');
+
+  roles: Role[] = [];
+
+  loading = false;
+  error = '';
+  success = '';
 
   ngOnInit(): void {
     this.loadRoles();
   }
 
-  loadRoles() {
+  loadRoles(): void {
+    this.loading = true;
+    this.error = '';
 
     this.roleService
-      .getRoles()
+      .getAll()
+      .pipe(finalize(() => this.changeDetector.markForCheck()))
       .subscribe({
-        next: data => {
-          this.roles.set(data);
+        next: (roles) => {
+          this.roles = roles;
+          this.loading = false;
         },
 
-        error: error => {
-          console.error(
-            'Error al cargar roles',
-            error
-          );
-        }
+        error: (error) => {
+          this.error = error?.error?.message || 'No se pudieron cargar los roles.';
+
+          this.loading = false;
+        },
       });
   }
 
-  deleteRole(id?: number) {
-
-    if (!id) {
+  deleteRole(role: Role): void {
+    if (!this.canDeleteRole) {
       return;
     }
 
-    if (!confirm('¿Eliminar este rol?')) {
+    const confirmed = confirm(`¿Deseas eliminar el rol ${role.nombre}?`);
+
+    if (!confirmed) {
       return;
     }
+
+    this.error = '';
+    this.success = '';
 
     this.roleService
-      .deleteRole(id)
+      .delete(role.idRol)
+      .pipe(finalize(() => this.changeDetector.markForCheck()))
       .subscribe({
         next: () => {
+          this.success = 'Rol eliminado correctamente.';
           this.loadRoles();
         },
 
-        error: error => {
-          console.error(
-            'Error al eliminar',
-            error
-          );
-        }
+        error: (error) => {
+          this.error = error?.error?.message || 'No se pudo eliminar el rol.';
+        },
       });
   }
 }

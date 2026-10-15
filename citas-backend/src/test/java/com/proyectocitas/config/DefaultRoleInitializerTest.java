@@ -178,6 +178,14 @@ class DefaultRoleInitializerTest {
         // =================================================
         // DEBEN CREARSE LOS 3 ROLES
         // =================================================
+        assertTrue(admin.getPermisos().stream().anyMatch(p -> p.name().equals("ACCESO_ADMIN")));
+        assertTrue(doctor.getPermisos().stream().anyMatch(p -> p.name().equals("ACCESO_MEDICO")));
+        assertTrue(patient.getPermisos().stream().anyMatch(p -> p.name().equals("ACCESO_PACIENTE")));
+        assertFalse(admin.getPermisos().stream().anyMatch(p -> p.name().equals("ACCESO_MEDICO")));
+        assertFalse(doctor.getPermisos().stream().anyMatch(p -> p.name().equals("ACCESO_ADMIN")));
+        assertFalse(patient.getPermisos().stream().anyMatch(p -> p.name().equals("ACCESO_ADMIN")));
+        assertTrue(admin.getPermisos().contains(Permiso.ACTUALIZAR_MEDICOS));
+        assertTrue(admin.getPermisos().contains(Permiso.ELIMINAR_MEDICOS));
 
         verify(
                 rolRepository,

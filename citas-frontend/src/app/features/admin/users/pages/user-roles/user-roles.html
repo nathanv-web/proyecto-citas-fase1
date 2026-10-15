@@ -1,98 +1,66 @@
-<section class="roles-container">
+<main class="page">
+  <header class="page-header">
+    <div>
+      <span class="eyebrow">CitaNova · Roles de usuario</span>
+      <h1>Asignar roles</h1>
 
-  <h2>Asignar roles a usuario</h2>
+      @if (user) {
+        <p>{{ user.nombre }} {{ user.apellido }} · {{ user.correo }}</p>
+      }
+    </div>
 
-  @if (cargando) {
-    <p>Cargando roles...</p>
+    <a routerLink="/admin/users" class="btn btn-secondary"> Volver </a>
+  </header>
+
+  @if (loading) {
+    <div class="message" role="status">Cargando roles...</div>
   }
 
   @if (error) {
-    <p class="error" role="alert">
+    <div class="alert error" role="alert">
       {{ error }}
-    </p>
+    </div>
   }
 
-  @if (usuario && !cargando) {
+  @if (success) {
+    <div class="alert success" role="status">
+      {{ success }}
+    </div>
+  }
 
-    <h3>
-      Usuario:
-      {{ usuario.nombre }}
-      {{ usuario.apellido }}
-    </h3>
+  @if (!loading && roles.length === 0) {
+    <div class="message" role="status">No hay roles disponibles.</div>
+  }
 
-    <p>
-      Correo: {{ usuario.correo }}
-    </p>
+  @if (!loading && roles.length > 0) {
+    <div class="roles-card">
+      <h2>Roles disponibles</h2>
 
-    <h4>Seleccione los roles</h4>
-
-    @if (roles.length === 0) {
-
-      <p>No existen roles disponibles.</p>
-
-    } @else {
-
-      @for (rol of roles; track rol.idRol) {
-
-        <div class="rol-item">
-
-          <label>
-
+      <div class="roles-list">
+        @for (role of roles; track role.idRol) {
+          <label class="role-option">
             <input
               type="checkbox"
-              [checked]="
-                rolesSeleccionados.includes(rol.idRol)
-              "
-              [disabled]="guardando"
-              (change)="
-                cambiarRol(
-                  rol.idRol,
-                  $any($event.target).checked
-                )
-              "
+              [checked]="isSelected(role.idRol)"
+              (change)="toggleRole(role.idRol)"
             />
 
-            {{ rol.nombre }}
+            <div>
+              <strong>{{ role.nombre }}</strong>
 
+              <p>
+                {{ role.descripcion || 'Sin descripción' }}
+              </p>
+            </div>
           </label>
+        }
+      </div>
 
-          <small>
-            {{ rol.descripcion }}
-          </small>
-
-        </div>
-
-      }
-
-    }
-
-    @if (rolesSeleccionados.length === 0) {
-
-      <p class="error">
-        Debe seleccionar al menos un rol.
-      </p>
-
-    }
-
-    <div class="acciones">
-
-      <button
-        type="button"
-        (click)="guardarRoles()"
-        [disabled]="
-          guardando ||
-          rolesSeleccionados.length === 0
-        "
-      >
-        {{ guardando ? 'Guardando...' : 'Guardar roles' }}
-      </button>
-
-      <a routerLink="/admin/users">
-        Cancelar
-      </a>
-
+      <div class="actions">
+        <button type="button" class="btn btn-primary" [disabled]="saving" (click)="saveRoles()">
+          {{ saving ? 'Guardando...' : 'Guardar roles' }}
+        </button>
+      </div>
     </div>
-
   }
-
-</section>
+</main>

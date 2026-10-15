@@ -1,0 +1,7 @@
+/* La edición agrupa los datos del rol y su selección de permisos. */
+:host {
+  display: block;
+}
+.page {
+  max-width: 1060px;
+}

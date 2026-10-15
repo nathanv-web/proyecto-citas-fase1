@@ -1,8 +1,11 @@
-﻿<div class="access-denied-page">
-  <div class="access-denied-card">
-    <h1>Acceso denegado</h1>
+<main class="access-denied-page">
+  <section class="access-denied-card" aria-labelledby="access-denied-title">
+    <span class="record-icon" aria-hidden="true">✚</span>
+    <span class="eyebrow">Acceso restringido</span>
+    <h1 id="access-denied-title">Acceso denegado</h1>
     <p>No tienes permisos para acceder a esta sección.</p>
 
-    <a routerLink="/login">Volver al inicio de sesión</a>
-  </div>
-</div>
+    <p>El administrador puede revisar el acceso de tu cuenta.</p>
+    <a class="btn btn-primary" routerLink="/login">Volver al inicio de sesión</a>
+  </section>
+</main>

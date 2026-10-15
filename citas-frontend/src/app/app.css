@@ -1,0 +1,49 @@
+/* La cabecera privada conserva la identidad de la bienvenida. */
+.panel-navigation {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 20px;
+  padding: 18px max(28px, calc((100% - 1144px) / 2));
+  background: var(--app-navy);
+  border-bottom: 1px solid var(--app-navy-light);
+}
+.panel-navigation nav {
+  justify-self: end;
+}
+.panel-navigation .app-brand {
+  color: var(--app-text-light);
+}
+.panel-navigation .brand-copy strong span {
+  color: var(--app-accent);
+}
+.panel-navigation .brand-copy small {
+  color: var(--app-primary-light);
+}
+@media (max-width: 900px) {
+  .panel-navigation {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .panel-navigation nav {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 480px) {
+  .panel-navigation {
+    padding: 18px 16px;
+    gap: 16px;
+  }
+  .panel-navigation .brand-copy small {
+    display: none;
+  }
+  .panel-navigation .brand-symbol {
+    display: none;
+  }
+  .panel-navigation .brand-copy strong {
+    font-size: 20px;
+  }
+  .panel-navigation nav,
+  .panel-navigation nav .btn {
+    width: 100%;
+  }
+}

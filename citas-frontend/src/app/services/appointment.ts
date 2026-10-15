@@ -1,15 +1,16 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { API_BASE_URL } from '../core/config/api.config';
 
+/** El servicio reúne las operaciones generales de consulta y gestión de citas. */
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AppointmentService {
-  // Ruta base de tu backend de Spring Boot
-  private apiUrl = 'http://localhost:8080/api/v1'; 
+  private apiUrl = API_BASE_URL;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   getMedicos(): Observable<any> {
     return this.http.get(`${this.apiUrl}/medicos`);

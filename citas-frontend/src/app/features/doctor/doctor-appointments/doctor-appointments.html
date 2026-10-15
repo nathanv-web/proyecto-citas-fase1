@@ -1,29 +1,93 @@
-<h3>Registrar diagnóstico</h3>
+<main class="page">
+  <header class="page-header">
+    <div>
+      <span class="eyebrow">CitaNova · Atención médica</span>
+      <h1>{{ canViewAgenda ? 'Agenda de hoy' : 'Registrar diagnóstico' }}</h1>
+      <p>Gestiona las consultas y registra la información de la atención.</p>
+    </div>
+  </header>
 
-<input
-  type="number"
-  [(ngModel)]="appointmentId"
-  placeholder="ID Cita"
->
+  @if (canViewAgenda) {
+    @if (loading()) {
+      <p class="loading" role="status">Cargando citas...</p>
+    }
+    @if (message()) {
+      <p class="alert error" role="alert">{{ message() }}</p>
+    }
+    <section class="record-grid" aria-label="Citas del día">
+      @for (appointment of appointments(); track appointment.idCita) {
+        <article class="record-card">
+          <div class="record-header">
+            <span class="eyebrow">Cita #{{ appointment.idCita }}</span>
+            <span
+              class="status"
+              [class.pending]="appointment.estado === 'PENDIENTE'"
+              [class.inactive]="appointment.estado === 'CANCELADA'"
+              >{{ appointment.estado }}</span
+            >
+          </div>
+          <h2>{{ appointment.paciente }}</h2>
+          <dl class="record-details">
+            <dt>Horario</dt>
+            <dd>{{ appointment.horaInicio }} - {{ appointment.horaFin }}</dd>
+            <dt>Motivo</dt>
+            <dd>{{ appointment.motivo }}</dd>
+          </dl>
+          @if (canRegisterDiagnosis && appointment.estado === 'PENDIENTE') {
+            <button
+              class="btn btn-secondary"
+              type="button"
+              (click)="appointmentId = appointment.idCita"
+            >
+              Seleccionar para diagnóstico
+            </button>
+          }
+        </article>
+      } @empty {
+        @if (!loading() && !message()) {
+          <p class="empty-state" role="status">No hay citas para hoy.</p>
+        }
+      }
+    </section>
+  }
 
-<br><br>
-
-<textarea
-  [(ngModel)]="diagnosticoReceta"
-  placeholder="Diagnóstico y receta"
-></textarea>
-
-<br><br>
-
-<textarea
-  [(ngModel)]="observaciones"
-  placeholder="Observaciones"
-></textarea>
-
-<br><br>
-
-<button
-  (click)="saveDiagnosis()"
->
-  Guardar diagnóstico
-</button>
+  @if (canRegisterDiagnosis) {
+    <section class="form-card list-section" aria-labelledby="diagnostico">
+      <h2 id="diagnostico">Registrar diagnóstico</h2>
+      <div class="field">
+        <label for="diagnosis-appointment">ID Cita</label>
+        <input
+          id="diagnosis-appointment"
+          type="number"
+          [(ngModel)]="appointmentId"
+          placeholder="Ej. 7"
+        />
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label for="diagnosis-content">Diagnóstico y receta</label>
+          <textarea
+            id="diagnosis-content"
+            [(ngModel)]="diagnosticoReceta"
+            placeholder="Detalle del diagnóstico y tratamiento"
+            rows="5"
+          ></textarea>
+        </div>
+        <div class="field">
+          <label for="diagnosis-notes">Observaciones</label>
+          <textarea
+            id="diagnosis-notes"
+            [(ngModel)]="observaciones"
+            placeholder="Indicaciones adicionales de la consulta"
+            rows="5"
+          ></textarea>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary" type="button" (click)="saveDiagnosis()">
+          Guardar diagnóstico
+        </button>
+      </div>
+    </section>
+  }
+</main>

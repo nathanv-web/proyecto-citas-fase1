@@ -1,71 +1,58 @@
-<h2>Horarios disponibles</h2>
-
-<label>ID Médico</label>
-
-<input
-  type="number"
-  [(ngModel)]="idMedico"
->
-
-<br><br>
-
-<label>Fecha</label>
-
-<input
-  type="date"
-  [(ngModel)]="fecha"
->
-
-<br><br>
-
-<button
-  (click)="search()"
->
-  Buscar horarios
-</button>
-
-<p>{{ message }}</p>
-
-<hr>
-
-@for (
-  schedule of schedules();
-  track schedule.idHorario
-) {
-
-  <div>
-
-    <p>
-      ID Horario:
-      {{ schedule.idHorario }}
-    </p>
-
-    <p>
-      Médico:
-      {{ schedule.medico }}
-    </p>
-
-    <p>
-      Fecha:
-      {{ schedule.fecha }}
-    </p>
-
-    <p>
-      Inicio:
-      {{ schedule.horaInicio }}
-    </p>
-
-    <p>
-      Fin:
-      {{ schedule.horaFin }}
-    </p>
-
-    <p>
-      Estado:
-      {{ schedule.estado }}
-    </p>
-
-  </div>
-
-  <hr>
-}
+<main class="page">
+  <header class="page-header">
+    <div>
+      <span class="eyebrow">CitaNova · Disponibilidad</span>
+      <h1>Horarios disponibles</h1>
+      <p>Consulta la disponibilidad de un médico para el día de tu preferencia.</p>
+    </div>
+  </header>
+  <section class="form-card" aria-labelledby="schedule-search-title">
+    <h2 id="schedule-search-title">Buscar un horario</h2>
+    <div class="form-grid">
+      <div class="field">
+        <label for="search-doctor">ID Médico</label>
+        <input
+          id="search-doctor"
+          type="number"
+          [(ngModel)]="idMedico"
+          placeholder="Ej. 2"
+          aria-describedby="search-doctor-help"
+        />
+        <small class="helper-text" id="search-doctor-help"
+          >El identificador se encuentra en el directorio de médicos.</small
+        >
+      </div>
+      <div class="field">
+        <label for="search-date">Fecha</label>
+        <input id="search-date" type="date" [(ngModel)]="fecha" />
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" type="button" (click)="search()">Buscar horarios</button>
+    </div>
+  </section>
+  @if (message) {
+    <p class="message" role="status">{{ message }}</p>
+  }
+  <section class="record-grid" aria-label="Resultados de horarios">
+    @for (schedule of schedules(); track schedule.idHorario) {
+      <article class="record-card">
+        <div class="record-header">
+          <span class="eyebrow">Horario #{{ schedule.idHorario }}</span>
+          <span class="status">{{ schedule.estado }}</span>
+        </div>
+        <h2>{{ schedule.medico }}</h2>
+        <dl class="record-details">
+          <dt>ID Horario</dt>
+          <dd>{{ schedule.idHorario }}</dd>
+          <dt>Fecha</dt>
+          <dd>{{ schedule.fecha }}</dd>
+          <dt>Inicio</dt>
+          <dd>{{ schedule.horaInicio }}</dd>
+          <dt>Fin</dt>
+          <dd>{{ schedule.horaFin }}</dd>
+        </dl>
+      </article>
+    }
+  </section>
+</main>

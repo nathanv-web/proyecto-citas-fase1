@@ -1,95 +1,62 @@
-import {
-  Component,
-  inject
-} from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 
-import {
-  FormBuilder,
-  ReactiveFormsModule,
-  Validators
-} from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
-import {
-  DoctorService
-} from '../doctor.service';
+import { DoctorService } from '../doctor.service';
 
+import { finalize } from 'rxjs';
+
+/** El formulario registra un horario de atención para el médico indicado. */
 @Component({
   selector: 'app-doctor-schedules',
   standalone: true,
-  imports: [
-    ReactiveFormsModule
-  ],
-  templateUrl:
-    './doctor-schedules.html'
+  imports: [ReactiveFormsModule],
+  templateUrl: './doctor-schedules.html',
 })
 export class DoctorSchedules {
+  private readonly changeDetector = inject(ChangeDetectorRef);
 
-  private fb =
-    inject(FormBuilder);
+  private fb = inject(FormBuilder);
 
-  private service =
-    inject(DoctorService);
+  private service = inject(DoctorService);
 
   message = '';
 
   form = this.fb.group({
+    idMedico: [null, Validators.required],
 
-    idMedico: [
-      null,
-      Validators.required
-    ],
+    fecha: ['', Validators.required],
 
-    fecha: [
-      '',
-      Validators.required
-    ],
+    horaInicio: ['', Validators.required],
 
-    horaInicio: [
-      '',
-      Validators.required
-    ],
-
-    horaFin: [
-      '',
-      Validators.required
-    ]
-
+    horaFin: ['', Validators.required],
   });
 
   save() {
-
     if (this.form.invalid) {
       return;
     }
 
     this.service
       .createSchedule(
-        Number(
-          this.form.value.idMedico
-        ),
+        Number(this.form.value.idMedico),
         this.form.value.fecha!,
         this.form.value.horaInicio!,
-        this.form.value.horaFin!
+        this.form.value.horaFin!,
       )
+      .pipe(finalize(() => this.changeDetector.markForCheck()))
       .subscribe({
-
         next: () => {
-
-          this.message =
-            'Horario creado correctamente';
+          this.message = 'Horario creado correctamente';
 
           this.form.reset();
         },
 
-        error: error => {
-
+        error: (error) => {
           console.error(error);
 
-          this.message =
-            error.error?.message
-            ?? 'No se pudo crear el horario';
-        }
-
+          this.message = error.error?.message ?? 'No se pudo crear el horario';
+        },
       });
   }
 }

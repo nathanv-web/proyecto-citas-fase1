@@ -67,6 +67,7 @@ public class DefaultRoleInitializer
 
             admin.setPermisos(
                     Set.of(
+                            Permiso.ACCESO_ADMIN,
                             Permiso.CREAR_USUARIOS,
                             Permiso.VER_USUARIOS,
                             Permiso.ACTUALIZAR_USUARIOS,
@@ -81,6 +82,8 @@ public class DefaultRoleInitializer
 
                             Permiso.CREAR_MEDICOS,
                             Permiso.VER_MEDICOS,
+                            Permiso.ACTUALIZAR_MEDICOS,
+                            Permiso.ELIMINAR_MEDICOS,
 
                             Permiso.CREAR_ESPECIALIDADES,
                             Permiso.VER_ESPECIALIDADES,
@@ -112,6 +115,7 @@ public class DefaultRoleInitializer
 
             doctor.setPermisos(
                     Set.of(
+                            Permiso.ACCESO_MEDICO,
                             Permiso.VER_MEDICOS,
                             Permiso.VER_ESPECIALIDADES,
                             Permiso.CREAR_HORARIOS,
@@ -137,6 +141,7 @@ public class DefaultRoleInitializer
 
             patient.setPermisos(
                     Set.of(
+                            Permiso.ACCESO_PACIENTE,
                             Permiso.VER_MEDICOS,
                             Permiso.VER_ESPECIALIDADES,
                             Permiso.VER_HORARIOS_DISPONIBLES,

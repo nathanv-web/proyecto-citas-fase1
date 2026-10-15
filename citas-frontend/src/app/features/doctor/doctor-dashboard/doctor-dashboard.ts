@@ -1,27 +1,12 @@
-import {
-  Component
-} from '@angular/core';
+import { Component } from '@angular/core';
 
-import {
-  RouterLink
-} from '@angular/router';
+import { PanelMenu } from '../../../shared/panel-menu/panel-menu';
 
+/** El panel médico presenta sus funciones mediante el menú compartido. */
 @Component({
   selector: 'app-doctor-dashboard',
   standalone: true,
-  imports: [RouterLink],
-  template: `
-    <h1>Panel del Doctor</h1>
-
-    <a routerLink="/doctor/schedules">
-      Crear horario
-    </a>
-
-    <br><br>
-
-    <a routerLink="/doctor/appointments">
-      Ver citas
-    </a>
-  `
+  imports: [PanelMenu],
+  template: ` <app-panel-menu panel="doctor" /> `,
 })
 export class DoctorDashboard {}

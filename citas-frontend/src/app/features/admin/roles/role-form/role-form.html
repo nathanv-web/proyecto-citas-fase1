@@ -1,69 +1,114 @@
-<h2>
-  {{ id ? 'Editar Rol' : 'Crear Rol' }}
-</h2>
+<main class="page">
+  <header class="page-header">
+    <div>
+      <span class="eyebrow">CitaNova · Configuración de roles</span>
+      <h1>
+        {{ isEdit ? 'Editar rol' : 'Nuevo rol' }}
+      </h1>
 
-<form
-  [formGroup]="form"
-  (ngSubmit)="save()"
->
+      <p>Configura el rol y los permisos que tendrá disponibles.</p>
+    </div>
 
-  <div>
+    <a [routerLink]="backLink" class="btn btn-secondary"> Volver </a>
+  </header>
 
-    <label>
-      Nombre
-    </label>
-
-    <input
-      type="text"
-      formControlName="nombre"
-    >
-
-  </div>
-
-  <div>
-
-    <label>
-      Descripción
-    </label>
-
-    <input
-      type="text"
-      formControlName="descripcion"
-    >
-
-  </div>
-
-  <h3>Permisos</h3>
-
-  @for (
-    permission of permissions();
-    track permission
-  ) {
-
-    <label>
-
-      <input
-        type="checkbox"
-        [checked]="
-          selectedPermissions()
-            .includes(permission)
-        "
-        (change)="
-          togglePermission(permission)
-        "
-      >
-
-      {{ permission }}
-
-    </label>
-
-    <br>
+  @if (loading) {
+    <div class="message" role="status">Cargando rol...</div>
   }
 
-  <br>
+  @if (error) {
+    <div class="alert error" role="alert">
+      {{ error }}
+    </div>
+  }
 
-  <button type="submit">
-    Guardar
-  </button>
+  @if (success) {
+    <div class="alert success" role="status">
+      {{ success }}
+    </div>
+  }
 
-</form>
+  @if (!loading) {
+    <form class="form-card" #roleForm="ngForm" (ngSubmit)="save()">
+      <div class="field">
+        <label for="nombre"> Nombre del rol * </label>
+
+        <input
+          id="nombre"
+          type="text"
+          name="nombre"
+          [(ngModel)]="form.nombre"
+          #nombre="ngModel"
+          required
+          maxlength="50"
+          pattern="ROLE_[A-Z][A-Z0-9_]*"
+          placeholder="ROLE_JEFE_AREA"
+        />
+
+        @if (nombre.invalid && nombre.touched) {
+          <small class="validation"> Usa el formato ROLE_NOMBRE. </small>
+        }
+      </div>
+
+      <div class="field">
+        <label for="descripcion"> Descripción </label>
+
+        <textarea
+          id="descripcion"
+          name="descripcion"
+          [(ngModel)]="form.descripcion"
+          maxlength="255"
+          rows="4"
+          placeholder="Descripción del rol"
+        >
+        </textarea>
+      </div>
+
+      @if (canAssignPermissions) {
+        <section class="permissions-section">
+          <div class="section-title">
+            <h2>Permisos</h2>
+
+            <span>
+              {{ selectedPermissions.length }}
+              seleccionado(s)
+            </span>
+          </div>
+
+          @if (permissions.length === 0) {
+            <div class="message" role="status">No hay permisos disponibles.</div>
+          } @else {
+            <p>
+              Para entrar a un panel, asigna ACCESO_ADMIN, ACCESO_MEDICO o ACCESO_PACIENTE, además
+              de los permisos de sus funciones. El acceso no concede las acciones.
+            </p>
+
+            <div class="permissions-grid">
+              @for (permission of permissions; track permission) {
+                <label class="permission-option">
+                  <input
+                    type="checkbox"
+                    [checked]="isPermissionSelected(permission)"
+                    (change)="togglePermission(permission)"
+                  />
+
+                  <span>
+                    {{ permission }}
+                  </span>
+                </label>
+              }
+            </div>
+          }
+        </section>
+      }
+
+      <div class="form-actions">
+        <a [routerLink]="backLink" class="btn btn-secondary"> Cancelar </a>
+
+        <button type="submit" class="btn btn-primary" [disabled]="roleForm.invalid || saving">
+          {{ saving ? 'Guardando...' : isEdit ? 'Guardar cambios' : 'Crear rol' }}
+        </button>
+      </div>
+    </form>
+  }
+</main>

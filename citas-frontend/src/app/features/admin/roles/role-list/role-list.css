@@ -1,0 +1,8 @@
+/* La columna de permisos conserva espacio para los nombres del catálogo. */
+:host {
+  display: block;
+}
+.permissions {
+  min-width: 230px;
+  max-width: 380px;
+}

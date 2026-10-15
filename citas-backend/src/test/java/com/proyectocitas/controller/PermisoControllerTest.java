@@ -32,6 +32,15 @@ class PermisoControllerTest {
                         jsonPath("$").isArray()
                 )
                 .andExpect(
+                        jsonPath("$[?(@ == 'ACCESO_ADMIN')]").exists()
+                )
+                .andExpect(
+                        jsonPath("$[?(@ == 'ACCESO_MEDICO')]").exists()
+                )
+                .andExpect(
+                        jsonPath("$[?(@ == 'ACCESO_PACIENTE')]").exists()
+                )
+                .andExpect(
                         jsonPath("$[?(@ == 'CREAR_USUARIOS')]")
                                 .exists()
                 )

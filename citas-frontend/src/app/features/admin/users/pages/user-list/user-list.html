@@ -1,58 +1,44 @@
-<!-- ================================================= -->
-<!-- ADMINISTRACIÓN DE USUARIOS -->
-<!-- ================================================= -->
+<main class="page">
+  <header class="page-header">
+    <div>
+      <span class="eyebrow">CitaNova · Administración de usuarios</span>
+      <h1>Usuarios</h1>
+      <p>Administración de usuarios del sistema.</p>
+    </div>
 
-<section class="usuarios-container">
+    @if (canCreateUser) {
+      <a routerLink="/admin/users/new" class="btn btn-primary"> Nuevo usuario </a>
+    }
+  </header>
 
-  <h2>Administración de Usuarios</h2>
-
-  <!-- ================================================= -->
-  <!-- CREAR USUARIO -->
-  <!-- ================================================= -->
-
-  @if (authService.hasPermission('CREAR_USUARIOS')) {
-
-    <a routerLink="/admin/users/new">
-      Nuevo usuario
-    </a>
-
+  @if (success) {
+    <div class="alert success" role="status">
+      {{ success }}
+    </div>
   }
-
-
-  <!-- ================================================= -->
-  <!-- MENSAJES -->
-  <!-- ================================================= -->
-
-  @if (cargando) {
-
-    <p>Cargando usuarios...</p>
-
-  }
-
 
   @if (error) {
-
-    <p class="error">
+    <div class="alert error" role="alert">
       {{ error }}
-    </p>
-
+    </div>
   }
 
+  @if (loading) {
+    <div class="loading" role="status">Cargando usuarios...</div>
+  }
 
-  <!-- ================================================= -->
-  <!-- TABLA -->
-  <!-- ================================================= -->
+  @if (!loading && !error && users.length === 0) {
+    <div class="empty" role="status">No hay usuarios registrados.</div>
+  }
 
-  @if (authService.hasPermission('VER_USUARIOS') && !cargando) {
-
-    @if (usuarios.length === 0 && !error) {
-
-      <p>No hay usuarios registrados.</p>
-
-    } @else if (usuarios.length > 0) {
-
+  @if (!loading && users.length > 0) {
+    <div
+      class="table-container"
+      tabindex="0"
+      role="region"
+      aria-label="Listado: Administración de usuarios"
+    >
       <table>
-
         <thead>
           <tr>
             <th>ID</th>
@@ -66,95 +52,82 @@
         </thead>
 
         <tbody>
-
-          @for (usuario of usuarios; track usuario.idUsuario) {
-
+          @for (user of users; track user.idUsuario) {
             <tr>
+              <td>{{ user.idUsuario }}</td>
 
-              <td>{{ usuario.idUsuario }}</td>
-
-              <td>
-                {{ usuario.nombre }}
-                {{ usuario.apellido }}
-              </td>
-
-              <td>{{ usuario.correo }}</td>
-
-              <td>{{ usuario.telefono }}</td>
+              <td>{{ user.nombre }} {{ user.apellido }}</td>
 
               <td>
-                {{ usuario.roles.join(', ') || 'Sin roles' }}
+                {{ user.correo }}
               </td>
 
               <td>
-                {{ usuario.activo ? 'Activo' : 'Inactivo' }}
+                {{ user.telefono }}
               </td>
 
               <td>
-
-                <!-- EDITAR -->
-
-                @if (authService.hasPermission('ACTUALIZAR_USUARIOS')) {
-
-                  <a
-                    [routerLink]="[
-                      '/admin/users/edit',
-                      usuario.idUsuario
-                    ]">
-                    Editar
-                  </a>
-
+                @if (user.roles && user.roles.length > 0) {
+                  <div class="roles">
+                    @for (role of user.roles; track role) {
+                      <span class="role">
+                        {{ role }}
+                      </span>
+                    }
+                  </div>
+                } @else {
+                  <span>Sin roles</span>
                 }
-
-
-                <!-- ASIGNAR ROLES -->
-
-                @if (authService.hasPermission('ASIGNAR_ROLES')) {
-
-                  <a
-                    [routerLink]="[
-                      '/admin/users/roles',
-                      usuario.idUsuario
-                    ]">
-                    Asignar roles
-                  </a>
-
-                }
-
-
-                <!-- DESACTIVAR -->
-
-                @if (
-                  authService.hasPermission('DESACTIVAR_USUARIOS')
-                  && usuario.activo
-                ) {
-
-                  <button
-                    type="button"
-                    (click)="desactivarUsuario(usuario)">
-
-                    Desactivar
-
-                  </button>
-
-                }
-
               </td>
 
+              <td>
+                @if (user.activo) {
+                  <span class="status active"> Activo </span>
+                } @else {
+                  <span class="status inactive"> Inactivo </span>
+                }
+              </td>
+
+              <td>
+                <div class="actions">
+                  @if (canEditUser) {
+                    <a [routerLink]="['/admin/users/edit', user.idUsuario]" class="btn btn-edit">
+                      Editar
+                    </a>
+                  }
+
+                  @if (canAssignRoles) {
+                    <a [routerLink]="['/admin/users/roles', user.idUsuario]" class="btn btn-role">
+                      Roles
+                    </a>
+                  }
+
+                  @if (canDeactivateUser && user.activo) {
+                    <button
+                      type="button"
+                      class="btn btn-danger"
+                      [disabled]="changingState"
+                      (click)="changeUserState(user)"
+                    >
+                      Desactivar
+                    </button>
+                  }
+                  @if (canActivateUser && !user.activo) {
+                    <button
+                      type="button"
+                      class="btn btn-primary"
+                      [disabled]="changingState"
+                      (click)="changeUserState(user)"
+                    >
+                      Activar
+                    </button>
+                  }
+                </div>
+              </td>
             </tr>
-
           }
-
         </tbody>
-
       </table>
-
-    }
-
-  } @else if (!authService.hasPermission('VER_USUARIOS')) {
-
-    <p>No tienes permisos para consultar usuarios.</p>
-
+    </div>
   }
-
-</section>
+</main>

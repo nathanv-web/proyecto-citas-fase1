@@ -1,0 +1,4 @@
+/* El formulario y el listado de médicos comparten los estilos generales. */
+:host {
+  display: block;
+}

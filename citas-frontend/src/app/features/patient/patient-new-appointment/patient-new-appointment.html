@@ -1,31 +1,44 @@
-<h2>Nueva cita</h2>
-
-<form
-  [formGroup]="form"
-  (ngSubmit)="save()"
->
-
-  <label>ID Horario</label>
-
-  <input
-    type="number"
-    formControlName="idHorario"
-  >
-
-  <br><br>
-
-  <label>Motivo</label>
-
-  <textarea
-    formControlName="motivo"
-  ></textarea>
-
-  <br><br>
-
-  <button type="submit">
-    Crear cita
-  </button>
-
-</form>
-
-<p>{{ message }}</p>
+<main class="page page-narrow">
+  <header class="page-header">
+    <div>
+      <span class="eyebrow">CitaNova · Reserva de citas</span>
+      <h1>Nueva cita</h1>
+      <p>Elige un horario disponible e indica el motivo de tu consulta.</p>
+    </div>
+  </header>
+  <form class="form-card" [formGroup]="form" (ngSubmit)="save()">
+    <h2>Datos de la consulta</h2>
+    <div class="field">
+      <label for="appointment-schedule">ID Horario</label>
+      <input
+        id="appointment-schedule"
+        type="number"
+        formControlName="idHorario"
+        placeholder="Ej. 10"
+        aria-describedby="appointment-schedule-help"
+      />
+      <small class="helper-text" id="appointment-schedule-help"
+        >El identificador se obtiene al consultar los horarios disponibles.</small
+      >
+    </div>
+    <div class="field">
+      <label for="appointment-reason">Motivo de la consulta</label>
+      <textarea
+        id="appointment-reason"
+        formControlName="motivo"
+        placeholder="Describe brevemente el motivo de tu visita"
+        rows="5"
+        aria-describedby="appointment-reason-help"
+      ></textarea>
+      <small class="helper-text" id="appointment-reason-help"
+        >El motivo debe tener al menos 5 caracteres.</small
+      >
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit">Crear cita</button>
+    </div>
+  </form>
+  @if (message) {
+    <p class="message" role="status">{{ message }}</p>
+  }
+</main>

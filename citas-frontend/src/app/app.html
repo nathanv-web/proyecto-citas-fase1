@@ -1,1 +1,18 @@
+@if (showPanelNavigation()) {
+  <header class="panel-navigation">
+    <app-user-profile />
+    <a class="app-brand" routerLink="/panels" aria-label="CitaNova, selector de paneles">
+      <span class="brand-symbol" aria-hidden="true">✚</span>
+      <span class="brand-copy">
+        <strong>Cita<span>Nova</span></strong>
+        <small>Tu salud en un clic</small>
+      </span>
+    </a>
+    <nav aria-label="Navegación de paneles">
+      <a class="btn btn-transparente" routerLink="/panels"
+        >Cambiar de panel <span aria-hidden="true">→</span></a
+      >
+    </nav>
+  </header>
+}
 <router-outlet />

@@ -1,0 +1,4 @@
+/* El panel administrativo utiliza el menú compartido de la aplicación. */
+:host {
+  display: block;
+}

@@ -1,174 +1,173 @@
-<section class="usuario-form-container">
+<main class="page" [class.registration]="isRegistration">
+  @if (isRegistration) {
+    <a class="app-brand" routerLink="/" aria-label="CitaNova, inicio">
+      <span class="brand-symbol" aria-hidden="true">✚</span>
+      <span class="brand-copy"
+        ><strong>Cita<span>Nova</span></strong
+        ><small>Tu salud en un clic</small></span
+      >
+    </a>
+  }
 
-  <h2>
-    {{ editando ? 'Editar usuario' : 'Crear usuario' }}
-  </h2>
+  <header class="page-header">
+    <div>
+      <span class="eyebrow">{{
+        isRegistration ? 'CitaNova · Registro de pacientes' : 'CitaNova · Usuarios'
+      }}</span>
+      <h1>
+        {{ isRegistration ? 'Crear cuenta' : isEdit ? 'Editar usuario' : 'Nuevo usuario' }}
+      </h1>
 
-  @if (cargando) {
-    <p>Cargando información del usuario...</p>
+      <p>
+        {{
+          isRegistration
+            ? 'Regístrate como paciente para reservar tus citas.'
+            : isEdit
+              ? 'Actualiza los datos del usuario.'
+              : 'Registra un nuevo usuario en el sistema.'
+        }}
+      </p>
+    </div>
+
+    <a [routerLink]="backLink" class="btn btn-secondary"> Volver </a>
+  </header>
+
+  @if (loading) {
+    <div class="message" role="status">Cargando usuario...</div>
   }
 
   @if (error) {
-    <p class="error" role="alert">
+    <div class="alert error" role="alert">
       {{ error }}
-    </p>
-
-    <button type="button" (click)="error = ''">
-      Cerrar mensaje
-    </button>
+    </div>
   }
 
-  @if (!cargando && !(editando && idUsuario === null)) {
+  @if (success) {
+    <div class="alert success" role="status">
+      {{ success }}
+    </div>
+  }
 
-    <form [formGroup]="formulario" (ngSubmit)="guardar()">
-
-      <!-- NOMBRE -->
-
-      <div>
-        <label for="nombre">Nombre</label>
-
-        <input
-  id="nombre"
-  type="text"
-  formControlName="nombre"
-  maxlength="50"
-  autocomplete="given-name"
-/>
-
-        @if (
-  formulario.controls.nombre.touched &&
-  formulario.controls.nombre.invalid
-) {
-  <small>
-    El nombre debe tener entre 3 y 50 caracteres.
-    Solo se permiten letras, espacios y separadores
-    como guiones o apóstrofos.
-  </small>
-}
-      </div>
-
-      <!-- APELLIDO -->
-
-      <div>
-        <label for="apellido">Apellido</label>
-
-       <input
-  id="apellido"
-  type="text"
-  formControlName="apellido"
-  maxlength="50"
-  autocomplete="family-name"
-  />
-
-
-       @if (
-  formulario.controls.apellido.touched &&
-  formulario.controls.apellido.invalid
-) {
-  <small>
-    El apellido debe tener entre 3 y 50 caracteres.
-    Solo se permiten letras, espacios y separadores
-    como guiones o apóstrofos.
-  </small>
-}
-      </div>
-
-      <!-- CORREO -->
-
-      <div>
-        <label for="correo">Correo electrónico</label>
-
-        <input
-          id="correo"
-          type="email"
-          formControlName="correo"
-        />
-
-        @if (
-          formulario.controls.correo.touched &&
-          formulario.controls.correo.invalid
-        ) {
-          <small>
-            Introduce un correo electrónico válido.
-          </small>
-        }
-      </div>
-
-      <!-- TELÉFONO -->
-
-      <div>
-        <label for="telefono">Teléfono</label>
-
-        <input
-  id="telefono"
-  type="tel"
-  inputmode="numeric"
-  maxlength="20"
-  autocomplete="tel"
-  formControlName="telefono"
-/>
-
-        @if (
-  formulario.controls.telefono.touched &&
-  formulario.controls.telefono.invalid
-) {
-  <small>
-    El teléfono debe contener únicamente números
-    y tener entre 8 y 20 dígitos.
-  </small>
-}
-      </div>
-
-      <!-- CONTRASEÑA: SOLO CREACIÓN -->
-
-      @if (!editando) {
-
-        <div>
-          <label for="contrasena">Contraseña</label>
+  @if (!loading) {
+    <form class="form-card" #userForm="ngForm" (ngSubmit)="save()">
+      <div class="form-grid">
+        <div class="field">
+          <label for="nombre"> Nombre * </label>
 
           <input
-            id="contrasena"
-            type="password"
-            formControlName="contrasena"
-            autocomplete="new-password"
+            id="nombre"
+            autocomplete="given-name"
+            type="text"
+            name="nombre"
+            [(ngModel)]="form.nombre"
+            #nombre="ngModel"
+            required
+            minlength="2"
+            maxlength="100"
           />
 
-          @if (
-            formulario.controls.contrasena.touched &&
-            formulario.controls.contrasena.invalid
-          ) {
-            <small>
-              La contraseña debe tener entre
-              8 y 12 caracteres.
+          @if (nombre.invalid && nombre.touched) {
+            <small class="validation"> El nombre debe tener entre 2 y 100 caracteres. </small>
+          }
+        </div>
+
+        <div class="field">
+          <label for="apellido"> Apellido * </label>
+
+          <input
+            id="apellido"
+            autocomplete="family-name"
+            type="text"
+            name="apellido"
+            [(ngModel)]="form.apellido"
+            #apellido="ngModel"
+            required
+            minlength="2"
+            maxlength="100"
+          />
+
+          @if (apellido.invalid && apellido.touched) {
+            <small class="validation"> El apellido debe tener entre 2 y 100 caracteres. </small>
+          }
+        </div>
+
+        <div class="field">
+          <label for="correo"> Correo * </label>
+
+          <input
+            id="correo"
+            autocomplete="email"
+            type="email"
+            name="correo"
+            [(ngModel)]="form.correo"
+            #correo="ngModel"
+            required
+          />
+
+          @if (correo.invalid && correo.touched) {
+            <small class="validation"> Ingresa un correo válido. </small>
+          }
+        </div>
+
+        <div class="field">
+          <label for="telefono"> Teléfono * </label>
+
+          <input
+            id="telefono"
+            autocomplete="tel"
+            type="text"
+            name="telefono"
+            [(ngModel)]="form.telefono"
+            #telefono="ngModel"
+            required
+            maxlength="20"
+          />
+
+          @if (telefono.invalid && telefono.touched) {
+            <small class="validation">
+              El teléfono es obligatorio y admite máximo 20 caracteres.
             </small>
           }
         </div>
 
-      }
+        @if (!isEdit) {
+          <div class="field full">
+            <label for="contrasena"> Contraseña * </label>
 
-      <!-- ACCIONES -->
+            <input
+              id="contrasena"
+              autocomplete="new-password"
+              type="password"
+              name="contrasena"
+              [(ngModel)]="form.contrasena"
+              #contrasena="ngModel"
+              required
+              minlength="8"
+              maxlength="12"
+            />
 
-      <div>
-
-        <button
-          type="submit"
-          [disabled]="
-            formulario.invalid ||
-            guardando ||
-            cargando ||
-            !!error
-          "
-        >
-          {{ guardando ? 'Guardando...' : 'Guardar' }}
-        </button>
-
-        <a routerLink="/admin/users">
-          Cancelar
-        </a>
-
+            @if (contrasena.invalid && contrasena.touched) {
+              <small class="validation"> La contraseña debe tener entre 8 y 12 caracteres. </small>
+            }
+          </div>
+        }
       </div>
 
+      <div class="form-actions">
+        <a [routerLink]="backLink" class="btn btn-secondary"> Cancelar </a>
+
+        <button type="submit" class="btn btn-primary" [disabled]="userForm.invalid || saving">
+          {{
+            saving
+              ? 'Guardando...'
+              : isRegistration
+                ? 'Crear cuenta'
+                : isEdit
+                  ? 'Guardar cambios'
+                  : 'Crear usuario'
+          }}
+        </button>
+      </div>
     </form>
   }
-
-</section>
+</main>

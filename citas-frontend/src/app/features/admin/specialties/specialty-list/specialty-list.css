@@ -1,0 +1,7 @@
+/* El formulario de especialidades conserva un ancho adecuado para sus campos. */
+:host {
+  display: block;
+}
+.form-card {
+  max-width: 760px;
+}

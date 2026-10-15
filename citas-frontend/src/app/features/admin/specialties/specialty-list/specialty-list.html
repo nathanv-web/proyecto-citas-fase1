@@ -1,0 +1,142 @@
+<main class="page">
+  <header class="page-header">
+    <div>
+      <span class="eyebrow">CitaNova · Especialidades médicas</span>
+      <h1>Especialidades</h1>
+      <p>Administra las especialidades médicas.</p>
+    </div>
+  </header>
+
+  @if (error) {
+    <div class="alert error" role="alert">
+      {{ error }}
+    </div>
+  }
+
+  @if (success) {
+    <div class="alert success" role="status">
+      {{ success }}
+    </div>
+  }
+
+  @if (canCreateSpecialty) {
+    <form class="form-card" #specialtyForm="ngForm" (ngSubmit)="createSpecialty()">
+      <h2>Nueva especialidad</h2>
+
+      <div class="field">
+        <label for="nombre"> Nombre * </label>
+
+        <input
+          id="nombre"
+          type="text"
+          name="nombre"
+          [(ngModel)]="form.nombre"
+          #nombre="ngModel"
+          required
+          maxlength="100"
+        />
+
+        @if (nombre.invalid && nombre.touched) {
+          <small class="validation"> El nombre es obligatorio. </small>
+        }
+      </div>
+
+      <div class="field">
+        <label for="descripcion"> Descripción </label>
+
+        <textarea
+          id="descripcion"
+          name="descripcion"
+          [(ngModel)]="form.descripcion"
+          rows="3"
+          maxlength="255"
+        >
+        </textarea>
+      </div>
+
+      <button type="submit" class="btn btn-primary" [disabled]="specialtyForm.invalid || saving">
+        {{ saving ? 'Guardando...' : 'Crear especialidad' }}
+      </button>
+    </form>
+  }
+
+  @if (canViewSpecialties) {
+    <section class="list-section">
+      <h2>Especialidades registradas</h2>
+
+      @if (loading) {
+        <div class="message" role="status">Cargando especialidades...</div>
+      } @else if (specialties.length === 0) {
+        <div class="message" role="status">No hay especialidades registradas.</div>
+      } @else {
+        <div
+          class="table-container"
+          tabindex="0"
+          role="region"
+          aria-label="Listado: Especialidades médicas"
+        >
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Descripción</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              @for (specialty of specialties; track specialty.idEspecialidad) {
+                <tr>
+                  <td>
+                    {{ specialty.idEspecialidad }}
+                  </td>
+
+                  <td>
+                    {{ specialty.nombre }}
+                  </td>
+
+                  <td>
+                    {{ specialty.descripcion || 'Sin descripción' }}
+                  </td>
+
+                  <td>
+                    <span
+                      class="status"
+                      [class.active]="specialty.activo !== false"
+                      [class.inactive]="specialty.activo === false"
+                      >{{ specialty.activo === false ? 'Inactiva' : 'Activa' }}</span
+                    >
+                  </td>
+                  <td>
+                    @if (specialty.activo !== false && canDeactivateSpecialty) {
+                      <button
+                        type="button"
+                        class="btn btn-danger"
+                        [disabled]="changingState"
+                        (click)="changeSpecialtyState(specialty)"
+                      >
+                        Desactivar
+                      </button>
+                    }
+                    @if (specialty.activo === false && canActivateSpecialty) {
+                      <button
+                        type="button"
+                        class="btn btn-primary"
+                        [disabled]="changingState"
+                        (click)="changeSpecialtyState(specialty)"
+                      >
+                        Activar
+                      </button>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+  }
+</main>

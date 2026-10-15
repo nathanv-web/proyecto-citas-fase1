@@ -1,7 +1,6 @@
 package com.proyectocitas.service.Impl;
 
 import com.proyectocitas.exception.DuplicateResourceException;
-import com.proyectocitas.exception.ResourceConflictException;
 import com.proyectocitas.exception.ResourceNotFoundException;
 
 import com.proyectocitas.model.Especialidad;
@@ -9,8 +8,6 @@ import com.proyectocitas.model.Especialidad;
 import com.proyectocitas.repository.EspecialidadRepository;
 
 import com.proyectocitas.service.EspecialidadService;
-
-import org.springframework.dao.DataIntegrityViolationException;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -269,7 +266,7 @@ public class EspecialidadServiceImpl
 
 
     // =================================================
-    // ELIMINAR ESPECIALIDAD
+    // DESACTIVAR ESPECIALIDAD SIN BORRAR SUS RELACIONES
     // =================================================
 
     @Override
@@ -295,23 +292,7 @@ public class EspecialidadServiceImpl
                         );
 
 
-        try {
-
-            especialidadRepository
-                    .delete(especialidad);
-
-            /*
-             * Fuerza a Hibernate a ejecutar el DELETE aquí,
-             * para poder capturar errores de llave foránea.
-             */
-            especialidadRepository.flush();
-
-        } catch (DataIntegrityViolationException ex) {
-
-            throw new ResourceConflictException(
-                    "No se puede eliminar la especialidad "
-                            + "porque está siendo utilizada por uno o más médicos"
-            );
-        }
+        especialidad.setActivo(false);
+        especialidadRepository.save(especialidad);
     }
 }

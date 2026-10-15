@@ -1,84 +1,53 @@
-<h2>Mis citas</h2>
-
-@for (
-  appointment of appointments();
-  track appointment.idCita
-) {
-
-  <div>
-
-    <h3>
-      Cita #{{ appointment.idCita }}
-    </h3>
-
-    <p>
-      Médico:
-      {{ appointment.medico }}
-    </p>
-
-    <p>
-      Especialidad:
-      {{ appointment.especialidad }}
-    </p>
-
-    <p>
-      Fecha:
-      {{ appointment.fecha }}
-    </p>
-
-    <p>
-      Horario:
-      {{ appointment.horaInicio }}
-      -
-      {{ appointment.horaFin }}
-    </p>
-
-    <p>
-      Motivo:
-      {{ appointment.motivo }}
-    </p>
-
-    <p>
-      Estado:
-      {{ appointment.estado }}
-    </p>
-
-    @if (
-      appointment.diagnosticoReceta
-    ) {
-
-      <p>
-        Diagnóstico / receta:
-        {{ appointment.diagnosticoReceta }}
-      </p>
+<main class="page">
+  <header class="page-header">
+    <div>
+      <span class="eyebrow">CitaNova · Historial de citas</span>
+      <h1>Mis citas</h1>
+      <p>Consulta tus reservas y la información registrada durante tu atención.</p>
+    </div>
+  </header>
+  <section class="record-grid" aria-label="Historial de citas">
+    @for (appointment of appointments(); track appointment.idCita) {
+      <article class="record-card">
+        <div class="record-header">
+          <h2>Cita #{{ appointment.idCita }}</h2>
+          <span
+            class="status"
+            [class.pending]="appointment.estado === 'PENDIENTE'"
+            [class.inactive]="appointment.estado === 'CANCELADA'"
+            >{{ appointment.estado }}</span
+          >
+        </div>
+        <dl class="record-details">
+          <dt>Médico</dt>
+          <dd>{{ appointment.medico }}</dd>
+          <dt>Especialidad</dt>
+          <dd>{{ appointment.especialidad }}</dd>
+          <dt>Fecha</dt>
+          <dd>{{ appointment.fecha }}</dd>
+          <dt>Horario</dt>
+          <dd>{{ appointment.horaInicio }} - {{ appointment.horaFin }}</dd>
+          <dt>Motivo</dt>
+          <dd>{{ appointment.motivo }}</dd>
+        </dl>
+        @if (appointment.diagnosticoReceta) {
+          <div class="clinical-note">
+            <h3>Diagnóstico / receta</h3>
+            <p>{{ appointment.diagnosticoReceta }}</p>
+          </div>
+        }
+        @if (appointment.observaciones) {
+          <div class="clinical-note">
+            <h3>Observaciones</h3>
+            <p>{{ appointment.observaciones }}</p>
+          </div>
+        }
+        @if (canCancelAppointment && appointment.estado === 'PENDIENTE') {
+          <button class="btn btn-danger" type="button" (click)="cancel(appointment.idCita)">
+            Cancelar cita
+          </button>
+        }
+      </article>
     }
-
-    @if (
-      appointment.observaciones
-    ) {
-
-      <p>
-        Observaciones:
-        {{ appointment.observaciones }}
-      </p>
-    }
-
-    @if (
-      appointment.estado === 'PENDIENTE'
-    ) {
-
-      <button
-        (click)="
-          cancel(
-            appointment.idCita
-          )
-        "
-      >
-        Cancelar cita
-      </button>
-    }
-
-  </div>
-
-  <hr>
-}
+  </section>
+</main>

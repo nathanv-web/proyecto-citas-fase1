@@ -1,11 +1,12 @@
-﻿import { Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
+/** La pantalla informa que la cuenta no dispone del acceso solicitado. */
 @Component({
   selector: 'app-access-denied',
   standalone: true,
   imports: [RouterLink],
   templateUrl: './access-denied.html',
-  styleUrl: './access-denied.css'
+  styleUrl: './access-denied.css',
 })
 export class AccessDenied {}

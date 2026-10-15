@@ -3,6 +3,10 @@ package com.proyectocitas.model;
 
 public enum Permiso {
 
+    ACCESO_ADMIN,
+    ACCESO_MEDICO,
+    ACCESO_PACIENTE,
+
     CREAR_USUARIOS,
     VER_USUARIOS,
     ACTUALIZAR_USUARIOS,

@@ -1,18 +1,8 @@
-// =================================================
-// MODELO PARA CREAR USUARIOS
-// =================================================
-// Los nombres deben coincidir con UsuarioRequestDTO del backend.
-
+/** El modelo reúne los datos necesarios para crear un usuario. */
 export interface UserRequest {
-
   nombre: string;
-
   apellido: string;
-
   correo: string;
-
   telefono: string;
-
   contrasena: string;
-
 }

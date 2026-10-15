@@ -1,39 +1,97 @@
-<h2>Roles</h2>
+<main class="page">
+  <header class="page-header">
+    <div>
+      <span class="eyebrow">CitaNova · Roles y permisos</span>
+      <h1>Roles y permisos</h1>
+      <p>Administra los roles disponibles en el sistema.</p>
+    </div>
 
-<a routerLink="/admin/roles/new">
-  Crear rol
-</a>
+    @if (canCreateRole) {
+      <a routerLink="/admin/roles/new" class="btn btn-primary"> Nuevo rol </a>
+    }
+  </header>
 
-<hr>
+  @if (success) {
+    <div class="alert success" role="status">
+      {{ success }}
+    </div>
+  }
 
-@for (role of roles(); track role.idRol) {
+  @if (error) {
+    <div class="alert error" role="alert">
+      {{ error }}
+    </div>
+  }
 
-  <div>
+  @if (loading) {
+    <div class="message" role="status">Cargando roles...</div>
+  }
 
-    <h3>
-      {{ role.nombre }}
-    </h3>
+  @if (!loading && !error && roles.length === 0) {
+    <div class="message" role="status">No hay roles registrados.</div>
+  }
 
-    <p>
-      {{ role.descripcion }}
-    </p>
+  @if (!loading && roles.length > 0) {
+    <div class="table-container" tabindex="0" role="region" aria-label="Listado: Roles y permisos">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Rol</th>
+            <th>Descripción</th>
+            <th>Permisos</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
 
-    <a
-      [routerLink]="[
-        '/admin/roles/edit',
-        role.idRol
-      ]"
-    >
-      Editar
-    </a>
+        <tbody>
+          @for (role of roles; track role.idRol) {
+            <tr>
+              <td>
+                {{ role.idRol }}
+              </td>
 
-    <button
-      (click)="deleteRole(role.idRol)"
-    >
-      Eliminar
-    </button>
+              <td>
+                <strong>{{ role.nombre }}</strong>
+              </td>
 
-  </div>
+              <td>
+                {{ role.descripcion || 'Sin descripción' }}
+              </td>
 
-  <hr>
-}
+              <td>
+                @if (role.permisos && role.permisos.length > 0) {
+                  <div class="permissions">
+                    @for (permission of role.permisos; track permission) {
+                      <span class="permission">
+                        {{ permission }}
+                      </span>
+                    }
+                  </div>
+                } @else {
+                  <span class="muted"> Sin permisos </span>
+                }
+              </td>
+
+              <td>
+                <div class="actions">
+                  @if (canEditRole) {
+                    <a [routerLink]="['/admin/roles/edit', role.idRol]" class="btn btn-edit">
+                      Editar / Permisos
+                    </a>
+                  }
+
+                  @if (canDeleteRole) {
+                    <button type="button" class="btn btn-danger" (click)="deleteRole(role)">
+                      Eliminar
+                    </button>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</main>

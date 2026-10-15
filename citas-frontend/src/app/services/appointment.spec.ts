@@ -1,15 +1,26 @@
 import { TestBed } from '@angular/core/testing';
-import { Appointment } from './appointment';
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { AppointmentService } from './appointment';
 
-describe('Appointment', () => {
-  let service: Appointment;
+describe('AppointmentService (compatibilidad)', () => {
+  let service: AppointmentService;
+  let http: HttpTestingController;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
-    service = TestBed.inject(Appointment);
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
+    service = TestBed.inject(AppointmentService);
+    http = TestBed.inject(HttpTestingController);
   });
 
-  it('should be created', () => {
-    expect(service).toBeTruthy();
+  afterEach(() => http.verify());
+
+  it('consulta los médicos en la misma API que los demás módulos', () => {
+    service.getMedicos().subscribe();
+    const request = http.expectOne(req => req.url.endsWith('/medicos'));
+    expect(request.request.url).toBe('/api/v1/medicos');
+    request.flush([]);
   });
 });

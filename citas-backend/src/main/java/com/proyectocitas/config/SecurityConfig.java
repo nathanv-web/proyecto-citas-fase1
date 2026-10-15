@@ -360,7 +360,16 @@ public class SecurityConfig {
         Permiso.ACTUALIZAR_ESPECIALIDADES.name()
 )
 
-// Eliminar especialidad
+// Cambiar el estado de una especialidad
+.requestMatchers(
+        HttpMethod.PATCH,
+        "/api/v1/especialidades/*/estado"
+)
+.hasAuthority(
+        Permiso.ACTUALIZAR_ESPECIALIDADES.name()
+)
+
+// Desactivar especialidad sin borrarla
 .requestMatchers(
         HttpMethod.DELETE,
         "/api/v1/especialidades/*"
