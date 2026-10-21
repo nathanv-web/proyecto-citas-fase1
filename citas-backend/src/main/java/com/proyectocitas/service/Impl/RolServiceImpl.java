@@ -20,6 +20,10 @@ import java.util.Set;
 import org.springframework.http.HttpStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 @Service
 public class RolServiceImpl implements RolService {
@@ -135,25 +139,96 @@ public class RolServiceImpl implements RolService {
         rolRepository.delete(rol);
     }
     
-    @Override
+    // =================================================
+// ASIGNAR PERMISOS A UN ROL
+// =================================================
+// Protecciones:
+// - El usuario debe estar autenticado.
+// - Solo puede conceder permisos que él mismo posee.
+// - ROLE_ADMIN solo puede ser modificado por alguien
+//   que tenga ACCESO_ADMIN.
+@Override
 public Rol asignarPermisos(
         Long idRol,
         Set<Permiso> permisos) {
 
-    // Buscar rol existente
-    Rol rol = rolRepository.findById(idRol)
-            .orElseThrow(() ->
-                    new ResourceNotFoundException(
-                            "El rol indicado no existe"
-                    )
-            );
+    Authentication authentication =
+            SecurityContextHolder
+                    .getContext()
+                    .getAuthentication();
 
-    // Asignar permisos seleccionados
+    if (authentication == null
+            || !authentication.isAuthenticated()) {
+
+        throw new ResponseStatusException(
+                HttpStatus.FORBIDDEN,
+                "No fue posible identificar al usuario autenticado."
+        );
+    }
+
+    Rol rol =
+            rolRepository.findById(idRol)
+                    .orElseThrow(() ->
+                            new ResourceNotFoundException(
+                                    "El rol indicado no existe"
+                            )
+                    );
+
+    // Solo un usuario con acceso administrativo puede
+    // modificar los permisos de ROLE_ADMIN.
+    if ("ROLE_ADMIN".equalsIgnoreCase(
+            rol.getNombre()
+    )) {
+
+        boolean tieneAccesoAdmin =
+                authentication.getAuthorities()
+                        .stream()
+                        .anyMatch(authority ->
+                                Permiso.ACCESO_ADMIN
+                                        .name()
+                                        .equals(
+                                                authority.getAuthority()
+                                        )
+                        );
+
+        if (!tieneAccesoAdmin) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "No tienes autorización para modificar los permisos del rol administrador."
+            );
+        }
+    }
+
+    // El actor solamente puede conceder permisos
+    // que ya posee personalmente.
+    for (Permiso permiso : permisos) {
+
+        boolean poseePermiso =
+                authentication.getAuthorities()
+                        .stream()
+                        .anyMatch(authority ->
+                                permiso.name()
+                                        .equals(
+                                                authority.getAuthority()
+                                        )
+                        );
+
+        if (!poseePermiso) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "No tienes autorización para asignar el permiso "
+                            + permiso.name()
+                            + "."
+            );
+        }
+    }
+
+    // Solo después de pasar todas las validaciones
+    // se modifica el rol.
     rol.setPermisos(
             new HashSet<>(permisos)
     );
 
-    // Guardar cambios
     return rolRepository.save(rol);
 }
 }
