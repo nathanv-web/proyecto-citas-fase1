@@ -40,6 +40,32 @@ public class UsuarioServiceImpl implements UsuarioService {
         return usuarioRepository.findAll();
     }
 
+  // =================================================
+ // BUSCAR Y FILTRAR USUARIOS
+// =================================================
+// Permite buscar usuarios por nombre, apellido o correo.
+// También puede filtrar opcionalmente por estado y rol.
+@Override
+public List<Usuario> buscarConFiltros(
+        String search,
+        Boolean activo,
+        String rol) {
+
+    // Limpiar espacios innecesarios en los parámetros de texto.
+    String searchLimpio =
+            search != null ? search.trim() : null;
+
+    String rolLimpio =
+            rol != null ? rol.trim() : null;
+
+    // Delegar la búsqueda al repositorio.
+    return usuarioRepository.buscarConFiltros(
+            searchLimpio,
+            activo,
+            rolLimpio
+    );
+}
+
     //Buscar un usuario por su ID
 
     @Override

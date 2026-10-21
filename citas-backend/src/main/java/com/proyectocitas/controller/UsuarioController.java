@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestParam;
 
 
 @RestController
@@ -64,22 +65,31 @@ public class UsuarioController {
                 .status(HttpStatus.CREATED)
                 .body(respuesta);
     }
-    // =================================================
-// LISTAR USUARIOS
+   // =================================================
+// LISTAR, BUSCAR Y FILTRAR USUARIOS
 // =================================================
-
+// Los parámetros son opcionales para mantener compatibilidad
+// con las llamadas existentes a GET /api/v1/users.
 @GetMapping
-public ResponseEntity<List<UsuarioDTO>> listarUsuarios() {
+public ResponseEntity<List<UsuarioDTO>> listarUsuarios(
+        @RequestParam(required = false) String search,
+        @RequestParam(required = false) Boolean activo,
+        @RequestParam(required = false) String rol) {
 
+    // Si no se envían filtros, el servicio igualmente devuelve
+    // todos los usuarios, manteniendo el comportamiento anterior.
     List<UsuarioDTO> usuarios =
-            usuarioService.obtenerTodos()
-                    .stream()
-                    .map(usuarioMapper::toDTO)
-                    .toList();
+            usuarioService.buscarConFiltros(
+                    search,
+                    activo,
+                    rol
+            )
+            .stream()
+            .map(usuarioMapper::toDTO)
+            .toList();
 
-    return ResponseEntity
-            .ok(usuarios);
-   }
+    return ResponseEntity.ok(usuarios);
+}
 // =================================================
 // BUSCAR USUARIO POR ID
 // =================================================

@@ -11,10 +11,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.verify;
 
 class UsuarioServiceImplTest {
 
@@ -68,4 +71,50 @@ class UsuarioServiceImplTest {
                 )
         );
     }
+    @Test
+void debeBuscarUsuariosConFiltrosLimpios() {
+
+    UsuarioRepository usuarioRepository =
+            mock(UsuarioRepository.class);
+
+    PasswordEncoder passwordEncoder =
+            mock(PasswordEncoder.class);
+
+    RolRepository rolRepository =
+            mock(RolRepository.class);
+
+    UsuarioServiceImpl service =
+            new UsuarioServiceImpl(
+                    usuarioRepository,
+                    passwordEncoder,
+                    rolRepository
+            );
+
+    Usuario usuario = new Usuario();
+    usuario.setIdUsuario(1L);
+    usuario.setNombre("Ana");
+
+    when(usuarioRepository.buscarConFiltros(
+            "ana",
+            true,
+            "ROLE_ADMIN"
+    )).thenReturn(List.of(usuario));
+
+    List<Usuario> resultado =
+            service.buscarConFiltros(
+                    "  ana  ",
+                    true,
+                    "  ROLE_ADMIN  "
+            );
+
+    assertEquals(1, resultado.size());
+    assertEquals(usuario, resultado.get(0));
+
+    verify(usuarioRepository)
+            .buscarConFiltros(
+                    "ana",
+                    true,
+                    "ROLE_ADMIN"
+            );
+}
 }

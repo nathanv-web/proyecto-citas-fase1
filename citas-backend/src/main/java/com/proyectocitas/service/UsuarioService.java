@@ -11,6 +11,17 @@ public interface UsuarioService {
 
     List<Usuario> obtenerTodos();
 
+// =================================================
+// BUSCAR Y FILTRAR USUARIOS
+// =================================================
+// Permite buscar usuarios por nombre, apellido o correo
+// y aplicar opcionalmente filtros por estado y rol.
+List<Usuario> buscarConFiltros(
+        String search,
+        Boolean activo,
+        String rol
+);
+
     Usuario obtenerPorId(Long id);
 
     Optional<Usuario> obtenerPorCorreo(String correo);
