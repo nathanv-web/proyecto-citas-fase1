@@ -11,6 +11,7 @@ import com.proyectocitas.exception.ResourceNotFoundException;
 import com.proyectocitas.model.Rol;
 import com.proyectocitas.repository.RolRepository;
 import com.proyectocitas.exception.ResourceConflictException;
+import com.proyectocitas.service.AuditoriaService;
 import java.util.HashSet;
 
 import java.util.List;
@@ -174,13 +175,20 @@ public Usuario asignarRol(
 
     // Evitar que un usuario modifique sus propios roles.
     if (actor.getIdUsuario() != null
-            && actor.getIdUsuario().equals(idUsuario)) {
+        && actor.getIdUsuario().equals(idUsuario)) {
 
-        throw new ResponseStatusException(
-                HttpStatus.FORBIDDEN,
-                "No puedes modificar tus propios roles."
-        );
-    }
+    AuditoriaService.registrar(
+            "ASIGNAR_ROLES",
+            "USUARIO_ID_" + idUsuario,
+            "FALLO",
+            "Intento de modificar los propios roles"
+    );
+
+    throw new ResponseStatusException(
+            HttpStatus.FORBIDDEN,
+            "No puedes modificar tus propios roles."
+    );
+}
 
     // Buscar al usuario objetivo.
     Usuario usuario =
@@ -232,11 +240,19 @@ public Usuario asignarRol(
                         );
 
         if (!actorEsAdministrador) {
-            throw new ResponseStatusException(
-                    HttpStatus.FORBIDDEN,
-                    "No tienes autorización para asignar el rol de administrador."
-            );
-        }
+
+    AuditoriaService.registrar(
+            "ASIGNAR_ROLES",
+            "USUARIO_ID_" + idUsuario,
+            "FALLO",
+            "Intento no autorizado de asignar ROLE_ADMIN"
+    );
+
+    throw new ResponseStatusException(
+            HttpStatus.FORBIDDEN,
+            "No tienes autorización para asignar el rol de administrador."
+    );
+}
     }
 
     boolean eraAdministrador =
@@ -268,16 +284,34 @@ public Usuario asignarRol(
                         );
 
         if (administradoresActivos <= 1) {
-            throw new ResourceConflictException(
-                    "No se puede retirar el rol de administrador al último administrador activo del sistema."
-            );
-        }
+
+    AuditoriaService.registrar(
+            "ASIGNAR_ROLES",
+            "USUARIO_ID_" + idUsuario,
+            "FALLO",
+            "Intento de retirar ROLE_ADMIN al último administrador activo"
+    );
+
+    throw new ResourceConflictException(
+            "No se puede retirar el rol de administrador al último administrador activo del sistema."
+    );
+}
     }
 
     usuario.getRoles().clear();
-    usuario.getRoles().addAll(nuevosRoles);
+usuario.getRoles().addAll(nuevosRoles);
 
-    return usuarioRepository.save(usuario);
+Usuario usuarioActualizado =
+        usuarioRepository.save(usuario);
+
+AuditoriaService.registrar(
+        "ASIGNAR_ROLES",
+        "USUARIO_ID_" + idUsuario,
+        "EXITO",
+        "Roles actualizados correctamente"
+);
+
+return usuarioActualizado;
 }
     
     // =================================================
@@ -316,14 +350,30 @@ public void desactivar(Long id) {
                         );
 
         if (administradoresActivos <= 1) {
-            throw new ResourceConflictException(
-                    "No se puede desactivar al último administrador activo del sistema."
-            );
-        }
+
+    AuditoriaService.registrar(
+            "DESACTIVAR_USUARIO",
+            "USUARIO_ID_" + id,
+            "FALLO",
+            "Intento de desactivar al último administrador activo"
+    );
+
+    throw new ResourceConflictException(
+            "No se puede desactivar al último administrador activo del sistema."
+    );
+}
     }
 
     usuario.setActivo(false);
-    usuarioRepository.save(usuario);
+
+usuarioRepository.save(usuario);
+
+AuditoriaService.registrar(
+        "DESACTIVAR_USUARIO",
+        "USUARIO_ID_" + id,
+        "EXITO",
+        "Usuario desactivado correctamente"
+);
 }
 
     //Login usuario pacientes

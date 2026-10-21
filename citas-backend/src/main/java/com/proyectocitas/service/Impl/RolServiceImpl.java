@@ -7,6 +7,7 @@ import com.proyectocitas.model.Permiso;
 import com.proyectocitas.model.Rol;
 import com.proyectocitas.repository.RolRepository;
 import com.proyectocitas.service.RolService;
+import com.proyectocitas.service.AuditoriaService;
 import com.proyectocitas.repository.UsuarioRepository;
 import java.util.HashSet;
 
@@ -192,11 +193,19 @@ public Rol asignarPermisos(
                         );
 
         if (!tieneAccesoAdmin) {
-            throw new ResponseStatusException(
-                    HttpStatus.FORBIDDEN,
-                    "No tienes autorización para modificar los permisos del rol administrador."
-            );
-        }
+
+    AuditoriaService.registrar(
+            "ASIGNAR_PERMISOS",
+            "ROL_ID_" + idRol,
+            "FALLO",
+            "Intento no autorizado de modificar permisos de ROLE_ADMIN"
+    );
+
+    throw new ResponseStatusException(
+            HttpStatus.FORBIDDEN,
+            "No tienes autorización para modificar los permisos del rol administrador."
+    );
+}
     }
 
     // El actor solamente puede conceder permisos
@@ -214,21 +223,40 @@ public Rol asignarPermisos(
                         );
 
         if (!poseePermiso) {
-            throw new ResponseStatusException(
-                    HttpStatus.FORBIDDEN,
-                    "No tienes autorización para asignar el permiso "
-                            + permiso.name()
-                            + "."
-            );
-        }
+
+    AuditoriaService.registrar(
+            "ASIGNAR_PERMISOS",
+            "ROL_ID_" + idRol,
+            "FALLO",
+            "Intento no autorizado de asignar el permiso "
+                    + permiso.name()
+    );
+
+    throw new ResponseStatusException(
+            HttpStatus.FORBIDDEN,
+            "No tienes autorización para asignar el permiso "
+                    + permiso.name()
+                    + "."
+    );
+}
     }
 
     // Solo después de pasar todas las validaciones
     // se modifica el rol.
     rol.setPermisos(
-            new HashSet<>(permisos)
-    );
+        new HashSet<>(permisos)
+);
 
-    return rolRepository.save(rol);
+Rol rolActualizado =
+        rolRepository.save(rol);
+
+AuditoriaService.registrar(
+        "ASIGNAR_PERMISOS",
+        "ROL_ID_" + idRol,
+        "EXITO",
+        "Permisos actualizados correctamente"
+);
+
+return rolActualizado;
 }
 }
