@@ -17,6 +17,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.server.ResponseStatusException;
+
 @Service
 public class UsuarioServiceImpl implements UsuarioService {
 
@@ -140,49 +145,138 @@ public List<Usuario> buscarConFiltros(
 
     }
     
-    //Asignacion de rol para cualquier usuario y verificacion de excepciones
- @Override
+    // =================================================
+// ASIGNAR ROLES A UN USUARIO
+// =================================================
+// Protecciones:
+// - Un usuario no puede modificar sus propios roles.
+// - ROLE_ADMIN solo puede ser concedido por un administrador.
+// - No se puede retirar ROLE_ADMIN al último administrador activo.
+@Override
 public Usuario asignarRol(
         Long idUsuario,
         Set<Long> idsRol) {
 
-    // Buscar usuario
-    Usuario usuario = usuarioRepository.findById(idUsuario)
-            .orElseThrow(() ->
-                    new ResourceNotFoundException(
-                            "El usuario indicado no existe"
-                    )
-            );
+    // Obtener al usuario autenticado desde Spring Security.
+    Authentication authentication =
+            SecurityContextHolder
+                    .getContext()
+                    .getAuthentication();
 
+    if (authentication == null
+            || !(authentication.getPrincipal() instanceof Usuario actor)) {
 
-    // Conjunto donde guardaremos los roles encontrados
+        throw new ResponseStatusException(
+                HttpStatus.FORBIDDEN,
+                "No fue posible identificar al usuario autenticado."
+        );
+    }
+
+    // Evitar que un usuario modifique sus propios roles.
+    if (actor.getIdUsuario() != null
+            && actor.getIdUsuario().equals(idUsuario)) {
+
+        throw new ResponseStatusException(
+                HttpStatus.FORBIDDEN,
+                "No puedes modificar tus propios roles."
+        );
+    }
+
+    // Buscar al usuario objetivo.
+    Usuario usuario =
+            usuarioRepository.findById(idUsuario)
+                    .orElseThrow(() ->
+                            new ResourceNotFoundException(
+                                    "El usuario indicado no existe"
+                            )
+                    );
+
     Set<Rol> nuevosRoles =
             new HashSet<>();
 
-
-    // Buscar cada rol enviado
+    // Buscar cada rol solicitado.
     for (Long idRol : idsRol) {
 
-        Rol rol = rolRepository.findById(idRol)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "El rol con ID " + idRol + " no existe"
-                        )
-                );
+        Rol rol =
+                rolRepository.findById(idRol)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "El rol con ID "
+                                                + idRol
+                                                + " no existe"
+                                )
+                        );
 
         nuevosRoles.add(rol);
     }
 
+    boolean asignaRolAdmin =
+            nuevosRoles.stream()
+                    .anyMatch(rol ->
+                            "ROLE_ADMIN".equalsIgnoreCase(
+                                    rol.getNombre()
+                            )
+                    );
 
-    // Quitar los roles actuales
+    // Para conceder ROLE_ADMIN, el actor también debe
+    // tener acceso administrativo.
+    if (asignaRolAdmin) {
+
+        boolean actorEsAdministrador =
+                authentication.getAuthorities()
+                        .stream()
+                        .anyMatch(authority ->
+                                "ACCESO_ADMIN".equals(
+                                        authority.getAuthority()
+                                )
+                        );
+
+        if (!actorEsAdministrador) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "No tienes autorización para asignar el rol de administrador."
+            );
+        }
+    }
+
+    boolean eraAdministrador =
+            usuario.getRoles()
+                    .stream()
+                    .anyMatch(rol ->
+                            "ROLE_ADMIN".equalsIgnoreCase(
+                                    rol.getNombre()
+                            )
+                    );
+
+    boolean seguiraSiendoAdministrador =
+            nuevosRoles.stream()
+                    .anyMatch(rol ->
+                            "ROLE_ADMIN".equalsIgnoreCase(
+                                    rol.getNombre()
+                            )
+                    );
+
+    // Evitar retirar ROLE_ADMIN al último administrador activo.
+    if (usuario.isEnabled()
+            && eraAdministrador
+            && !seguiraSiendoAdministrador) {
+
+        long administradoresActivos =
+                usuarioRepository
+                        .countByActivoTrueAndRoles_Nombre(
+                                "ROLE_ADMIN"
+                        );
+
+        if (administradoresActivos <= 1) {
+            throw new ResourceConflictException(
+                    "No se puede retirar el rol de administrador al último administrador activo del sistema."
+            );
+        }
+    }
+
     usuario.getRoles().clear();
-
-
-    // Asignar los nuevos roles
     usuario.getRoles().addAll(nuevosRoles);
 
-
-    // Guardar cambios
     return usuarioRepository.save(usuario);
 }
     

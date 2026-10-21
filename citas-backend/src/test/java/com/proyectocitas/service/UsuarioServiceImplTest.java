@@ -11,9 +11,13 @@ import com.proyectocitas.model.Rol;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
@@ -167,5 +171,146 @@ void noDebeDesactivarAlUltimoAdministradorActivo() {
             usuarioRepository,
             never()
     ).save(administrador);
+}
+@Test
+void noDebePermitirModificarSusPropiosRoles() {
+
+    UsuarioRepository usuarioRepository =
+            mock(UsuarioRepository.class);
+
+    PasswordEncoder passwordEncoder =
+            mock(PasswordEncoder.class);
+
+    RolRepository rolRepository =
+            mock(RolRepository.class);
+
+    UsuarioServiceImpl service =
+            new UsuarioServiceImpl(
+                    usuarioRepository,
+                    passwordEncoder,
+                    rolRepository
+            );
+
+    Usuario actor = new Usuario();
+    actor.setIdUsuario(1L);
+    actor.setCorreo("admin@citanova.com");
+    actor.setActivo(true);
+
+    UsernamePasswordAuthenticationToken authentication =
+            new UsernamePasswordAuthenticationToken(
+                    actor,
+                    null,
+                    actor.getAuthorities()
+            );
+
+    SecurityContextHolder
+            .getContext()
+            .setAuthentication(authentication);
+
+    try {
+
+        ResponseStatusException exception =
+                assertThrows(
+                        ResponseStatusException.class,
+                        () -> service.asignarRol(
+                                1L,
+                                Set.of(1L)
+                        )
+                );
+
+        assertEquals(
+                403,
+                exception.getStatusCode().value()
+        );
+
+        verify(
+                usuarioRepository,
+                never()
+        ).save(actor);
+
+    } finally {
+
+        SecurityContextHolder.clearContext();
+    }
+}
+@Test
+void noDebeQuitarRolAdminAlUltimoAdministradorActivo() {
+
+    UsuarioRepository usuarioRepository =
+            mock(UsuarioRepository.class);
+
+    PasswordEncoder passwordEncoder =
+            mock(PasswordEncoder.class);
+
+    RolRepository rolRepository =
+            mock(RolRepository.class);
+
+    UsuarioServiceImpl service =
+            new UsuarioServiceImpl(
+                    usuarioRepository,
+                    passwordEncoder,
+                    rolRepository
+            );
+
+    Rol rolAdmin = new Rol();
+    rolAdmin.setIdRol(1L);
+    rolAdmin.setNombre("ROLE_ADMIN");
+
+    Rol rolPaciente = new Rol();
+    rolPaciente.setIdRol(2L);
+    rolPaciente.setNombre("ROLE_PATIENT");
+
+    Usuario actor = new Usuario();
+    actor.setIdUsuario(99L);
+    actor.setActivo(true);
+
+    Usuario administradorObjetivo = new Usuario();
+    administradorObjetivo.setIdUsuario(1L);
+    administradorObjetivo.setActivo(true);
+    administradorObjetivo.getRoles().add(rolAdmin);
+
+    UsernamePasswordAuthenticationToken authentication =
+            new UsernamePasswordAuthenticationToken(
+                    actor,
+                    null,
+                    actor.getAuthorities()
+            );
+
+    SecurityContextHolder
+            .getContext()
+            .setAuthentication(authentication);
+
+    when(usuarioRepository.findById(1L))
+            .thenReturn(Optional.of(administradorObjetivo));
+
+    when(rolRepository.findById(2L))
+            .thenReturn(Optional.of(rolPaciente));
+
+    when(
+            usuarioRepository
+                    .countByActivoTrueAndRoles_Nombre(
+                            "ROLE_ADMIN"
+                    )
+    ).thenReturn(1L);
+
+    try {
+
+        assertThrows(
+                ResourceConflictException.class,
+                () -> service.asignarRol(
+                        1L,
+                        Set.of(2L)
+                )
+        );
+
+        verify(
+                usuarioRepository,
+                never()
+        ).save(administradorObjetivo);
+
+    } finally {
+
+        SecurityContextHolder.clearContext();
+    }
 }
 }
