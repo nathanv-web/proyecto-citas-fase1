@@ -21,6 +21,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.RequestParam;
 import com.proyectocitas.dto.RolPermisosRequestDTO;
 
 
@@ -63,20 +67,47 @@ public class RolController {
                 .body(respuesta);
     }
     // =================================================
-// LISTAR ROLES
+// LISTAR, BUSCAR Y PAGINAR ROLES
 // =================================================
-
+// Sin parámetros conserva la respuesta anterior en forma
+// de lista para no afectar a los consumidores existentes.
+//
+// Cuando se recibe search, page o size, la respuesta se
+// devuelve paginada.
 @GetMapping
-public ResponseEntity<List<RolDTO>> listarRoles() {
+public ResponseEntity<?> listarRoles(
+        @RequestParam(required = false) String search,
+        @RequestParam(required = false) Integer page,
+        @RequestParam(required = false) Integer size) {
 
-    List<RolDTO> roles =
-            rolService.obtenerTodos()
-                    .stream()
-                    .map(rolMapper::toDTO)
-                    .toList();
+    // Mantener compatibilidad con el comportamiento anterior.
+    if ((search == null || search.isBlank())
+            && page == null
+            && size == null) {
 
-    return ResponseEntity
-            .ok(roles);
+        List<RolDTO> roles =
+                rolService.obtenerTodos()
+                        .stream()
+                        .map(rolMapper::toDTO)
+                        .toList();
+
+        return ResponseEntity.ok(roles);
+    }
+
+    // Valores predeterminados para la paginación.
+    int numeroPagina = page != null ? page : 0;
+    int tamanoPagina = size != null ? size : 10;
+
+    Pageable pageable =
+            PageRequest.of(numeroPagina, tamanoPagina);
+
+    Page<RolDTO> roles =
+            rolService.buscarConPaginacion(
+                    search,
+                    pageable
+            ).map(rolMapper::toDTO);
+
+    return ResponseEntity.ok(roles);
 }
 
  // =================================================

@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 public class RolServiceImpl implements RolService {
@@ -39,6 +41,27 @@ public class RolServiceImpl implements RolService {
     public List<Rol> obtenerTodos() {
         return rolRepository.findAll();
     }
+
+    // =================================================
+    // BUSCAR ROLES CON PAGINACIÓN
+    // =================================================
+    // Si no se recibe texto de búsqueda, devuelve todos
+    // los roles paginados. Si se recibe search, realiza
+    // una búsqueda parcial ignorando mayúsculas/minúsculas.
+    @Override
+    public Page<Rol> buscarConPaginacion(
+        String search,
+        Pageable pageable) {
+
+    if (search == null || search.isBlank()) {
+        return rolRepository.findAll(pageable);
+    }
+
+    return rolRepository.findByNombreContainingIgnoreCase(
+            search.trim(),
+            pageable
+    );
+}
 
     //Buscar un rol por su ID
 
