@@ -35,6 +35,15 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     // si todavía está asignado a uno o más usuarios.
     boolean existsByRoles_IdRol(Long idRol);
 
+    // =================================================
+    // CONTAR ADMINISTRADORES ACTIVOS
+    // =================================================
+    // Permite verificar cuántos usuarios activos tienen
+    // asignado el rol ROLE_ADMIN.
+    //
+    // Se utilizará para impedir que el sistema quede
+    // sin ningún administrador activo.
+    long countByActivoTrueAndRoles_Nombre(String nombreRol);
 
     // =================================================
     // BUSCAR Y FILTRAR USUARIOS

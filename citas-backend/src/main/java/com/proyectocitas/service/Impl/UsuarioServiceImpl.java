@@ -10,6 +10,7 @@ import com.proyectocitas.exception.DuplicateResourceException;
 import com.proyectocitas.exception.ResourceNotFoundException;
 import com.proyectocitas.model.Rol;
 import com.proyectocitas.repository.RolRepository;
+import com.proyectocitas.exception.ResourceConflictException;
 import java.util.HashSet;
 
 import java.util.List;
@@ -185,20 +186,52 @@ public Usuario asignarRol(
     return usuarioRepository.save(usuario);
 }
     
-    
-    
-    //Desactivar Usuarios 
-    @Override
-    public void desactivar(Long id) {
-        
-        Usuario usuario = usuarioRepository.findById(id)
-                .orElseThrow(()-> 
-                new ResourceNotFoundException(
-                "El usuario indicado no existe"));
-        
-        usuario.setActivo(false);
-        usuarioRepository.save(usuario);
+    // =================================================
+// DESACTIVAR USUARIO
+// =================================================
+// Antes de desactivar un administrador se valida que
+// exista por lo menos otro administrador activo.
+@Override
+public void desactivar(Long id) {
+
+    Usuario usuario =
+            usuarioRepository.findById(id)
+                    .orElseThrow(() ->
+                            new ResourceNotFoundException(
+                                    "Usuario no encontrado con ID: " + id
+                            )
+                    );
+
+    boolean esAdministrador =
+            usuario.getRoles()
+                    .stream()
+                    .anyMatch(rol ->
+                            "ROLE_ADMIN".equalsIgnoreCase(
+                                    rol.getNombre()
+                            )
+                    );
+
+    // Si el usuario es un administrador activo,
+    // no se permite desactivarlo cuando es el último.
+    if (usuario.isEnabled() && esAdministrador) {
+
+        long administradoresActivos =
+                usuarioRepository
+                        .countByActivoTrueAndRoles_Nombre(
+                                "ROLE_ADMIN"
+                        );
+
+        if (administradoresActivos <= 1) {
+            throw new ResourceConflictException(
+                    "No se puede desactivar al último administrador activo del sistema."
+            );
+        }
     }
+
+    usuario.setActivo(false);
+    usuarioRepository.save(usuario);
+}
+
     //Login usuario pacientes
     @Override 
     public Usuario registrarPaciente(Usuario usuario){

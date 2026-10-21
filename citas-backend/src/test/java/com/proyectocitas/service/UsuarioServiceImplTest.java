@@ -6,6 +6,8 @@ import com.proyectocitas.model.Usuario;
 import com.proyectocitas.repository.RolRepository;
 import com.proyectocitas.repository.UsuarioRepository;
 import com.proyectocitas.service.Impl.UsuarioServiceImpl;
+import com.proyectocitas.exception.ResourceConflictException;
+import com.proyectocitas.model.Rol;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,6 +20,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.never;
 
 class UsuarioServiceImplTest {
 
@@ -116,5 +119,53 @@ void debeBuscarUsuariosConFiltrosLimpios() {
                     true,
                     "ROLE_ADMIN"
             );
+}
+        @Test
+void noDebeDesactivarAlUltimoAdministradorActivo() {
+
+    UsuarioRepository usuarioRepository =
+            mock(UsuarioRepository.class);
+
+    PasswordEncoder passwordEncoder =
+            mock(PasswordEncoder.class);
+
+    RolRepository rolRepository =
+            mock(RolRepository.class);
+
+    UsuarioServiceImpl service =
+            new UsuarioServiceImpl(
+                    usuarioRepository,
+                    passwordEncoder,
+                    rolRepository
+            );
+
+    Rol rolAdmin = new Rol();
+    rolAdmin.setIdRol(1L);
+    rolAdmin.setNombre("ROLE_ADMIN");
+
+    Usuario administrador = new Usuario();
+    administrador.setIdUsuario(1L);
+    administrador.setActivo(true);
+    administrador.getRoles().add(rolAdmin);
+
+    when(usuarioRepository.findById(1L))
+            .thenReturn(Optional.of(administrador));
+
+    when(
+            usuarioRepository
+                    .countByActivoTrueAndRoles_Nombre(
+                            "ROLE_ADMIN"
+                    )
+    ).thenReturn(1L);
+
+    assertThrows(
+            ResourceConflictException.class,
+            () -> service.desactivar(1L)
+    );
+
+    verify(
+            usuarioRepository,
+            never()
+    ).save(administrador);
 }
 }
