@@ -8,6 +8,12 @@ import com.proyectocitas.service.AppointmentService;
 
 import jakarta.validation.Valid;
 
+import com.proyectocitas.dto.CancelAppointmentRequestDTO;
+import com.proyectocitas.dto.RescheduleRequestDTO;
+
+import java.time.LocalDate;
+import org.springframework.format.annotation.DateTimeFormat;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -109,33 +115,88 @@ public class AppointmentController {
         return ResponseEntity.ok(historial);
     }
             
-// ================================================
-// AGENDA DEL DOCTOR
-// ================================================
+// =================================================
+// CONSULTAR AGENDA DEL MEDICO CON FILTROS
+// =================================================
 
 @GetMapping("/my-agenda")
-public ResponseEntity<List<DoctorAgendaDTO>>
-        obtenerMiAgenda(
-                Principal principal) {
+public ResponseEntity<List<DoctorAgendaDTO>> obtenerMiAgenda(
+
+        @RequestParam(required = false)
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        LocalDate fecha,
+
+        @RequestParam(required = false)
+        String periodo,
+
+        @RequestParam(required = false)
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        LocalDate desde,
+
+        @RequestParam(required = false)
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        LocalDate hasta,
+
+        Principal principal) {
 
     if (principal == null) {
-
         throw new ResponseStatusException(
                 HttpStatus.UNAUTHORIZED,
                 "Usuario no autenticado"
         );
     }
 
-    return ResponseEntity.ok(
+    List<DoctorAgendaDTO> agenda =
             appointmentService.obtenerMiAgenda(
-                    principal.getName()
-            )
-    );
+                    principal.getName(),
+                    fecha,
+                    periodo,
+                    desde,
+                    hasta
+            );
+
+    return ResponseEntity.ok(agenda);
 }
             
-            @PutMapping("/{id}/cancel")
+// =================================================
+// CANCELAR CITA CON MOTIVO
+// =================================================
+
+@PutMapping("/{id}/cancel")
 public ResponseEntity<AppointmentResponseDTO> cancelarCita(
         @PathVariable Long id,
+        @Valid @RequestBody(required = false)
+        CancelAppointmentRequestDTO request,
+        Principal principal) {
+
+    if (principal == null) {
+        throw new ResponseStatusException(
+                HttpStatus.UNAUTHORIZED,
+                "Usuario no autenticado"
+        );
+    }
+
+    String motivoCancelacion = request == null
+            ? null
+            : request.getMotivoCancelacion();
+
+    AppointmentResponseDTO respuesta =
+            appointmentService.cancelarCita(
+                    id,
+                    principal.getName(),
+                    motivoCancelacion
+            );
+
+    return ResponseEntity.ok(respuesta);
+}
+// =================================================
+// REPROGRAMAR CITA
+// =================================================
+
+@PutMapping("/{id}/reschedule")
+public ResponseEntity<AppointmentResponseDTO> reprogramarCita(
+        @PathVariable("id") Long idCita,
+        @Valid @RequestBody RescheduleRequestDTO request,
         Principal principal) {
 
     if (principal == null) {
@@ -146,11 +207,13 @@ public ResponseEntity<AppointmentResponseDTO> cancelarCita(
     }
 
     AppointmentResponseDTO respuesta =
-            appointmentService.cancelarCita(
-                    id,
+            appointmentService.reprogramarCita(
+                    idCita,
+                    request,
                     principal.getName()
             );
 
     return ResponseEntity.ok(respuesta);
 }
+
 }

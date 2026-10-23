@@ -220,11 +220,12 @@ CREATE TABLE IF NOT EXISTS estados_cita (
 CREATE TABLE IF NOT EXISTS citas_medicas (
     id_cita BIGINT AUTO_INCREMENT PRIMARY KEY,
 
-    id_horario BIGINT NOT NULL UNIQUE,
+    id_horario BIGINT NOT NULL,
     id_paciente BIGINT NOT NULL,
     id_estado BIGINT NOT NULL,
 
     motivo VARCHAR(500) NOT NULL,
+    motivo_cancelacion VARCHAR(500) NULL,
 
     diagnostico_receta TEXT,
 

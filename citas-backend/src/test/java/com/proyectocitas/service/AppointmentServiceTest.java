@@ -57,6 +57,31 @@ class AppointmentServiceTest {
                 appointmentMapper
         );
     }
+    
+    // Preparar los repositorios simulados para el bloqueo
+    // transaccional de una cita.
+    private void prepararCitaConBloqueo(
+        Long idCita,
+        Cita cita) {
+
+    HorarioDisponible horario = cita.getHorario();
+
+    if (horario == null) {
+        horario = new HorarioDisponible();
+        cita.setHorario(horario);
+    }
+
+    horario.setIdHorario(10L);
+    horario.setEstado(
+            HorarioDisponible.EstadoHorario.RESERVADO
+    );
+
+    when(citaRepository.obtenerIdHorarioDeCita(idCita))
+            .thenReturn(Optional.of(10L));
+
+    when(horarioRepository.buscarHorarioConBloqueo(10L))
+            .thenReturn(Optional.of(horario));
+}
 
 
     // =================================================
@@ -111,7 +136,7 @@ class AppointmentServiceTest {
 
 
         when(
-                horarioRepository.findById(10L)
+                horarioRepository.buscarHorarioConBloqueo(10L)
         ).thenReturn(
                 Optional.of(horario)
         );
@@ -260,7 +285,7 @@ class AppointmentServiceTest {
 
 
         when(
-                horarioRepository.findById(99L)
+               horarioRepository.buscarHorarioConBloqueo(99L)
         ).thenReturn(
                 Optional.empty()
         );
@@ -335,59 +360,50 @@ class AppointmentServiceTest {
     // =================================================
 
     @Test
-    void agendarDebeFallarSiHorarioYaTieneCita() {
+void agendarDebeFallarSiHorarioYaTieneCita() {
 
-        AppointmentRequestDTO request =
-                new AppointmentRequestDTO();
+    AppointmentRequestDTO request =
+            new AppointmentRequestDTO();
 
-        request.setIdHorario(10L);
-        request.setMotivo("Consulta general");
+    request.setIdHorario(10L);
+    request.setMotivo("Consulta general");
 
+    Usuario paciente = new Usuario();
+    paciente.setIdUsuario(1L);
 
-        Usuario paciente = new Usuario();
-        paciente.setIdUsuario(1L);
+    HorarioDisponible horario =
+            new HorarioDisponible();
+    horario.setIdHorario(10L);
+    horario.setEstado(
+            HorarioDisponible.EstadoHorario.DISPONIBLE
+    );
 
+    // Simular paciente autenticado
+    when(usuarioRepository.findByCorreo(
+            "paciente@correo.com"
+    )).thenReturn(Optional.of(paciente));
 
-        HorarioDisponible horario =
-                new HorarioDisponible();
+    // Simular horario encontrado con bloqueo
+    when(horarioRepository.buscarHorarioConBloqueo(10L))
+            .thenReturn(Optional.of(horario));
 
-        horario.setIdHorario(10L);
+    // Simular que ya existe una cita vigente
+    when(citaRepository
+            .existsByHorario_IdHorarioAndEstado_NombreNot(
+                    10L,
+                    EstadoCita.NombreEstado.CANCELADA
+            ))
+            .thenReturn(true);
 
-        horario.setEstado(
-                HorarioDisponible.EstadoHorario.DISPONIBLE
-        );
-
-
-        when(
-                usuarioRepository.findByCorreo(
-                        "paciente@correo.com"
-                )
-        ).thenReturn(
-                Optional.of(paciente)
-        );
-
-
-        when(
-                horarioRepository.findById(10L)
-        ).thenReturn(
-                Optional.of(horario)
-        );
-
-
-        when(
-                citaRepository
-                        .existsByHorario_IdHorario(10L)
-        ).thenReturn(true);
-
-
-        assertThrows(
-                ScheduleConflictException.class,
-                () -> service.agendarCita(
-                        request,
-                        "paciente@correo.com"
-                )
-        );
-    }
+    // Debe impedir la reserva duplicada
+    assertThrows(
+            ScheduleConflictException.class,
+            () -> service.agendarCita(
+                    request,
+                    "paciente@correo.com"
+            )
+    );
+}
     // =================================================
 // REGISTRAR DIAGNÓSTICO CORRECTAMENTE
 // =================================================
@@ -426,6 +442,7 @@ void debeRegistrarDiagnosticoCorrectamente() {
 
     when(citaRepository.findById(1L))
             .thenReturn(Optional.of(cita));
+    prepararCitaConBloqueo(1L, cita);
 
     when(estadoCitaRepository.findByNombre(
             EstadoCita.NombreEstado.COMPLETADA))
@@ -561,6 +578,7 @@ void diagnosticoDebeFallarSiCitaNoTieneMedicoAsignado() {
 
     when(citaRepository.findById(1L))
             .thenReturn(Optional.of(cita));
+    prepararCitaConBloqueo(1L, cita);
 
 
     assertThrows(
@@ -606,6 +624,7 @@ void diagnosticoDebeRetornar403SiMedicoNoEsElAsignado() {
 
     when(citaRepository.findById(1L))
             .thenReturn(Optional.of(cita));
+    prepararCitaConBloqueo(1L, cita);
 
 
     ResponseStatusException exception =
@@ -662,6 +681,7 @@ void diagnosticoDebeFallarSiCitaNoEstaPendiente() {
 
     when(citaRepository.findById(1L))
             .thenReturn(Optional.of(cita));
+    prepararCitaConBloqueo(1L, cita);
 
 
     assertThrows(
@@ -776,6 +796,7 @@ void debeCancelarCitaCorrectamente() {
 
     when(citaRepository.findById(1L))
             .thenReturn(Optional.of(cita));
+    prepararCitaConBloqueo(1L, cita);
 
     when(estadoCitaRepository.findByNombre(
             EstadoCita.NombreEstado.CANCELADA))
@@ -889,6 +910,7 @@ void cancelarDebeRetornar403SiCitaEsDeOtroPaciente() {
 
     when(citaRepository.findById(1L))
             .thenReturn(Optional.of(cita));
+    prepararCitaConBloqueo(1L, cita);
 
 
     ResponseStatusException exception =
@@ -933,6 +955,7 @@ void cancelarDebeFallarSiCitaNoEstaPendiente() {
 
     when(citaRepository.findById(1L))
             .thenReturn(Optional.of(cita));
+    prepararCitaConBloqueo(1L, cita);
 
 
     assertThrows(
@@ -970,6 +993,7 @@ void cancelarDebeFallarSiEstadoCanceladaNoExiste() {
 
     when(citaRepository.findById(1L))
             .thenReturn(Optional.of(cita));
+    prepararCitaConBloqueo(1L, cita);
 
     when(estadoCitaRepository.findByNombre(
             EstadoCita.NombreEstado.CANCELADA))

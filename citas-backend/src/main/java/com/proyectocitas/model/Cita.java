@@ -17,7 +17,7 @@ public class Cita {
     //RELACIONES 
     
     @OneToOne
-    @JoinColumn(name = "id_horario")
+    @JoinColumn(name = "id_horario", nullable = false)
     private HorarioDisponible horario;
 
     @ManyToOne
@@ -31,6 +31,8 @@ public class Cita {
     // ATRIBUTOS
     
     private String motivo;
+    @Column(name = "motivo_cancelacion", length = 500)
+    private String motivoCancelacion;
 
     @Column(name = "diagnostico_receta", columnDefinition = "TEXT")
     private String diagnosticoReceta;
@@ -96,6 +98,13 @@ public class Cita {
 
     public void setMotivo(String motivo) {
         this.motivo = motivo;
+    }
+    public String getMotivoCancelacion() {
+    return motivoCancelacion;
+    }
+
+    public void setMotivoCancelacion(String motivoCancelacion) {
+    this.motivoCancelacion = motivoCancelacion;
     }
 
     public String getDiagnosticoReceta() {

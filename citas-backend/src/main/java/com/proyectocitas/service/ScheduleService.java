@@ -8,6 +8,8 @@ import com.proyectocitas.repository.HorarioDisponibleRepository;
 import com.proyectocitas.repository.MedicoRepository;
 import com.proyectocitas.exception.ResourceNotFoundException;
 
+import com.proyectocitas.model.EstadoCita;
+
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -77,14 +79,20 @@ public class ScheduleService {
         }
 
         //Verificar que el horario no tenga una cita asociada
-        if (citaRepository.existsByHorario_IdHorario(idHorario)) {
-            return false;
-        }
+        // Solo bloquear si existe una cita vigente
+// Verificar que el horario no tenga una cita vigente
+if (citaRepository
+        .existsByHorario_IdHorarioAndEstado_NombreNot(
+                idHorario,
+                EstadoCita.NombreEstado.CANCELADA
+        )) {
+    return false;
+}
 
-        return true;
-    }
-
-
+// Si todas las validaciones se cumplen,
+// el horario está disponible.
+return true;
+}
     //Validar que un nuevo horario no se traslape con otro horario del medico
     public boolean validarNuevoHorario(
             Long idMedico,
