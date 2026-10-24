@@ -1,0 +1,147 @@
+<div class="container-fluid p-4">
+  <!-- Encabezado -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold m-0">Gestión de Roles y Permisos</h2>
+      <p class="text-muted small m-0">Administración de niveles de acceso y control de seguridad en CitaNova</p>
+    </div>
+    <button class="btn btn-primary d-flex align-items-center gap-2 shadow-sm fw-semibold" (click)="abrirModalCrear()">
+      <i class="bi bi-shield-plus"></i> Nuevo Rol
+    </button>
+  </div>
+
+  <!-- Búsqueda con Datalist / Autocompletado -->
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-12">
+          <div class="input-group">
+            <span class="input-group-text bg-white border-end-0">
+              <i class="bi bi-search text-muted"></i>
+            </span>
+            <input 
+              type="text" 
+              class="form-control border-start-0 ps-0" 
+              placeholder="Escribe o selecciona un rol..." 
+              [(ngModel)]="searchTerm"
+              list="listadoRoles"
+            />
+            <datalist id="listadoRoles">
+              <option *ngFor="let r of roles" [value]="r.nombre"></option>
+            </datalist>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla de Roles -->
+  <div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th class="ps-4">Rol</th>
+              <th>Descripción</th>
+              <th>Permisos Asignados</th>
+              <th>Estado</th>
+              <th class="text-end pe-4">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of rolesFiltrados">
+              <!-- Nombre del Rol -->
+              <td class="ps-4">
+                <div class="d-flex align-items-center gap-3">
+                  <div class="avatar bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                    <i class="bi bi-shield-lock-fill fs-5"></i>
+                  </div>
+                  <div>
+                    <span class="fw-bold text-dark d-block">{{ r.nombre }}</span>
+                    <small class="text-muted">ID: #00{{ r.id }}</small>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Descripción -->
+              <td class="text-secondary">{{ r.descripcion }}</td>
+
+              <!-- Permisos -->
+              <td>
+                <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill fw-semibold">
+                  <i class="bi bi-key-fill me-1"></i> {{ r.permisosCount }} permisos asignados
+                </span>
+              </td>
+
+              <!-- Estado -->
+              <td>
+                <span class="badge fw-semibold px-3 py-2 rounded-pill" [ngClass]="r.estado === 'ACTIVO' ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary'">
+                  <i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> {{ r.estado }}
+                </span>
+              </td>
+
+              <!-- Acciones -->
+              <td class="text-end pe-4">
+                <button class="btn btn-sm btn-outline-primary me-2 fw-semibold d-inline-flex align-items-center gap-1 shadow-sm" (click)="seleccionarEditar(r)">
+                  <i class="bi bi-pencil-square"></i> Editar
+                </button>
+                <button class="btn btn-sm btn-outline-danger fw-semibold d-inline-flex align-items-center gap-1 shadow-sm" (click)="eliminarRol(r.id)">
+                  <i class="bi bi-trash3"></i> Eliminar
+                </button>
+              </td>
+            </tr>
+
+            <tr *ngIf="rolesFiltrados.length === 0">
+              <td colspan="5" class="text-center py-4 text-muted">
+                <i class="bi bi-exclamation-circle fs-4 d-block mb-2"></i>
+                No se encontraron roles coincidentes.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Flotante para Crear / Editar Rol -->
+<div class="modal fade show d-block" *ngIf="mostrarModal" style="background-color: rgba(0,0,0,0.5);" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-dark text-white">
+        <h5 class="modal-title fw-bold">
+          <i class="bi" [ngClass]="modoEdicion ? 'bi-pencil-square' : 'bi-shield-plus'"></i>
+          {{ modoEdicion ? 'Editar Rol' : 'Nuevo Rol' }}
+        </h5>
+        <button type="button" class="btn-close btn-close-white" (click)="cerrarModal()"></button>
+      </div>
+
+      <div class="modal-body p-4">
+        <form (ngSubmit)="guardarRol()">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Nombre del Rol</label>
+            <input type="text" class="form-control" [(ngModel)]="rolForm.nombre" name="nombre" placeholder="Ej. AUDITOR" required />
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Descripción</label>
+            <textarea class="form-control" [(ngModel)]="rolForm.descripcion" name="descripcion" rows="3" placeholder="Descripción breve de responsabilidades..." required></textarea>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Cantidad de Permisos Iniciales</label>
+            <input type="number" class="form-control" [(ngModel)]="rolForm.permisosCount" name="permisosCount" />
+          </div>
+
+          <div class="d-flex justify-content-end gap-2 mt-4">
+            <button type="button" class="btn btn-light fw-semibold" (click)="cerrarModal()">Cancelar</button>
+            <button type="submit" class="btn btn-primary fw-semibold px-4">
+              {{ modoEdicion ? 'Actualizar Rol' : 'Guardar Rol' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,143 @@
+<div class="container-fluid p-4">
+  <!-- Encabezado -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold m-0">Gestión de Usuarios</h2>
+      <p class="text-muted small m-0">Administración de accesos y estado de cuentas en CitaNova</p>
+    </div>
+    <button class="btn btn-primary d-flex align-items-center gap-2" (click)="abrirModalCrear()">
+      <i class="bi bi-person-plus-fill"></i> Nuevo Usuario
+    </button>
+  </div>
+
+  <!-- Barra de Filtros y Búsqueda -->
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="input-group">
+            <span class="input-group-text bg-white border-end-0">
+              <i class="bi bi-search text-muted"></i>
+            </span>
+            <!-- Input con menú desplegable de sugerencias -->
+            <input 
+              type="text" 
+              class="form-control border-start-0 ps-0" 
+              placeholder="Escribe o selecciona un usuario..." 
+              [(ngModel)]="searchTerm"
+              list="sugerenciasUsuarios"
+            />
+            <datalist id="sugerenciasUsuarios">
+              <option *ngFor="let u of usuarios" [value]="u.nombre">{{ u.correo }}</option>
+            </datalist>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <select class="form-select" [(ngModel)]="estadoFilter">
+            <option value="">Todos los estados</option>
+            <option value="ACTIVO">Activos</option>
+            <option value="INACTIVO">Inactivos</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <button class="btn btn-outline-secondary w-100" (click)="limpiarFiltros()">Limpiar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla de Usuarios -->
+  <div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th class="ps-3">Usuario</th>
+              <th>Correo</th>
+              <th>Rol</th>
+              <th>Estado</th>
+              <th class="text-end pe-3">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let u of usuariosFiltrados">
+              <td class="ps-3">
+                <div class="d-flex align-items-center">
+                  <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 38px; height: 38px; font-weight: bold;">
+                    {{ u.nombre.charAt(0) }}
+                  </div>
+                  <div>
+                    <span class="fw-bold d-block">{{ u.nombre }}</span>
+                    <small class="text-muted">ID: #{{ u.id }}</small>
+                  </div>
+                </div>
+              </td>
+              <td>{{ u.correo }}</td>
+              <td>
+                <span class="badge fw-semibold" [ngClass]="u.rol === 'ADMINISTRADOR' ? 'bg-danger-subtle text-danger' : (u.rol === 'MEDICO' ? 'bg-info-subtle text-info' : 'bg-primary-subtle text-primary')">
+                  {{ u.rol }}
+                </span>
+              </td>
+              <td>
+                <span class="badge fw-semibold" [ngClass]="u.estado === 'ACTIVO' ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary'">
+                  {{ u.estado }}
+                </span>
+              </td>
+              <td class="text-end pe-3">
+                <button class="btn btn-sm btn-outline-primary me-2" (click)="seleccionarEditar(u)">
+                  <i class="bi bi-pencil-square"></i> Editar
+                </button>
+                <button 
+                  class="btn btn-sm" 
+                  [ngClass]="u.estado === 'ACTIVO' ? 'btn-outline-danger' : 'btn-outline-success'"
+                  (click)="toggleEstado(u)">
+                  {{ u.estado === 'ACTIVO' ? 'Desactivar' : 'Activar' }}
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="usuariosFiltrados.length === 0">
+              <td colspan="5" class="text-center py-4 text-muted">
+                No se encontraron usuarios coincidentes.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para Crear / Editar Usuario -->
+<div class="modal fade show d-block bg-dark bg-opacity-50" *ngIf="mostrarModal">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold">{{ modoEdicion ? 'Editar Usuario' : 'Nuevo Usuario' }}</h5>
+        <button type="button" class="btn-close" (click)="cerrarModal()"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label font-semibold">Nombre Completo</label>
+          <input type="text" class="form-control" [(ngModel)]="usuarioForm.nombre" placeholder="Ej. Carlos Mendoza">
+        </div>
+        <div class="mb-3">
+          <label class="form-label font-semibold">Correo Electrónico</label>
+          <input type="email" class="form-control" [(ngModel)]="usuarioForm.correo" placeholder="correo@citanova.com">
+        </div>
+        <div class="mb-3">
+          <label class="form-label font-semibold">Rol</label>
+          <select class="form-select" [(ngModel)]="usuarioForm.rol">
+            <option value="ADMINISTRADOR">ADMINISTRADOR</option>
+            <option value="MEDICO">MEDICO</option>
+            <option value="PACIENTE">PACIENTE</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" (click)="cerrarModal()">Cancelar</button>
+        <button type="button" class="btn btn-primary" (click)="guardarUsuario()">Guardar Cambios</button>
+      </div>
+    </div>
+  </div>
+</div>|
