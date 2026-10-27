@@ -2,7 +2,12 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-// Definición de la estructura de datos para un Usuario
+/**
+ * ============================================================================
+ * INTERFAZ: Usuario
+ * Define la estructura y contrato de datos para cada usuario del sistema.
+ * ============================================================================
+ */
 interface Usuario {
   id: number;
   nombre: string;
@@ -11,23 +16,30 @@ interface Usuario {
   estado: string;
 }
 
+/**
+ * ============================================================================
+ * COMPONENTE: UsuariosComponent
+ * Módulo del Panel Administrativo (Integrante 5 - Nathan)
+ * Encargado de la gestión de usuarios, filtrado reactivo y modales.
+ * ============================================================================
+ */
 @Component({
   selector: 'app-usuarios',
-  standalone: true, // Componente Standalone (Angular 17+)
-  imports: [CommonModule, FormsModule], // Módulos necesarios para directivas y formulación (ngModel)
+  standalone: true, // Componente Standalone de Angular 17+
+  imports: [CommonModule, FormsModule], // Módulos para directivas (*ngIf, *ngFor) y [(ngModel)]
   templateUrl: './usuarios.component.html',
   styleUrl: './usuarios.component.css'
 })
 export class UsuariosComponent {
-  // Variables para el control de búsqueda y filtros
+  // Variables para el control de búsqueda y filtros en la tabla
   searchTerm: string = '';
   estadoFilter: string = '';
 
-  // Control del estado visual de la ventana modal
+  // Variables para el control visual de la ventana modal
   mostrarModal: boolean = false;
   modoEdicion: boolean = false;
 
-  // Modelo de datos enlazado al formulario de la modal
+  // Modelo de datos enlazado al formulario del modal (NgModel)
   usuarioForm: Usuario = {
     id: 0,
     nombre: '',
@@ -36,14 +48,17 @@ export class UsuariosComponent {
     estado: 'ACTIVO'
   };
 
-  // Base de datos local (Mock data para pruebas en el Frontend)
+  // Base de datos local (Mock data para pruebas completas en el Frontend)
   usuarios: Usuario[] = [
     { id: 101, nombre: 'Nathan Administrador', correo: 'nathan@citanova.com', rol: 'ADMINISTRADOR', estado: 'ACTIVO' },
     { id: 102, nombre: 'Maria Lopez', correo: 'maria@citanova.com', rol: 'MEDICO', estado: 'ACTIVO' },
     { id: 103, nombre: 'Juan Perez', correo: 'juan@citanova.com', rol: 'PACIENTE', estado: 'INACTIVO' }
   ];
 
-  // Getter reactivo: Filtra usuarios en tiempo real por búsqueda de texto y estado seleccionado
+  /**
+   * Getter reactivo: Filtra los usuarios en tiempo real.
+   * Evalúa coincidencias de texto (nombre o correo) y filtro de estado (ACTIVO/INACTIVO).
+   */
   get usuariosFiltrados(): Usuario[] {
     return this.usuarios.filter(u => {
       const matchSearch = u.nombre.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
@@ -53,32 +68,44 @@ export class UsuariosComponent {
     });
   }
 
-  // Limpia los campos de filtro y restablece la tabla
+  /**
+   * Restablece los campos de búsqueda y limpia los filtros de la tabla
+   */
   limpiarFiltros(): void {
     this.searchTerm = '';
     this.estadoFilter = '';
   }
 
-  // Prepara y abre la modal en modo "Creación"
+  /**
+   * Prepara y despliega la ventana modal en modo "Creación"
+   */
   abrirModalCrear(): void {
     this.modoEdicion = false;
     this.usuarioForm = { id: Date.now(), nombre: '', correo: '', rol: 'PACIENTE', estado: 'ACTIVO' };
     this.mostrarModal = true;
   }
 
-  // Carga los datos del usuario seleccionado y abre la modal en modo "Edición"
+  /**
+   * Carga la información del usuario en el formulario y abre la modal en modo "Edición"
+   * Se utiliza el operador 'spread' ({ ...u }) para evitar mutaciones directas en la lista antes de guardar.
+   */
   seleccionarEditar(u: Usuario): void {
     this.modoEdicion = true;
-    this.usuarioForm = { ...u }; // Se usa spread operator (...) para evitar mutación directa
+    this.usuarioForm = { ...u };
     this.mostrarModal = true;
   }
 
-  // Cierra la ventana modal
+  /**
+   * Oculta la ventana modal
+   */
   cerrarModal(): void {
     this.mostrarModal = false;
   }
 
-  // Guarda un nuevo usuario o actualiza uno existente según el modo activo
+  /**
+   * Procesa el guardado del formulario.
+   * Si está en modo edición actualiza el registro existente; si no, inserta un nuevo usuario.
+   */
   guardarUsuario(): void {
     if (!this.usuarioForm.nombre || !this.usuarioForm.correo) return;
 
@@ -93,7 +120,9 @@ export class UsuariosComponent {
     this.cerrarModal();
   }
 
-  // Alterna dinámicamente el estado del usuario entre ACTIVO e INACTIVO
+  /**
+   * Alterna dinámicamente el estado del usuario entre 'ACTIVO' e 'INACTIVO'
+   */
   toggleEstado(u: Usuario): void {
     u.estado = u.estado === 'ACTIVO' ? 'INACTIVO' : 'ACTIVO';
   }
