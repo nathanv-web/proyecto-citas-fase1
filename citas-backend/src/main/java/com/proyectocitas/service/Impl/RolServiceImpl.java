@@ -7,6 +7,7 @@ import com.proyectocitas.model.Permiso;
 import com.proyectocitas.model.Rol;
 import com.proyectocitas.repository.RolRepository;
 import com.proyectocitas.service.RolService;
+import com.proyectocitas.service.AuditoriaService;
 import com.proyectocitas.repository.UsuarioRepository;
 import java.util.HashSet;
 
@@ -17,6 +18,12 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 
 @Service
@@ -39,6 +46,27 @@ public class RolServiceImpl implements RolService {
     public List<Rol> obtenerTodos() {
         return rolRepository.findAll();
     }
+
+    // =================================================
+    // BUSCAR ROLES CON PAGINACIÓN
+    // =================================================
+    // Si no se recibe texto de búsqueda, devuelve todos
+    // los roles paginados. Si se recibe search, realiza
+    // una búsqueda parcial ignorando mayúsculas/minúsculas.
+    @Override
+    public Page<Rol> buscarConPaginacion(
+        String search,
+        Pageable pageable) {
+
+    if (search == null || search.isBlank()) {
+        return rolRepository.findAll(pageable);
+    }
+
+    return rolRepository.findByNombreContainingIgnoreCase(
+            search.trim(),
+            pageable
+    );
+}
 
     //Buscar un rol por su ID
 
@@ -112,25 +140,123 @@ public class RolServiceImpl implements RolService {
         rolRepository.delete(rol);
     }
     
-    @Override
+    // =================================================
+// ASIGNAR PERMISOS A UN ROL
+// =================================================
+// Protecciones:
+// - El usuario debe estar autenticado.
+// - Solo puede conceder permisos que él mismo posee.
+// - ROLE_ADMIN solo puede ser modificado por alguien
+//   que tenga ACCESO_ADMIN.
+@Override
 public Rol asignarPermisos(
         Long idRol,
         Set<Permiso> permisos) {
 
-    // Buscar rol existente
-    Rol rol = rolRepository.findById(idRol)
-            .orElseThrow(() ->
-                    new ResourceNotFoundException(
-                            "El rol indicado no existe"
-                    )
-            );
+    Authentication authentication =
+            SecurityContextHolder
+                    .getContext()
+                    .getAuthentication();
 
-    // Asignar permisos seleccionados
-    rol.setPermisos(
-            new HashSet<>(permisos)
+    if (authentication == null
+            || !authentication.isAuthenticated()) {
+
+        throw new ResponseStatusException(
+                HttpStatus.FORBIDDEN,
+                "No fue posible identificar al usuario autenticado."
+        );
+    }
+
+    Rol rol =
+            rolRepository.findById(idRol)
+                    .orElseThrow(() ->
+                            new ResourceNotFoundException(
+                                    "El rol indicado no existe"
+                            )
+                    );
+
+    // Solo un usuario con acceso administrativo puede
+    // modificar los permisos de ROLE_ADMIN.
+    if ("ROLE_ADMIN".equalsIgnoreCase(
+            rol.getNombre()
+    )) {
+
+        boolean tieneAccesoAdmin =
+                authentication.getAuthorities()
+                        .stream()
+                        .anyMatch(authority ->
+                                Permiso.ACCESO_ADMIN
+                                        .name()
+                                        .equals(
+                                                authority.getAuthority()
+                                        )
+                        );
+
+        if (!tieneAccesoAdmin) {
+
+    AuditoriaService.registrar(
+            "ASIGNAR_PERMISOS",
+            "ROL_ID_" + idRol,
+            "FALLO",
+            "Intento no autorizado de modificar permisos de ROLE_ADMIN"
     );
 
-    // Guardar cambios
-    return rolRepository.save(rol);
+    throw new ResponseStatusException(
+            HttpStatus.FORBIDDEN,
+            "No tienes autorización para modificar los permisos del rol administrador."
+    );
+}
+    }
+
+    // El actor solamente puede conceder permisos
+    // que ya posee personalmente.
+    for (Permiso permiso : permisos) {
+
+        boolean poseePermiso =
+                authentication.getAuthorities()
+                        .stream()
+                        .anyMatch(authority ->
+                                permiso.name()
+                                        .equals(
+                                                authority.getAuthority()
+                                        )
+                        );
+
+        if (!poseePermiso) {
+
+    AuditoriaService.registrar(
+            "ASIGNAR_PERMISOS",
+            "ROL_ID_" + idRol,
+            "FALLO",
+            "Intento no autorizado de asignar el permiso "
+                    + permiso.name()
+    );
+
+    throw new ResponseStatusException(
+            HttpStatus.FORBIDDEN,
+            "No tienes autorización para asignar el permiso "
+                    + permiso.name()
+                    + "."
+    );
+}
+    }
+
+    // Solo después de pasar todas las validaciones
+    // se modifica el rol.
+    rol.setPermisos(
+        new HashSet<>(permisos)
+);
+
+Rol rolActualizado =
+        rolRepository.save(rol);
+
+AuditoriaService.registrar(
+        "ASIGNAR_PERMISOS",
+        "ROL_ID_" + idRol,
+        "EXITO",
+        "Permisos actualizados correctamente"
+);
+
+return rolActualizado;
 }
 }

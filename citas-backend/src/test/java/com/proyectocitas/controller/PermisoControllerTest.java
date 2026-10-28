@@ -53,4 +53,41 @@ class PermisoControllerTest {
                                 .exists()
                 );
     }
+
+    @Test
+void debeListarMetadataDePermisosSinCambiarNombres() throws Exception {
+
+    PermisoController controller =
+            new PermisoController();
+
+    MockMvc mockMvc =
+            MockMvcBuilders
+                    .standaloneSetup(controller)
+                    .build();
+
+    mockMvc.perform(
+            get("/api/v1/permissions/metadata")
+    )
+            .andExpect(
+                    status().isOk()
+            )
+            .andExpect(
+                    jsonPath("$").isArray()
+            )
+            .andExpect(
+                    jsonPath(
+                            "$[?(@.nombre == 'VER_USUARIOS' && @.categoria == 'USUARIOS')]"
+                    ).exists()
+            )
+            .andExpect(
+                    jsonPath(
+                            "$[?(@.nombre == 'ASIGNAR_PERMISOS' && @.categoria == 'ROLES_Y_PERMISOS')]"
+                    ).exists()
+            )
+            .andExpect(
+                    jsonPath(
+                            "$[?(@.nombre == 'ACCESO_ADMIN' && @.categoria == 'ACCESO')]"
+                    ).exists()
+            );
+}
 }
