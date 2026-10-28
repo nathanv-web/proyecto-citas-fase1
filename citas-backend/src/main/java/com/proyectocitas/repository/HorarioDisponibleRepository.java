@@ -3,6 +3,12 @@ package com.proyectocitas.repository;
 import com.proyectocitas.model.HorarioDisponible;
 import com.proyectocitas.model.HorarioDisponible.EstadoHorario;
 
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -31,4 +37,15 @@ public interface HorarioDisponibleRepository
             LocalDate fecha,
             EstadoHorario estado
     );
+    // Bloquear un horario durante una reserva
+// para evitar reservas simultaneas.
+
+@Lock(LockModeType.PESSIMISTIC_WRITE)
+@Query("""
+       SELECT h
+       FROM HorarioDisponible h
+       WHERE h.idHorario = :idHorario
+       """)
+Optional<HorarioDisponible> buscarHorarioConBloqueo(
+        @Param("idHorario") Long idHorario);
 }

@@ -31,6 +31,9 @@ public class AppointmentResponseDTO {
 
     //Motivo de la consulta
     private String motivo;
+    
+    //Motivo de la cancelacion
+    private String motivoCancelacion;
 
     //Diagnóstico y receta de la cita
     private String diagnosticoReceta;
@@ -113,6 +116,14 @@ public class AppointmentResponseDTO {
 
     public void setMotivo(String motivo) {
         this.motivo = motivo;
+    }
+    
+    public String getMotivoCancelacion() {
+    return motivoCancelacion;
+    }
+
+    public void setMotivoCancelacion(String motivoCancelacion) {
+    this.motivoCancelacion = motivoCancelacion;
     }
 
     public String getDiagnosticoReceta() {

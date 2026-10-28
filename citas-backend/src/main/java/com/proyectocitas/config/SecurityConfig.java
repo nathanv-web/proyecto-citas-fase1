@@ -500,7 +500,11 @@ public class SecurityConfig {
                                 Permiso.CANCELAR_CITA.name()
                         )
 
-
+                        // REPROGRAMAR CITA
+                        .requestMatchers( HttpMethod.PUT,"/api/v1/appointments/*/reschedule")
+                        .hasAuthority(Permiso.CREAR_CITA.name()
+                        )                        
+                     
                         // =================================================
                         // REGISTRAR DIAGNÓSTICO
                         // =================================================
@@ -515,28 +519,20 @@ public class SecurityConfig {
 
 
                         // =================================================
-                        // VER CITAS
+                        // AGENDA DEL MEDICO AUTENTICADO
                         // =================================================
-                        // Controla las consultas generales de citas.
-                        //
-                        // my-history ya fue declarado antes para que
-                        // el paciente solamente necesite VER_HISTORIAL.
+
+                        .requestMatchers(HttpMethod.GET,"/api/v1/appointments/my-agenda")
+                        .hasAuthority(Permiso.VER_CITAS.name()
+                        )
                         
-                        .requestMatchers(
-        HttpMethod.GET,
-        "/api/v1/appointments",
-        "/api/v1/appointments/**"
-)
-.hasAuthority(
-        Permiso.VER_CITAS.name()
-)
-                        // ================================================
-                        // VER AGENDA DEL DOCTOR
-                        // ================================================
-                        
-                        .requestMatchers(HttpMethod.GET,
-                                "/api/v1/appointments/my-agenda")
-                        .hasAuthority(Permiso.VER_CITAS.name())
+                        // =================================================
+                        // LISTADO GENERAL: SOLO ADMINISTRADORES
+                        // =================================================
+
+                        .requestMatchers(HttpMethod.GET,"/api/v1/appointments")
+                        .hasAuthority(Permiso.ACCESO_ADMIN.name()
+                        )
 
                         // =================================================
                         // RESTO DE ENDPOINTS

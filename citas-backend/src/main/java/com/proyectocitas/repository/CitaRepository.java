@@ -26,11 +26,13 @@ public interface CitaRepository
     
     //Buscar la cita por horario
     
-    Optional<Cita> findByHorario_IdHorario(Long idHorario);
+    Optional<Cita> findByHorario_IdHorarioOrderByFechaCreacionDesc(Long idHorario);
     
     //Saber si un horario ya fue reservado
-
+    
     boolean existsByHorario_IdHorario(Long idHorario);
+
+    boolean existsByHorario_IdHorarioAndEstado_NombreNot(Long idHorario, NombreEstado estado);
     
     //Buscar agenda del médico autenticado
     
@@ -47,5 +49,34 @@ public interface CitaRepository
 List<Cita> findAgendaByCorreoMedicoAndFecha(
         @Param("correo") String correo,
         @Param("fecha") LocalDate fecha
+);
+
+// =================================================
+// CONSULTAR AGENDA DEL MEDICO ENTRE DOS FECHAS
+// =================================================
+
+@Query("""
+       SELECT c
+       FROM Cita c
+       JOIN c.horario h
+       JOIN h.medico m
+       JOIN m.usuario u
+       WHERE u.correo = :correo
+       AND h.fecha BETWEEN :desde AND :hasta
+       ORDER BY h.fecha ASC, h.horaInicio ASC, c.idCita ASC
+       """)
+List<Cita> findAgendaByCorreoMedicoAndRango(
+        @Param("correo") String correo,
+        @Param("desde") LocalDate desde,
+        @Param("hasta") LocalDate hasta
+);
+
+@Query("""
+       SELECT c.horario.idHorario
+       FROM Cita c
+       WHERE c.idCita = :idCita
+       """)
+Optional<Long> obtenerIdHorarioDeCita(
+        @Param("idCita") Long idCita
 );
 }

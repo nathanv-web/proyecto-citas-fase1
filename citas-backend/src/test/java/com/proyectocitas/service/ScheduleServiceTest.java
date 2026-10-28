@@ -7,6 +7,8 @@ import com.proyectocitas.repository.CitaRepository;
 import com.proyectocitas.repository.HorarioDisponibleRepository;
 import com.proyectocitas.repository.MedicoRepository;
 
+import com.proyectocitas.model.EstadoCita;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -124,8 +126,12 @@ class ScheduleServiceTest {
         when(horarioRepository.findById(1L))
                 .thenReturn(Optional.of(horario));
 
-        when(citaRepository.existsByHorario_IdHorario(1L))
-                .thenReturn(true);
+        when(citaRepository
+        .existsByHorario_IdHorarioAndEstado_NombreNot(
+                1L,
+                EstadoCita.NombreEstado.CANCELADA
+        ))
+        .thenReturn(true);
 
         assertFalse(service.estaDisponible(1L));
     }
@@ -138,8 +144,12 @@ class ScheduleServiceTest {
         when(horarioRepository.findById(1L))
                 .thenReturn(Optional.of(horario));
 
-        when(citaRepository.existsByHorario_IdHorario(1L))
-                .thenReturn(false);
+        when(citaRepository
+        .existsByHorario_IdHorarioAndEstado_NombreNot(
+                1L,
+                EstadoCita.NombreEstado.CANCELADA
+        ))
+        .thenReturn(false);
 
         assertTrue(service.estaDisponible(1L));
     }

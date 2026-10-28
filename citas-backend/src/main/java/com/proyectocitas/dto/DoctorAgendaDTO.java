@@ -1,6 +1,7 @@
 package com.proyectocitas.dto;
 
 import java.time.LocalTime;
+import java.time.LocalDate;
 
 public class DoctorAgendaDTO {
 
@@ -8,6 +9,7 @@ public class DoctorAgendaDTO {
     private String paciente;
     private LocalTime horaInicio;
     private LocalTime horaFin;
+    private LocalDate fecha;
     private String motivo;
     private String estado;
 
@@ -60,6 +62,14 @@ public class DoctorAgendaDTO {
 
     public void setHoraFin(LocalTime horaFin) {
         this.horaFin = horaFin;
+    }
+    
+    public LocalDate getFecha() {
+    return fecha;
+    }
+
+    public void setFecha(LocalDate fecha) {
+    this.fecha = fecha;
     }
 
     public String getMotivo() {

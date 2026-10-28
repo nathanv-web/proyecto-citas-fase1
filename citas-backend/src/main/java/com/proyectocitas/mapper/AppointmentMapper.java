@@ -20,6 +20,7 @@ public class AppointmentMapper {
 
         dto.setIdCita(cita.getIdCita());
         dto.setMotivo(cita.getMotivo());
+        dto.setMotivoCancelacion(cita.getMotivoCancelacion());
         dto.setDiagnosticoReceta(cita.getDiagnosticoReceta());
         dto.setObservaciones(cita.getObservaciones());
 

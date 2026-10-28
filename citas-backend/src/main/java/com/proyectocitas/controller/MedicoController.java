@@ -1,5 +1,8 @@
 package com.proyectocitas.controller;
 
+import java.util.Locale;
+import org.springframework.web.server.ResponseStatusException;
+
 import com.proyectocitas.dto.MedicoDTO;
 import com.proyectocitas.dto.MedicoRequestDTO;
 
@@ -56,35 +59,58 @@ public class MedicoController {
 
 
     // =================================================
-    // LISTAR MÉDICOS
-    // =================================================
+// LISTAR Y BUSCAR MÉDICOS
+// =================================================
 
-    @GetMapping
-    public List<MedicoDTO> obtenerMedicos(
-            @RequestParam(required = false)
-            String especialidad) {
+@GetMapping
+public List<MedicoDTO> obtenerMedicos(
+        @RequestParam(name = "search", required = false)
+        String search,
 
-        return medicoRepository
-                .findAll()
-                .stream()
+        @RequestParam(name = "especialidad", required = false)
+        String especialidad,
 
-                .filter(medico ->
-                        especialidad == null
-                        || especialidad.isBlank()
-                        || (
-                            medico.getEspecialidad() != null
-                            && medico
-                                .getEspecialidad()
-                                .getNombre()
-                                .equalsIgnoreCase(
-                                        especialidad
-                                )
-                        )
-                )
+        @RequestParam(name = "estado", required = false)
+        String estado) {
 
-                .map(medicoMapper::toDTO)
-                .toList();
+    // Normalizar los datos de búsqueda
+    String textoBusqueda = normalizar(search);
+    String filtroEspecialidad = normalizar(especialidad);
+
+    // Validar el estado del médico
+    Medico.EstadoMedico filtroEstado = null;
+
+    if (estado != null && !estado.isBlank()) {
+        try {
+            filtroEstado = Medico.EstadoMedico.valueOf(
+                    estado.trim().toUpperCase(Locale.ROOT)
+            );
+
+        } catch (IllegalArgumentException ex) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "El estado debe ser ACTIVO o INACTIVO"
+            );
+        }
     }
+
+    // Consultar médicos aplicando los filtros
+    return medicoRepository.buscarConFiltros(
+                    textoBusqueda,
+                    filtroEspecialidad,
+                    filtroEstado
+            )
+            .stream()
+            .map(medicoMapper::toDTO)
+            .toList();
+}
+
+// Normalizar textos para las búsquedas
+private static String normalizar(String texto) {
+    return texto == null
+            ? ""
+            : texto.trim().toLowerCase(Locale.ROOT);
+}
 
 
     // =================================================
