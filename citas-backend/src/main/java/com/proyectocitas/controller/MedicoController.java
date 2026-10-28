@@ -3,8 +3,8 @@ package com.proyectocitas.controller;
 import java.util.Locale;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.proyectocitas.dto.MedicoDTO;
-import com.proyectocitas.dto.MedicoRequestDTO;
+import com.proyectocitas.dto.response.MedicoResponseDTO;
+import com.proyectocitas.dto.request.MedicoCreateRequestDTO;
 
 import com.proyectocitas.exception.DuplicateResourceException;
 import com.proyectocitas.exception.ResourceNotFoundException;
@@ -18,7 +18,7 @@ import com.proyectocitas.model.Usuario;
 import com.proyectocitas.repository.EspecialidadRepository;
 import com.proyectocitas.repository.MedicoRepository;
 import com.proyectocitas.repository.UsuarioRepository;
-import com.proyectocitas.dto.MedicoUpdateDTO;
+import com.proyectocitas.dto.request.MedicoUpdateRequestDTO;
 
 import jakarta.validation.Valid;
 
@@ -63,7 +63,7 @@ public class MedicoController {
 // =================================================
 
 @GetMapping
-public List<MedicoDTO> obtenerMedicos(
+public List<MedicoResponseDTO> obtenerMedicos(
         @RequestParam(name = "search", required = false)
         String search,
 
@@ -118,7 +118,7 @@ private static String normalizar(String texto) {
     // =================================================
 
     @GetMapping("/{id}")
-    public ResponseEntity<MedicoDTO>
+    public ResponseEntity<MedicoResponseDTO>
             obtenerMedicoPorId(
                     @PathVariable Long id) {
 
@@ -142,11 +142,11 @@ private static String normalizar(String texto) {
     // =================================================
 
     @PostMapping
-    public ResponseEntity<MedicoDTO>
+    public ResponseEntity<MedicoResponseDTO>
             crearMedico(
                     @Valid
                     @RequestBody
-                    MedicoRequestDTO request) {
+                    MedicoCreateRequestDTO request) {
 
 
         // ---------------------------------------------
@@ -246,16 +246,16 @@ private static String normalizar(String texto) {
                         )
                 );
     }
-            
+
             //====================================
             // ACTUALIZAR MEDICO
             //====================================
 
 
 @PutMapping("/{id}")
-public ResponseEntity<MedicoDTO> actualizarMedico(
+public ResponseEntity<MedicoResponseDTO> actualizarMedico(
         @PathVariable Long id,
-        @Valid @RequestBody MedicoUpdateDTO request) {
+        @Valid @RequestBody MedicoUpdateRequestDTO request) {
 
     Medico medico = medicoRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException(

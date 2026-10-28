@@ -1,6 +1,6 @@
 package com.proyectocitas.controller;
 
-import com.proyectocitas.dto.UsuarioDTO;
+import com.proyectocitas.dto.response.UsuarioResponseDTO;
 import com.proyectocitas.mapper.UsuarioMapper;
 import com.proyectocitas.model.Rol;
 import com.proyectocitas.model.Usuario;
@@ -86,8 +86,8 @@ class AuthRegisterEndpointTest {
         );
 
 
-        UsuarioDTO respuesta =
-                new UsuarioDTO();
+        UsuarioResponseDTO respuesta =
+                new UsuarioResponseDTO();
 
         respuesta.setIdUsuario(1L);
         respuesta.setNombre("Jaime");

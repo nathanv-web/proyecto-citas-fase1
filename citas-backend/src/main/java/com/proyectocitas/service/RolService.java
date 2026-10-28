@@ -1,7 +1,7 @@
 package com.proyectocitas.service;
 
 import com.proyectocitas.model.Rol;
-import com.proyectocitas.dto.RolUpdateDTO;
+import com.proyectocitas.dto.request.RolUpdateRequestDTO;
 import com.proyectocitas.model.Permiso;
 
 import java.util.List;
@@ -40,7 +40,7 @@ public interface RolService {
 
     //Actualizar solo los datos enviados
 
-    Rol actualizar(RolUpdateDTO rol, Long id);
+    Rol actualizar(RolUpdateRequestDTO rol, Long id);
 
     //Eliminar un rol por su ID
 

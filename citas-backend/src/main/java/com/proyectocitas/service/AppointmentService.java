@@ -1,8 +1,8 @@
 package com.proyectocitas.service;
 
-import com.proyectocitas.dto.AppointmentRequestDTO;
-import com.proyectocitas.dto.AppointmentResponseDTO;
-import com.proyectocitas.dto.DiagnosisRequestDTO;
+import com.proyectocitas.dto.request.AppointmentCreateRequestDTO;
+import com.proyectocitas.dto.response.AppointmentResponseDTO;
+import com.proyectocitas.dto.request.DiagnosisRequestDTO;
 import com.proyectocitas.exception.ResourceConflictException;
 import com.proyectocitas.exception.ResourceNotFoundException;
 import com.proyectocitas.exception.ScheduleConflictException;
@@ -11,7 +11,7 @@ import com.proyectocitas.mapper.AppointmentMapper;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.annotation.Isolation;
 
-import com.proyectocitas.dto.RescheduleRequestDTO;
+import com.proyectocitas.dto.request.RescheduleRequestDTO;
 import java.time.LocalDateTime;
 import java.time.DayOfWeek;
 import java.util.Locale;
@@ -27,7 +27,7 @@ import com.proyectocitas.repository.EstadoCitaRepository;
 import com.proyectocitas.repository.HorarioDisponibleRepository;
 import com.proyectocitas.repository.UsuarioRepository;
 import java.time.LocalDate;
-import com.proyectocitas.dto.DoctorAgendaDTO;
+import com.proyectocitas.dto.response.DoctorAgendaResponseDTO;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -68,7 +68,7 @@ public class AppointmentService {
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
             public AppointmentResponseDTO agendarCita(
-            AppointmentRequestDTO request,
+            AppointmentCreateRequestDTO request,
             String emailPaciente) {
 
 
@@ -330,7 +330,7 @@ public AppointmentResponseDTO cancelarCita(
         Long idCita,
         String correoPaciente,
         String motivoCancelacion) {
-    
+
 
     // 1. Buscar al paciente autenticado
     Usuario paciente = usuarioRepository
@@ -644,7 +644,7 @@ public AppointmentResponseDTO reprogramarCita(
 // =================================================
 
 @Transactional(readOnly = true)
-public List<DoctorAgendaDTO> obtenerMiAgenda(
+public List<DoctorAgendaResponseDTO> obtenerMiAgenda(
         String correoMedico,
         LocalDate fecha,
         String periodo,
@@ -749,7 +749,7 @@ public List<DoctorAgendaDTO> obtenerMiAgenda(
                 AppointmentResponseDTO citaDTO =
                         appointmentMapper.toDTO(cita);
 
-                DoctorAgendaDTO agenda = new DoctorAgendaDTO(
+                DoctorAgendaResponseDTO agenda = new DoctorAgendaResponseDTO(
                         citaDTO.getIdCita(),
                         citaDTO.getPaciente(),
                         citaDTO.getHoraInicio(),
@@ -770,7 +770,7 @@ public List<DoctorAgendaDTO> obtenerMiAgenda(
 // =================================================
 
 @Transactional(readOnly = true)
-public List<DoctorAgendaDTO> obtenerMiAgenda(
+public List<DoctorAgendaResponseDTO> obtenerMiAgenda(
         String correoMedico) {
 
     return obtenerMiAgenda(

@@ -90,7 +90,7 @@ public class SecurityConfig {
                                 SessionCreationPolicy.STATELESS
                         )
                 )
-                
+
                 // =================================================
                 // MANEJO DE ACCESO DENEGADO
                 // =================================================
@@ -102,7 +102,7 @@ public class SecurityConfig {
                                  customAccessDeniedHandler
                         )
                 )
-                
+
                  // =================================================
                  // MANEJO DE ERRORES DE SEGURIDAD
                  // =================================================
@@ -147,7 +147,7 @@ public class SecurityConfig {
                         // Login y registro de pacientes no necesitan JWT.
 
                         .requestMatchers(
-                                "/api/v1/auth/**"
+                                "/api/v1/auth/login", "/api/v1/auth/register"
                         )
                         .permitAll()
 
@@ -160,7 +160,7 @@ public class SecurityConfig {
                                 "/error"
                         )
                         .permitAll()
-                        
+
 // =================================================
 // PERMISOS
 // =================================================
@@ -400,7 +400,7 @@ public class SecurityConfig {
                         .hasAuthority(
                                 Permiso.VER_MEDICOS.name()
                         )
-                        
+
                         // Actualizar médico
 .requestMatchers(
         HttpMethod.PUT,
@@ -419,8 +419,8 @@ public class SecurityConfig {
 .hasAuthority(
         Permiso.ELIMINAR_MEDICOS.name()
 )
-                        
-                        
+
+
 
 
                         // =================================================
@@ -445,16 +445,16 @@ public class SecurityConfig {
                         .hasAuthority(
                                 Permiso.VER_HORARIOS_DISPONIBLES.name()
                         )
-                        
+
                         //Actualizar horarios
-                        
+
                         .requestMatchers(HttpMethod.PUT,
                                 "/api/v1/schedules/**").
                         hasAuthority(Permiso.ACTUALIZAR_HORARIOS.name()
                         )
-                        
+
                         //Eliminar Horarios
-                        
+
                         .requestMatchers(HttpMethod.DELETE,
                                 "/api/v1/schedules/*"
                         )
@@ -503,8 +503,8 @@ public class SecurityConfig {
                         // REPROGRAMAR CITA
                         .requestMatchers( HttpMethod.PUT,"/api/v1/appointments/*/reschedule")
                         .hasAuthority(Permiso.CREAR_CITA.name()
-                        )                        
-                     
+                        )
+
                         // =================================================
                         // REGISTRAR DIAGNÓSTICO
                         // =================================================
@@ -525,7 +525,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET,"/api/v1/appointments/my-agenda")
                         .hasAuthority(Permiso.VER_CITAS.name()
                         )
-                        
+
                         // =================================================
                         // LISTADO GENERAL: SOLO ADMINISTRADORES
                         // =================================================

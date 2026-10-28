@@ -60,17 +60,7 @@
               </td>
 
               <td>
-                @if (role.permisos && role.permisos.length > 0) {
-                  <div class="permissions">
-                    @for (permission of role.permisos; track permission) {
-                      <span class="permission">
-                        {{ permission }}
-                      </span>
-                    }
-                  </div>
-                } @else {
-                  <span class="muted"> Sin permisos </span>
-                }
+                <span class="permission">Permisos: +{{ role.permisos?.length ?? 0 }}</span>
               </td>
 
               <td>

@@ -1,8 +1,8 @@
 package com.proyectocitas.controller;
 
-import com.proyectocitas.dto.EspecialidadDTO;
-import com.proyectocitas.dto.EspecialidadEstadoDTO;
-import com.proyectocitas.dto.EspecialidadRequestDTO;
+import com.proyectocitas.dto.response.EspecialidadResponseDTO;
+import com.proyectocitas.dto.request.EspecialidadEstadoRequestDTO;
+import com.proyectocitas.dto.request.EspecialidadRequestDTO;
 import com.proyectocitas.exception.ResourceNotFoundException;
 import com.proyectocitas.mapper.EspecialidadMapper;
 import com.proyectocitas.model.Especialidad;
@@ -29,7 +29,7 @@ public class EspecialidadController {
             ) {
         this.especialidadMapper = especialidadMapper;
         this.especialidadService = especialidadService;
-        
+
     }
 
 
@@ -38,10 +38,10 @@ public class EspecialidadController {
     // =================================================
 
     @GetMapping
-    public ResponseEntity<List<EspecialidadDTO>>
+    public ResponseEntity<List<EspecialidadResponseDTO>>
             obtenerTodas() {
 
-        List<EspecialidadDTO> especialidades =
+        List<EspecialidadResponseDTO> especialidades =
                 especialidadService
                         .obtenerTodos()
                         .stream()
@@ -59,7 +59,7 @@ public class EspecialidadController {
     // =================================================
 
     @GetMapping("/{id}")
-    public ResponseEntity<EspecialidadDTO>
+    public ResponseEntity<EspecialidadResponseDTO>
             obtenerPorId(
                     @PathVariable Long id
             ) {
@@ -87,7 +87,7 @@ public class EspecialidadController {
     // =================================================
 
     @PostMapping
-    public ResponseEntity<EspecialidadDTO>
+    public ResponseEntity<EspecialidadResponseDTO>
             guardar(
                     @Valid
                     @RequestBody
@@ -116,7 +116,7 @@ public class EspecialidadController {
     // =================================================
 
     @PutMapping("/{id}")
-    public ResponseEntity<EspecialidadDTO>
+    public ResponseEntity<EspecialidadResponseDTO>
             actualizar(
                     @PathVariable Long id,
 
@@ -148,9 +148,9 @@ public class EspecialidadController {
     // =================================================
 
     @PatchMapping("/{id}/estado")
-    public ResponseEntity<EspecialidadDTO> actualizarEstado(
+    public ResponseEntity<EspecialidadResponseDTO> actualizarEstado(
             @PathVariable Long id,
-            @Valid @RequestBody EspecialidadEstadoDTO request
+            @Valid @RequestBody EspecialidadEstadoRequestDTO request
     ) {
         Especialidad cambios = new Especialidad();
         cambios.setActivo(request.activo());

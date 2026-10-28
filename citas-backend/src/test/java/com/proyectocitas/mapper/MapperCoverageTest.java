@@ -1,6 +1,7 @@
 package com.proyectocitas.mapper;
 
-import com.proyectocitas.dto.*;
+import com.proyectocitas.dto.request.*;
+import com.proyectocitas.dto.response.*;
 import com.proyectocitas.model.*;
 import org.junit.jupiter.api.Test;
 
@@ -106,7 +107,7 @@ class MapperCoverageTest {
 
     @Test
     void appointmentRequestAEntity() {
-        AppointmentRequestDTO dto = new AppointmentRequestDTO();
+        AppointmentCreateRequestDTO dto = new AppointmentCreateRequestDTO();
         dto.setMotivo("Dolor de cabeza");
 
         Cita cita = appointmentMapper.toEntity(dto);
@@ -126,7 +127,7 @@ class MapperCoverageTest {
         estado.setNombre(EstadoCita.NombreEstado.COMPLETADA);
         estado.setDescripcion("Completada");
 
-        EstadoCitaDTO dto = estadoCitaMapper.toDTO(estado);
+        EstadoCitaResponseDTO dto = estadoCitaMapper.toDTO(estado);
 
         assertEquals(2L, dto.getIdEstado());
         assertEquals("COMPLETADA", dto.getNombre());
@@ -165,7 +166,7 @@ class MapperCoverageTest {
         horario.setHoraFin(LocalTime.of(11, 0));
         horario.setEstado(HorarioDisponible.EstadoHorario.DISPONIBLE);
 
-        HorarioDisponibleDTO dto = horarioMapper.toDTO(horario);
+        HorarioDisponibleResponseDTO dto = horarioMapper.toDTO(horario);
 
         assertEquals(10L, dto.getIdHorario());
         assertEquals(7L, dto.getIdMedico());
@@ -179,7 +180,7 @@ class MapperCoverageTest {
         horario.setEstado(null);
         horario.setMedico(null);
 
-        HorarioDisponibleDTO dto = horarioMapper.toDTO(horario);
+        HorarioDisponibleResponseDTO dto = horarioMapper.toDTO(horario);
 
         assertNull(dto.getEstado());
         assertNull(dto.getIdMedico());
@@ -193,7 +194,7 @@ class MapperCoverageTest {
         HorarioDisponible horario = new HorarioDisponible();
         horario.setMedico(medico);
 
-        HorarioDisponibleDTO dto = horarioMapper.toDTO(horario);
+        HorarioDisponibleResponseDTO dto = horarioMapper.toDTO(horario);
 
         assertEquals(8L, dto.getIdMedico());
         assertNull(dto.getMedico());
@@ -201,7 +202,7 @@ class MapperCoverageTest {
 
     @Test
     void horarioRequestAEntity() {
-        HorarioDisponibleRequestDTO dto = new HorarioDisponibleRequestDTO();
+        HorarioDisponibleCreateRequestDTO dto = new HorarioDisponibleCreateRequestDTO();
         dto.setFecha(LocalDate.of(2026, 12, 1));
         dto.setHoraInicio(LocalTime.of(13, 0));
         dto.setHoraFin(LocalTime.of(14, 0));
@@ -238,7 +239,7 @@ class MapperCoverageTest {
         medico.setBiografia("Especialista");
         medico.setEstado(Medico.EstadoMedico.ACTIVO);
 
-        MedicoDTO dto = medicoMapper.toDTO(medico);
+        MedicoResponseDTO dto = medicoMapper.toDTO(medico);
 
         assertEquals("Luis Diaz", dto.getNombre());
         assertEquals("luis@hospital.com", dto.getCorreo());
@@ -253,7 +254,7 @@ class MapperCoverageTest {
         medico.setEspecialidad(null);
         medico.setEstado(null);
 
-        MedicoDTO dto = medicoMapper.toDTO(medico);
+        MedicoResponseDTO dto = medicoMapper.toDTO(medico);
 
         assertNull(dto.getNombre());
         assertNull(dto.getEspecialidad());
@@ -262,7 +263,7 @@ class MapperCoverageTest {
 
     @Test
     void medicoRequestAEntity() {
-        MedicoRequestDTO dto = new MedicoRequestDTO();
+        MedicoCreateRequestDTO dto = new MedicoCreateRequestDTO();
         dto.setColegiado("COL-200");
         dto.setAniosExperiencia(4);
         dto.setBiografia("Medico general");
@@ -276,7 +277,7 @@ class MapperCoverageTest {
 
     @Test
     void rolRequestAEntity() {
-        RolRequestDTO dto = new RolRequestDTO();
+        RolCreateRequestDTO dto = new RolCreateRequestDTO();
         dto.setNombre("ROLE_JEFE_AREA");
         dto.setDescripcion("Jefe de area");
 
@@ -296,7 +297,7 @@ class MapperCoverageTest {
                 Set.of(Permiso.CREAR_ROLES, Permiso.VER_USUARIOS)
         );
 
-        RolDTO dto = rolMapper.toDTO(rol);
+        RolResponseDTO dto = rolMapper.toDTO(rol);
 
         assertEquals(3L, dto.getIdRol());
         assertEquals("ROLE_ADMIN", dto.getNombre());
@@ -327,7 +328,7 @@ class MapperCoverageTest {
         usuario.setActivo(true);
         usuario.setRoles(Set.of(admin, doctor));
 
-        UsuarioDTO dto = usuarioMapper.toDTO(usuario);
+        UsuarioResponseDTO dto = usuarioMapper.toDTO(usuario);
 
         assertEquals(20L, dto.getIdUsuario());
         assertEquals("Pedro", dto.getNombre());
@@ -344,14 +345,14 @@ class MapperCoverageTest {
         Usuario usuario = new Usuario();
         usuario.setRoles(null);
 
-        UsuarioDTO dto = usuarioMapper.toDTO(usuario);
+        UsuarioResponseDTO dto = usuarioMapper.toDTO(usuario);
 
         assertNull(dto.getRoles());
     }
 
     @Test
     void usuarioRequestAEntity() {
-        UsuarioRequestDTO dto = new UsuarioRequestDTO();
+        UsuarioCreateRequestDTO dto = new UsuarioCreateRequestDTO();
         dto.setNombre("Sofia");
         dto.setApellido("Mendez");
         dto.setCorreo("sofia@correo.com");

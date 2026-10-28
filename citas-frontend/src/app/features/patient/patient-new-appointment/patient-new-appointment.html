@@ -6,19 +6,50 @@
       <p>Elige un horario disponible e indica el motivo de tu consulta.</p>
     </div>
   </header>
+  <section class="form-card form-grid" aria-label="Buscar disponibilidad">
+    <div class="field">
+      <label for="booking-doctor">Médico</label
+      ><select id="booking-doctor" [(ngModel)]="idMedico" (ngModelChange)="clearSchedules()">
+        <option [ngValue]="0">Selecciona un médico</option>
+        @for (doctor of doctors(); track doctor.idMedico) {
+          <option [ngValue]="doctor.idMedico">
+            {{ doctor.nombre }} · {{ doctor.especialidad }}
+          </option>
+        }
+      </select>
+    </div>
+    <div class="field">
+      <label for="booking-date">Fecha</label
+      ><input
+        id="booking-date"
+        type="date"
+        [(ngModel)]="fecha"
+        (ngModelChange)="clearSchedules()"
+      />
+    </div>
+    <button
+      class="btn"
+      type="button"
+      (click)="searchSchedules()"
+      [disabled]="!idMedico || !fecha || searching() || saving()"
+    >
+      Consultar horarios
+    </button>
+  </section>
   <form class="form-card" [formGroup]="form" (ngSubmit)="save()">
     <h2>Datos de la consulta</h2>
     <div class="field">
-      <label for="appointment-schedule">ID Horario</label>
-      <input
-        id="appointment-schedule"
-        type="number"
-        formControlName="idHorario"
-        placeholder="Ej. 10"
-        aria-describedby="appointment-schedule-help"
-      />
+      <label for="appointment-schedule">Horario disponible</label>
+      <select id="appointment-schedule" formControlName="idHorario">
+        <option [ngValue]="0">Selecciona un horario</option>
+        @for (schedule of schedules(); track schedule.idHorario) {
+          <option [ngValue]="schedule.idHorario">
+            {{ schedule.horaInicio }} - {{ schedule.horaFin }}
+          </option>
+        }
+      </select>
       <small class="helper-text" id="appointment-schedule-help"
-        >El identificador se obtiene al consultar los horarios disponibles.</small
+        >Consulta los horarios del médico y la fecha seleccionados.</small
       >
     </div>
     <div class="field">
@@ -35,7 +66,9 @@
       >
     </div>
     <div class="form-actions">
-      <button class="btn btn-primary" type="submit">Crear cita</button>
+      <button class="btn btn-primary" type="submit" [disabled]="saving() || searching()">
+        Crear cita
+      </button>
     </div>
   </form>
   @if (message) {

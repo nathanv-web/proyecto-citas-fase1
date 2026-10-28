@@ -1,3 +1,4 @@
+import { ConfirmationService } from '../../../../core/notifications/confirmation.service';
 import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
@@ -25,6 +26,7 @@ import { AuthService } from '../../../../core/auth/services/auth.service';
   styleUrl: './doctor-list.css',
 })
 export class DoctorList implements OnInit {
+  private readonly confirmation = inject(ConfirmationService);
   private readonly changeDetector = inject(ChangeDetectorRef);
   private readonly authService = inject(AuthService);
   readonly canViewDoctors = this.authService.hasPermission('VER_MEDICOS');
@@ -85,14 +87,12 @@ export class DoctorList implements OnInit {
         },
 
         error: (error) => {
-          this.error = error?.error?.message || 'No se pudieron cargar los médicos.';
-
           this.loading = false;
         },
       });
   }
 
-  changeDoctorState(doctor: Doctor): void {
+  async changeDoctorState(doctor: Doctor): Promise<void> {
     const activate = doctor.estado === 'INACTIVO';
     if (
       !this.canViewDoctors ||
@@ -102,7 +102,11 @@ export class DoctorList implements OnInit {
     ) {
       return;
     }
-    if (!confirm(`¿Deseas ${activate ? 'activar' : 'desactivar'} al médico ${doctor.nombre}?`)) {
+    if (
+      !(await this.confirmation.confirm(
+        `¿Deseas ${activate ? 'activar' : 'desactivar'} al médico ${doctor.nombre}?`,
+      ))
+    ) {
       return;
     }
     this.error = '';
@@ -123,10 +127,7 @@ export class DoctorList implements OnInit {
           this.success = `Médico ${activate ? 'activado' : 'desactivado'} correctamente.`;
           this.loadDoctors();
         },
-        error: (error) => {
-          this.error =
-            error?.error?.message || `No se pudo ${activate ? 'activar' : 'desactivar'} el médico.`;
-        },
+        error: (error) => {},
       });
   }
 
@@ -139,9 +140,7 @@ export class DoctorList implements OnInit {
           this.specialties = data;
         },
 
-        error: (error) => {
-          this.error = error?.error?.message || 'No se pudieron cargar las especialidades.';
-        },
+        error: (error) => {},
       });
 
     this.userService
@@ -152,9 +151,7 @@ export class DoctorList implements OnInit {
           this.users = data.filter((user) => user.activo);
         },
 
-        error: (error) => {
-          this.error = error?.error?.message || 'No se pudieron cargar los usuarios.';
-        },
+        error: (error) => {},
       });
   }
 
@@ -215,8 +212,6 @@ export class DoctorList implements OnInit {
         },
 
         error: (error) => {
-          this.error = error?.error?.message || 'No se pudo crear el médico.';
-
           this.saving = false;
         },
       });

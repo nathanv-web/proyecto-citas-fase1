@@ -46,30 +46,12 @@ export class Login {
     this.authService.login(this.loginForm.getRawValue()).subscribe({
       next: () => {
         this.loading.set(false);
-        this.router.navigateByUrl('/panels');
+        this.router.navigateByUrl(
+          this.authService.mustChangePassword() ? '/change-password' : '/panels',
+        );
       },
       error: (error: HttpErrorResponse) => {
         this.loading.set(false);
-
-        switch (error.status) {
-          case 400:
-            this.errorMessage.set('Los datos enviados no son válidos.');
-            break;
-          case 401:
-            this.errorMessage.set('Correo o contraseña incorrectos.');
-            break;
-          case 403:
-            this.errorMessage.set('No tienes autorización para acceder.');
-            break;
-          case 404:
-            this.errorMessage.set('No se encontró el servicio solicitado.');
-            break;
-          case 409:
-            this.errorMessage.set('Existe un conflicto con los datos enviados.');
-            break;
-          default:
-            this.errorMessage.set('No fue posible iniciar sesión. Intenta nuevamente.');
-        }
       },
     });
   }

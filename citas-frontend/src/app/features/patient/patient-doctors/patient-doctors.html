@@ -6,6 +6,27 @@
       <p>Conoce a los profesionales y encuentra una especialidad para tu consulta.</p>
     </div>
   </header>
+  <section class="form-card form-grid" aria-label="Buscar médicos">
+    <div class="field">
+      <label for="doctor-search">Nombre o correo</label>
+      <input id="doctor-search" [(ngModel)]="search" (ngModelChange)="filter()" />
+    </div>
+    <div class="field">
+      <label for="doctor-specialty">Especialidad</label>
+      <input id="doctor-specialty" [(ngModel)]="especialidad" (ngModelChange)="filter()" />
+    </div>
+    <div class="field">
+      <label for="doctor-status">Estado</label>
+      <select id="doctor-status" [(ngModel)]="estado" (ngModelChange)="filter()">
+        <option value="">Todos</option>
+        <option value="ACTIVO">Activo</option>
+        <option value="INACTIVO">Inactivo</option>
+      </select>
+    </div>
+  </section>
+  @if (loading()) {
+    <p role="status">Buscando médicos...</p>
+  }
   <section class="record-grid" aria-label="Directorio de médicos">
     @for (doctor of doctors(); track doctor.idMedico) {
       <article class="record-card">
@@ -21,8 +42,6 @@
         <h2>{{ doctor.nombre }}</h2>
         <p>{{ doctor.especialidad }}</p>
         <dl class="record-details">
-          <dt>ID Médico</dt>
-          <dd>{{ doctor.idMedico }}</dd>
           <dt>Correo</dt>
           <dd>{{ doctor.correo }}</dd>
           <dt>Colegiado</dt>
@@ -34,6 +53,10 @@
           <p>{{ doctor.biografia }}</p>
         }
       </article>
+    } @empty {
+      @if (!loading()) {
+        <p role="status">No hay médicos para estos filtros.</p>
+      }
     }
   </section>
 </main>

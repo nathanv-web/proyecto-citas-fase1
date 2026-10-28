@@ -1,6 +1,6 @@
 package com.proyectocitas.service.Impl;
 
-import com.proyectocitas.dto.RolUpdateDTO;
+import com.proyectocitas.dto.request.RolUpdateRequestDTO;
 import com.proyectocitas.exception.DuplicateResourceException;
 import com.proyectocitas.exception.ResourceNotFoundException;
 import com.proyectocitas.model.Permiso;
@@ -75,7 +75,7 @@ public class RolServiceImpl implements RolService {
         return rolRepository.findById(id)
                 .orElseThrow(() ->
                 new ResourceNotFoundException(" El rol indicado no existe"));
-                
+
     }
 
     //Buscar un rol por su nombre
@@ -100,13 +100,13 @@ public class RolServiceImpl implements RolService {
 
     @Override
     public Rol actualizar(
-           RolUpdateDTO rol
+           RolUpdateRequestDTO rol
             , Long id) {
-        
+
         Rol rolDB = rolRepository.findById(id)
-                .orElseThrow(() -> 
+                .orElseThrow(() ->
                         new  ResourceNotFoundException("El rol indicado no existe"));
-        
+
         if (rol.getNombre() != null) {
             if (!rol.getNombre()
                 .equalsIgnoreCase(rolDB.getNombre())){
@@ -117,29 +117,29 @@ public class RolServiceImpl implements RolService {
             }
                 rolDB.setNombre(rol.getNombre());
         }
-        
+
         if (rol.getDescripcion() != null) {
             rolDB.setDescripcion(rol.getDescripcion());
         }
         return rolRepository.save(rolDB);
-        
+
     }
 
-    //Eliminar un rol y la verificacion si esta asignado a uno o mas usuarios 
+    //Eliminar un rol y la verificacion si esta asignado a uno o mas usuarios
 
     @Override
     public void eliminar(Long id) {
-        
+
         Rol rol = rolRepository.findById(id)
                 .orElseThrow(()->
                 new ResourceNotFoundException("El rol indicado no existe"));
-        
+
         if (usuarioRepository.existsByRoles_IdRol(id)) {
             throw new DuplicateResourceException("No se puede eliminar el rol porque esta asignado a uno o más usuarios");
                     }
         rolRepository.delete(rol);
     }
-    
+
     // =================================================
 // ASIGNAR PERMISOS A UN ROL
 // =================================================

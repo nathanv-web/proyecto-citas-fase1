@@ -1,0 +1,89 @@
+<aside class="sidebar" aria-label="Menú lateral">
+  <div class="sidebar-heading">
+    <div>
+      <span class="sidebar-eyebrow">Tu espacio de trabajo</span>
+      <h2>Paneles y acciones</h2>
+    </div>
+    <button
+      class="mobile-toggle"
+      type="button"
+      [attr.aria-expanded]="mobileOpen()"
+      aria-controls="sidebar-panels"
+      (click)="toggleMobileMenu()"
+    >
+      {{ mobileOpen() ? 'Cerrar menú' : 'Abrir menú' }}
+    </button>
+  </div>
+
+  <nav
+    id="sidebar-panels"
+    class="sidebar-body"
+    [class.mobile-open]="mobileOpen()"
+    aria-label="Paneles y acciones"
+  >
+    <a
+      class="overview-link"
+      routerLink="/panels"
+      [class.current]="currentPath() === '/panels'"
+      [attr.aria-current]="currentPath() === '/panels' ? 'page' : null"
+      (click)="closeMobileMenu()"
+    >
+      <span aria-hidden="true">☷</span>
+      Todos los paneles
+    </a>
+
+    <p class="sidebar-hint">Elige un panel para ver sus acciones.</p>
+
+    @for (panel of panels(); track panel.id) {
+      <section class="panel-group" [class.selected]="currentPanel()?.id === panel.id">
+        <button
+          class="panel-toggle"
+          type="button"
+          [attr.aria-expanded]="expandedPanel() === panel.id"
+          [attr.aria-controls]="'sidebar-actions-' + panel.id"
+          (click)="togglePanel(panel.id)"
+        >
+          <span class="panel-symbol" aria-hidden="true">{{
+            panel.id === 'admin' ? '☷' : panel.id === 'doctor' ? '✚' : '♡'
+          }}</span>
+          <span class="panel-label">{{ panel.label }}</span>
+          <span
+            class="panel-chevron"
+            [class.expanded]="expandedPanel() === panel.id"
+            aria-hidden="true"
+            >⌄</span
+          >
+        </button>
+
+        <ul [id]="'sidebar-actions-' + panel.id" [hidden]="expandedPanel() !== panel.id">
+          <li>
+            <a
+              class="action-link panel-home"
+              [routerLink]="panel.route"
+              [class.current]="currentPath() === panel.route"
+              [attr.aria-current]="currentPath() === panel.route ? 'page' : null"
+              (click)="closeMobileMenu()"
+              >Inicio del panel</a
+            >
+          </li>
+          @for (action of panel.actions; track action.id) {
+            <li>
+              <a
+                class="action-link"
+                [routerLink]="action.route"
+                [queryParams]="{ action: action.id }"
+                [fragment]="action.fragment"
+                [class.current]="isCurrentAction(panel.id, action)"
+                [attr.aria-current]="isCurrentAction(panel.id, action) ? 'page' : null"
+                (click)="closeMobileMenu()"
+                >{{ action.label }}</a
+              >
+            </li>
+          }
+        </ul>
+      </section>
+    } @empty {
+      <p class="sidebar-hint" role="status">No tienes paneles disponibles para esta cuenta.</p>
+    }
+  </nav>
+</aside>

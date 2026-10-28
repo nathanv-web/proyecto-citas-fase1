@@ -1,22 +1,22 @@
 package com.proyectocitas.mapper;
 
-import com.proyectocitas.dto.HorarioDisponibleDTO;
-import com.proyectocitas.dto.HorarioDisponibleRequestDTO;
+import com.proyectocitas.dto.response.HorarioDisponibleResponseDTO;
+import com.proyectocitas.dto.request.HorarioDisponibleCreateRequestDTO;
 import com.proyectocitas.model.HorarioDisponible;
 import org.springframework.stereotype.Component;
 
 @Component
 public class HorarioDisponibleMapper {
 
-    //Convierte una entidad HorarioDisponible a HorarioDisponibleDTO
-    public HorarioDisponibleDTO toDTO(HorarioDisponible horario) {
+    //Convierte una entidad HorarioDisponible a HorarioDisponibleResponseDTO
+    public HorarioDisponibleResponseDTO toDTO(HorarioDisponible horario) {
 
         //Evitar error si el horario viene null
         if (horario == null) {
             return null;
         }
 
-        HorarioDisponibleDTO dto = new HorarioDisponibleDTO();
+        HorarioDisponibleResponseDTO dto = new HorarioDisponibleResponseDTO();
 
         dto.setIdHorario(horario.getIdHorario());
         dto.setFecha(horario.getFecha());
@@ -51,8 +51,8 @@ public class HorarioDisponibleMapper {
     }
 
 
-    //Convierte un HorarioDisponibleRequestDTO a entidad HorarioDisponible
-    public HorarioDisponible toEntity(HorarioDisponibleRequestDTO dto) {
+    //Convierte un HorarioDisponibleCreateRequestDTO a entidad HorarioDisponible
+    public HorarioDisponible toEntity(HorarioDisponibleCreateRequestDTO dto) {
 
         //Evitar error si el DTO viene null
         if (dto == null) {

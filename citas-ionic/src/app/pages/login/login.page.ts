@@ -79,15 +79,8 @@ this.router.navigateByUrl(
       error: (error: HttpErrorResponse) => {
         this.loading = false;
 
-        if (error.status === 0) {
-          this.errorMessage =
-            'No se pudo conectar con el servidor.';
-          return;
-        }
 
-        this.errorMessage =
-          error.error?.message ||
-          'No fue posible iniciar sesión.';
+
       }
     });
   }

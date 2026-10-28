@@ -1,6 +1,6 @@
 package com.proyectocitas.controller;
 
-import com.proyectocitas.dto.RolDTO;
+import com.proyectocitas.dto.response.RolResponseDTO;
 import com.proyectocitas.mapper.RolMapper;
 import com.proyectocitas.model.Permiso;
 import com.proyectocitas.model.Rol;
@@ -64,8 +64,8 @@ class RolPermisosControllerTest {
         // DTO DE RESPUESTA
         // =================================================
 
-        RolDTO rolDTO =
-                new RolDTO();
+        RolResponseDTO rolDTO =
+                new RolResponseDTO();
 
         rolDTO.setIdRol(4L);
         rolDTO.setNombre("ROLE_SECRETARY");

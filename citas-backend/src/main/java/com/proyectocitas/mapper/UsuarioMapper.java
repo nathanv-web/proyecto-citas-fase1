@@ -1,7 +1,7 @@
 package com.proyectocitas.mapper;
 
-import com.proyectocitas.dto.UsuarioDTO;
-import com.proyectocitas.dto.UsuarioRequestDTO;
+import com.proyectocitas.dto.response.UsuarioResponseDTO;
+import com.proyectocitas.dto.request.UsuarioCreateRequestDTO;
 import com.proyectocitas.model.Usuario;
 import org.springframework.stereotype.Component;
 
@@ -10,15 +10,15 @@ import java.util.stream.Collectors;
 @Component
 public class UsuarioMapper {
 
-    //Convierte una entidad Usuario a UsuarioDTO
-    public UsuarioDTO toDTO(Usuario usuario) {
+    //Convierte una entidad Usuario a UsuarioResponseDTO
+    public UsuarioResponseDTO toDTO(Usuario usuario) {
 
         //Evitar error si el usuario viene null
         if (usuario == null) {
             return null;
         }
 
-        UsuarioDTO dto = new UsuarioDTO();
+        UsuarioResponseDTO dto = new UsuarioResponseDTO();
 
         dto.setIdUsuario(usuario.getIdUsuario());
         dto.setNombre(usuario.getNombre());
@@ -42,8 +42,8 @@ public class UsuarioMapper {
     }
 
 
-    //Convierte un UsuarioRequestDTO a una entidad Usuario
-    public Usuario toEntity(UsuarioRequestDTO dto) {
+    //Convierte un UsuarioCreateRequestDTO a una entidad Usuario
+    public Usuario toEntity(UsuarioCreateRequestDTO dto) {
 
         //Evitar error si el DTO viene null
         if (dto == null) {

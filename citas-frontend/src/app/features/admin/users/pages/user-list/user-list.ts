@@ -1,3 +1,4 @@
+import { ConfirmationService } from '../../../../../core/notifications/confirmation.service';
 import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
@@ -16,6 +17,7 @@ import { finalize, Observable } from 'rxjs';
   styleUrl: './user-list.css',
 })
 export class UserList implements OnInit {
+  private readonly confirmation = inject(ConfirmationService);
   private readonly changeDetector = inject(ChangeDetectorRef);
 
   private readonly userService = inject(UserService);
@@ -53,20 +55,18 @@ export class UserList implements OnInit {
         },
 
         error: (error) => {
-          this.error = error?.error?.message || 'No se pudieron cargar los usuarios.';
-
           this.loading = false;
         },
       });
   }
 
-  changeUserState(user: User): void {
+  async changeUserState(user: User): Promise<void> {
     const activate = !user.activo;
     if (this.changingState || !(activate ? this.canActivateUser : this.canDeactivateUser)) {
       return;
     }
 
-    const confirmed = confirm(
+    const confirmed = await this.confirmation.confirm(
       `¿Deseas ${activate ? 'activar' : 'desactivar'} al usuario ${user.nombre} ${user.apellido}?`,
     );
 
@@ -94,11 +94,7 @@ export class UserList implements OnInit {
           this.loadUsers();
         },
 
-        error: (error) => {
-          this.error =
-            error?.error?.message ||
-            `No se pudo ${activate ? 'activar' : 'desactivar'} el usuario.`;
-        },
+        error: (error) => {},
       });
   }
 }

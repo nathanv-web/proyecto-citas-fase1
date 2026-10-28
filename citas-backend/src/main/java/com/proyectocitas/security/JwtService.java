@@ -21,7 +21,12 @@ public class JwtService {
     private long expiration;
 
     public String generateToken(UserDetails userDetails) {
-        return generateToken(userDetails.getUsername());
+        return Jwts.builder()
+                .subject(userDetails.getUsername())
+                .claim("versionSesion", ((com.proyectocitas.model.Usuario) userDetails).getVersionSesion())
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + expiration))
+                .signWith(getSigningKey()).compact();
     }
 
     public String generateToken(String email) {
@@ -41,7 +46,15 @@ public class JwtService {
         String username = extractUsername(token);
 
         return username.equals(userDetails.getUsername())
-                && !isTokenExpired(token);
+                && !isTokenExpired(token)
+                && userDetails.isEnabled() && userDetails.isAccountNonLocked()
+                && versionValida(token, userDetails);
+    }
+
+    private boolean versionValida(String token, UserDetails userDetails) {
+        Number version = extractClaim(token, claims -> (Number) claims.get("versionSesion"));
+        long actual = ((com.proyectocitas.model.Usuario) userDetails).getVersionSesion();
+        return (version == null ? 0 : version.longValue()) == actual;
     }
 
     private boolean isTokenExpired(String token) {

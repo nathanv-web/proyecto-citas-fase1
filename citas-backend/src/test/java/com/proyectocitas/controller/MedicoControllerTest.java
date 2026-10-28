@@ -1,6 +1,6 @@
 package com.proyectocitas.controller;
 
-import com.proyectocitas.dto.MedicoRequestDTO;
+import com.proyectocitas.dto.request.MedicoCreateRequestDTO;
 import com.proyectocitas.exception.DuplicateResourceException;
 import com.proyectocitas.exception.ResourceNotFoundException;
 import com.proyectocitas.mapper.MedicoMapper;
@@ -51,8 +51,8 @@ class MedicoControllerTest {
                 );
 
 
-        MedicoRequestDTO request =
-                new MedicoRequestDTO();
+        MedicoCreateRequestDTO request =
+                new MedicoCreateRequestDTO();
 
         request.setIdUsuario(5L);
         request.setIdEspecialidad(2L);
@@ -105,8 +105,8 @@ class MedicoControllerTest {
                 );
 
 
-        MedicoRequestDTO request =
-                new MedicoRequestDTO();
+        MedicoCreateRequestDTO request =
+                new MedicoCreateRequestDTO();
 
         request.setIdUsuario(99L);
         request.setIdEspecialidad(2L);
@@ -182,8 +182,8 @@ class MedicoControllerTest {
                 );
 
 
-        MedicoRequestDTO request =
-                new MedicoRequestDTO();
+        MedicoCreateRequestDTO request =
+                new MedicoCreateRequestDTO();
 
         request.setIdUsuario(5L);
         request.setIdEspecialidad(99L);

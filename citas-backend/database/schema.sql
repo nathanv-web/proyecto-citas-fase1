@@ -29,6 +29,11 @@ CREATE TABLE IF NOT EXISTS usuarios (
     telefono VARCHAR(255) NOT NULL,
     contrasena VARCHAR(255) NOT NULL,
 
+    debe_cambiar_password BOOLEAN NOT NULL DEFAULT FALSE,
+    intentos_fallidos INT NOT NULL DEFAULT 0,
+    bloqueado_hasta DATETIME NULL,
+    version_sesion BIGINT NOT NULL DEFAULT 0,
+
     fecha_registro DATETIME NOT NULL
         DEFAULT CURRENT_TIMESTAMP,
 

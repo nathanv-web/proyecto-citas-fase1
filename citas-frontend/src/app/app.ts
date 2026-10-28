@@ -3,11 +3,14 @@ import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map } from 'rxjs';
 import { AuthService } from './core/auth/services/auth.service';
+import { ToastContainer } from './core/notifications/toast-container';
+import { ConfirmationDialog } from './core/notifications/confirmation-dialog';
+import { Sidebar } from './shared/sidebar/sidebar';
 import { UserProfile } from './shared/user-profile/user-profile';
 
 /** El componente principal presenta las rutas y la navegación de las pantallas privadas. */
 @Component({
-  imports: [RouterOutlet, RouterLink, UserProfile],
+  imports: [RouterOutlet, RouterLink, UserProfile, ToastContainer, ConfirmationDialog, Sidebar],
   selector: 'app-root',
   styleUrl: './app.css',
   templateUrl: './app.html',
@@ -17,7 +20,7 @@ export class App {
   private readonly authService = inject(AuthService);
 
   // La navegación se actualiza al terminar cada cambio de ruta.
-  private readonly currentUrl = toSignal(
+  protected readonly currentUrl = toSignal(
     this.router.events.pipe(
       filter((event): event is NavigationEnd => event instanceof NavigationEnd),
       map((event) => event.urlAfterRedirects),
@@ -28,6 +31,15 @@ export class App {
   protected readonly showPanelNavigation = computed(() => {
     const path = this.currentUrl().split(/[?#]/)[0];
     return !['/', '/login', '/register'].includes(path) && this.authService.isAuthenticated();
+  });
+
+  protected readonly showSidebar = computed(() => {
+    const path = this.currentUrl().split(/[?#]/)[0];
+    return (
+      this.showPanelNavigation() &&
+      path !== '/change-password' &&
+      !this.authService.mustChangePassword()
+    );
   });
 
   protected readonly title = signal('citas-fronted');

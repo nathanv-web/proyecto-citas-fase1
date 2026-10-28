@@ -41,9 +41,7 @@ export class SpecialtiesPage implements OnInit {
         error: (error: HttpErrorResponse) => {
           this.loading = false;
 
-          this.errorMessage =
-            error.error?.message ||
-            'No fue posible cargar las especialidades.';
+
         }
       });
   }

@@ -143,11 +143,11 @@
               #contrasena="ngModel"
               required
               minlength="8"
-              maxlength="12"
+              maxlength="64"
             />
 
             @if (contrasena.invalid && contrasena.touched) {
-              <small class="validation"> La contraseña debe tener entre 8 y 12 caracteres. </small>
+              <small class="validation"> La contraseña debe tener entre 8 y 64 caracteres. </small>
             }
           </div>
         }

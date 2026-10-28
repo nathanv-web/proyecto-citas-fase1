@@ -11,17 +11,27 @@
     <h2>Horario de atención</h2>
     <div class="form-grid">
       <div class="field">
-        <label for="schedule-doctor">ID Médico</label>
-        <input
+        <label for="schedule-doctor">Médico</label>
+        <select
           id="schedule-doctor"
-          type="number"
-          placeholder="Ej. 2"
           formControlName="idMedico"
           aria-describedby="schedule-doctor-help"
-        />
-        <small class="helper-text" id="schedule-doctor-help"
-          >El identificador se encuentra en el listado de médicos.</small
         >
+          <option [ngValue]="0">Selecciona tu perfil médico</option>
+          @for (doctor of doctors(); track doctor.idMedico) {
+            <option [ngValue]="doctor.idMedico">
+              {{ doctor.nombre }} · {{ doctor.especialidad }}
+            </option>
+          }
+        </select>
+        <small class="helper-text" id="schedule-doctor-help"
+          >El horario se guardará en tu propia agenda.</small
+        >
+        @if (loadingDoctors()) {
+          <small role="status">Cargando tu perfil médico...</small>
+        } @else if (!doctors().length) {
+          <small>No hay un perfil médico disponible para esta cuenta.</small>
+        }
       </div>
       <div class="field">
         <label for="schedule-date">Fecha de atención</label>
@@ -37,10 +47,13 @@
       </div>
     </div>
     <div class="form-actions">
-      <button class="btn btn-primary" type="submit">Crear horario</button>
+      <button
+        class="btn btn-primary"
+        type="submit"
+        [disabled]="form.invalid || saving() || loadingDoctors()"
+      >
+        Crear horario
+      </button>
     </div>
   </form>
-  @if (message) {
-    <p class="message" role="status">{{ message }}</p>
-  }
 </main>

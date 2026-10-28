@@ -1,3 +1,5 @@
+import { NotificationService } from '../../notifications/notification.service';
+import { apiErrorMessage } from '../../notifications/api-error';
 import { Injectable } from '@angular/core';
 import {
   HttpErrorResponse,
@@ -16,18 +18,21 @@ export class AuthInterceptor implements HttpInterceptor {
   private readonly tokenKey = 'auth_token';
   private readonly userKey = 'auth_user';
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private notifications: NotificationService) {}
 
   intercept(
     request: HttpRequest<unknown>,
     next: HttpHandler
   ): Observable<HttpEvent<unknown>> {
 
+    if (!request.url.startsWith('http://localhost:8081/api/v1/')) return next.handle(request);
+
+    const isPublic = /\/auth\/(login|register)$/.test(request.url);
     const token = localStorage.getItem(this.tokenKey);
 
     let authRequest = request;
 
-    if (token) {
+    if (token && !isPublic) {
       authRequest = request.clone({
         setHeaders: {
           Authorization: `Bearer ${token}`
@@ -38,7 +43,8 @@ export class AuthInterceptor implements HttpInterceptor {
     return next.handle(authRequest).pipe(
       catchError((error: HttpErrorResponse) => {
 
-        if (error.status === 401) {
+        void this.notifications.error(apiErrorMessage(error));
+        if (error.status === 401 && !isPublic) {
           localStorage.removeItem(this.tokenKey);
           localStorage.removeItem(this.userKey);
 

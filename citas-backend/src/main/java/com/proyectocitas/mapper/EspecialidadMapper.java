@@ -1,14 +1,14 @@
 package com.proyectocitas.mapper;
 
-import com.proyectocitas.dto.EspecialidadDTO;
-import com.proyectocitas.dto.EspecialidadRequestDTO;
+import com.proyectocitas.dto.response.EspecialidadResponseDTO;
+import com.proyectocitas.dto.request.EspecialidadRequestDTO;
 import com.proyectocitas.model.Especialidad;
 import org.springframework.stereotype.Component;
 
 @Component
 public class EspecialidadMapper {
 
-    public EspecialidadDTO toDTO(
+    public EspecialidadResponseDTO toDTO(
             Especialidad especialidad
     ) {
 
@@ -16,8 +16,8 @@ public class EspecialidadMapper {
             return null;
         }
 
-        EspecialidadDTO dto =
-                new EspecialidadDTO();
+        EspecialidadResponseDTO dto =
+                new EspecialidadResponseDTO();
 
         dto.setIdEspecialidad(
                 especialidad.getIdEspecialidad()

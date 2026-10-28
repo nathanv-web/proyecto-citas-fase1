@@ -62,9 +62,7 @@ export class SchedulesPage implements OnInit {
       error: (error: HttpErrorResponse) => {
         this.loadingMedicos = false;
 
-        this.errorMessage =
-          error.error?.message ||
-          'No fue posible cargar los médicos.';
+
       }
     });
   }
@@ -102,9 +100,7 @@ export class SchedulesPage implements OnInit {
           this.loadingHorarios = false;
           this.busquedaRealizada = true;
 
-          this.errorMessage =
-            error.error?.message ||
-            'No fue posible consultar los horarios disponibles.';
+
         }
       });
   }

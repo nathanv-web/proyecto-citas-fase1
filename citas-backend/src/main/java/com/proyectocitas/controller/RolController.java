@@ -1,8 +1,8 @@
 package com.proyectocitas.controller;
 
-import com.proyectocitas.dto.RolDTO;
-import com.proyectocitas.dto.RolRequestDTO;
-import com.proyectocitas.dto.RolUpdateDTO;
+import com.proyectocitas.dto.response.RolResponseDTO;
+import com.proyectocitas.dto.request.RolCreateRequestDTO;
+import com.proyectocitas.dto.request.RolUpdateRequestDTO;
 import com.proyectocitas.mapper.RolMapper;
 import com.proyectocitas.model.Rol;
 import com.proyectocitas.service.RolService;
@@ -25,7 +25,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.RequestParam;
-import com.proyectocitas.dto.RolPermisosRequestDTO;
+import com.proyectocitas.dto.request.RolPermisosRequestDTO;
 
 
 @RestController
@@ -50,8 +50,8 @@ public class RolController {
     // =================================================
 
     @PostMapping
-    public ResponseEntity<RolDTO> crearRol(
-            @Valid @RequestBody RolRequestDTO request) {
+    public ResponseEntity<RolResponseDTO> crearRol(
+            @Valid @RequestBody RolCreateRequestDTO request) {
 
         Rol rol =
                 rolMapper.toEntity(request);
@@ -59,7 +59,7 @@ public class RolController {
         Rol rolGuardado =
                 rolService.guardar(rol);
 
-        RolDTO respuesta =
+        RolResponseDTO respuesta =
                 rolMapper.toDTO(rolGuardado);
 
         return ResponseEntity
@@ -85,7 +85,7 @@ public ResponseEntity<?> listarRoles(
             && page == null
             && size == null) {
 
-        List<RolDTO> roles =
+        List<RolResponseDTO> roles =
                 rolService.obtenerTodos()
                         .stream()
                         .map(rolMapper::toDTO)
@@ -101,7 +101,7 @@ public ResponseEntity<?> listarRoles(
     Pageable pageable =
             PageRequest.of(numeroPagina, tamanoPagina);
 
-    Page<RolDTO> roles =
+    Page<RolResponseDTO> roles =
             rolService.buscarConPaginacion(
                     search,
                     pageable
@@ -115,18 +115,18 @@ public ResponseEntity<?> listarRoles(
 // =================================================
 
 @GetMapping("/{id}")
-public ResponseEntity<RolDTO> buscarRolPorId(
+public ResponseEntity<RolResponseDTO> buscarRolPorId(
 @PathVariable Long id){
-    
-    Rol rol = 
+
+    Rol rol =
             rolService.obtenerPorId(id);
-    
-    RolDTO respuesta = 
+
+    RolResponseDTO respuesta =
             rolMapper.toDTO(rol);
-    
+
     return ResponseEntity.
             ok(respuesta);
-    
+
 }
 
 // =================================================
@@ -134,14 +134,14 @@ public ResponseEntity<RolDTO> buscarRolPorId(
 // =================================================
 
 @PutMapping("/{id}")
-public ResponseEntity<RolDTO> actualizarRol(
+public ResponseEntity<RolResponseDTO> actualizarRol(
         @PathVariable Long id,
-        @Valid @RequestBody RolUpdateDTO request) {
+        @Valid @RequestBody RolUpdateRequestDTO request) {
 
     Rol rolActualizado =
             rolService.actualizar(request,id );
 
-    RolDTO respuesta =
+    RolResponseDTO respuesta =
             rolMapper.toDTO(rolActualizado);
 
     return ResponseEntity
@@ -167,7 +167,7 @@ public ResponseEntity<Void> eliminarRol(
 // =================================================
 
 @PutMapping("/{id}/permissions")
-public ResponseEntity<RolDTO> asignarPermisos(
+public ResponseEntity<RolResponseDTO> asignarPermisos(
         @PathVariable Long id,
         @Valid @RequestBody RolPermisosRequestDTO request) {
 
@@ -177,7 +177,7 @@ public ResponseEntity<RolDTO> asignarPermisos(
                     request.getPermisos()
             );
 
-    RolDTO respuesta =
+    RolResponseDTO respuesta =
             rolMapper.toDTO(
                     rolActualizado
             );

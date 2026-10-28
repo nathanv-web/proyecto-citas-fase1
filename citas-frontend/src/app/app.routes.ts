@@ -22,6 +22,12 @@ import { Welcome } from './features/public/welcome/welcome';
 /** Las rutas conectan las pantallas públicas y privadas con los controles de sesión y acceso a paneles. */
 export const routes: Routes = [
   {
+    path: 'change-password',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/auth/pages/change-password/change-password').then((m) => m.ChangePassword),
+  },
+  {
     path: 'login',
     component: Login,
   },

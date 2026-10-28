@@ -27,6 +27,8 @@ export interface Horario {
 
 /** El modelo describe una cita y la información clínica disponible en su historial. */
 export interface Cita {
+  idMedico: number;
+  motivoCancelacion?: string;
   idCita: number;
   paciente: string;
   medico: string;
@@ -49,8 +51,12 @@ export class AppointmentService {
 
   private apiUrl = API_BASE_URL;
 
-  getDoctors() {
-    return this.http.get<Medico[]>(`${this.apiUrl}/medicos`);
+  getDoctors(search = '', especialidad = '', estado = '') {
+    const params = new HttpParams()
+      .set('search', search)
+      .set('especialidad', especialidad)
+      .set('estado', estado);
+    return this.http.get<Medico[]>(`${this.apiUrl}/medicos`, { params });
   }
 
   getSpecialties() {
@@ -76,7 +82,15 @@ export class AppointmentService {
     return this.http.get<Cita[]>(`${this.apiUrl}/appointments/my-history`);
   }
 
-  cancelAppointment(idCita: number) {
-    return this.http.put<Cita>(`${this.apiUrl}/appointments/${idCita}/cancel`, {});
+  rescheduleAppointment(idCita: number, idHorarioNuevo: number) {
+    return this.http.put<Cita>(`${this.apiUrl}/appointments/${idCita}/reschedule`, {
+      idHorarioNuevo,
+    });
+  }
+
+  cancelAppointment(idCita: number, motivoCancelacion = '') {
+    return this.http.put<Cita>(`${this.apiUrl}/appointments/${idCita}/cancel`, {
+      motivoCancelacion,
+    });
   }
 }

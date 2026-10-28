@@ -8,9 +8,6 @@
   background: var(--app-navy);
   border-bottom: 1px solid var(--app-navy-light);
 }
-.panel-navigation nav {
-  justify-self: end;
-}
 .panel-navigation .app-brand {
   color: var(--app-text-light);
 }
@@ -23,9 +20,6 @@
 @media (max-width: 900px) {
   .panel-navigation {
     grid-template-columns: minmax(0, 1fr) auto;
-  }
-  .panel-navigation nav {
-    grid-column: 1 / -1;
   }
 }
 @media (max-width: 480px) {
@@ -42,8 +36,23 @@
   .panel-navigation .brand-copy strong {
     font-size: 20px;
   }
-  .panel-navigation nav,
-  .panel-navigation nav .btn {
-    width: 100%;
+}
+
+/* El área de trabajo mantiene el menú a la izquierda y evita desbordar el contenido. */
+.workspace.with-sidebar {
+  display: grid;
+  grid-template-columns: 264px minmax(0, 1fr);
+  align-items: start;
+  min-height: calc(100dvh - 100px);
+  background: var(--app-navy);
+}
+.workspace-content {
+  min-width: 0;
+  min-height: 100%;
+  background: var(--app-bg);
+}
+@media (max-width: 900px) {
+  .workspace.with-sidebar {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

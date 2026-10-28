@@ -1,7 +1,7 @@
 package com.proyectocitas.mapper;
 
-import com.proyectocitas.dto.AppointmentRequestDTO;
-import com.proyectocitas.dto.AppointmentResponseDTO;
+import com.proyectocitas.dto.request.AppointmentCreateRequestDTO;
+import com.proyectocitas.dto.response.AppointmentResponseDTO;
 import com.proyectocitas.model.Cita;
 import org.springframework.stereotype.Component;
 
@@ -47,6 +47,7 @@ public class AppointmentMapper {
 
             //Obtener datos del medico asociado al horario
             if (cita.getHorario().getMedico() != null) {
+                dto.setIdMedico(cita.getHorario().getMedico().getIdMedico());
 
                 //Obtener nombre completo del medico
                 if (cita.getHorario().getMedico().getUsuario() != null) {
@@ -97,8 +98,8 @@ public class AppointmentMapper {
     }
 
 
-    //Convierte AppointmentRequestDTO a una entidad Cita
-    public Cita toEntity(AppointmentRequestDTO dto) {
+    //Convierte AppointmentCreateRequestDTO a una entidad Cita
+    public Cita toEntity(AppointmentCreateRequestDTO dto) {
 
         //Evitar error si el DTO viene null
         if (dto == null) {

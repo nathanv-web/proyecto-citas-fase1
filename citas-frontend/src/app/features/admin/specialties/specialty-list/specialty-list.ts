@@ -1,3 +1,4 @@
+import { ConfirmationService } from '../../../../core/notifications/confirmation.service';
 import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
@@ -16,6 +17,7 @@ import { finalize, Observable } from 'rxjs';
   styleUrl: './specialty-list.css',
 })
 export class SpecialtyList implements OnInit {
+  private readonly confirmation = inject(ConfirmationService);
   private readonly changeDetector = inject(ChangeDetectorRef);
   private readonly authService = inject(AuthService);
   readonly canViewSpecialties = this.authService.hasPermission('VER_ESPECIALIDADES');
@@ -61,14 +63,12 @@ export class SpecialtyList implements OnInit {
         },
 
         error: (error) => {
-          this.error = error?.error?.message || 'No se pudieron cargar las especialidades.';
-
           this.loading = false;
         },
       });
   }
 
-  changeSpecialtyState(specialty: Specialty): void {
+  async changeSpecialtyState(specialty: Specialty): Promise<void> {
     const activate = specialty.activo === false;
     if (
       !this.canViewSpecialties ||
@@ -79,9 +79,9 @@ export class SpecialtyList implements OnInit {
       return;
     }
     if (
-      !confirm(
+      !(await this.confirmation.confirm(
         `¿Deseas ${activate ? 'activar' : 'desactivar'} la especialidad ${specialty.nombre}?`,
-      )
+      ))
     ) {
       return;
     }
@@ -103,11 +103,7 @@ export class SpecialtyList implements OnInit {
           this.success = `Especialidad ${activate ? 'activada' : 'desactivada'} correctamente.`;
           this.loadSpecialties();
         },
-        error: (error) => {
-          this.error =
-            error?.error?.message ||
-            `No se pudo ${activate ? 'activar' : 'desactivar'} la especialidad.`;
-        },
+        error: (error) => {},
       });
   }
 
@@ -147,8 +143,6 @@ export class SpecialtyList implements OnInit {
         },
 
         error: (error) => {
-          this.error = error?.error?.message || 'No se pudo crear la especialidad.';
-
           this.saving = false;
         },
       });

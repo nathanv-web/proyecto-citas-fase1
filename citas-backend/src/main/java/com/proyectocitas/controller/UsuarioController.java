@@ -1,10 +1,10 @@
 
 package com.proyectocitas.controller;
 
-import com.proyectocitas.dto.UsuarioDTO;
-import com.proyectocitas.dto.UsuarioRequestDTO;
-import com.proyectocitas.dto.UsuarioRolesRequestDTO;
-import com.proyectocitas.dto.UsuarioUpdateDTO;
+import com.proyectocitas.dto.response.UsuarioResponseDTO;
+import com.proyectocitas.dto.request.UsuarioCreateRequestDTO;
+import com.proyectocitas.dto.request.UsuarioRolesRequestDTO;
+import com.proyectocitas.dto.request.UsuarioUpdateRequestDTO;
 import com.proyectocitas.mapper.UsuarioMapper;
 import com.proyectocitas.model.Usuario;
 import com.proyectocitas.service.UsuarioService;
@@ -49,8 +49,8 @@ public class UsuarioController {
     // =================================================
 
     @PostMapping
-    public ResponseEntity<UsuarioDTO> crearUsuario(
-            @Valid @RequestBody UsuarioRequestDTO request) {
+    public ResponseEntity<UsuarioResponseDTO> crearUsuario(
+            @Valid @RequestBody UsuarioCreateRequestDTO request) {
 
         Usuario usuario =
                 usuarioMapper.toEntity(request);
@@ -58,7 +58,7 @@ public class UsuarioController {
         Usuario usuarioGuardado =
                 usuarioService.guardar(usuario);
 
-        UsuarioDTO respuesta =
+        UsuarioResponseDTO respuesta =
                 usuarioMapper.toDTO(usuarioGuardado);
 
         return ResponseEntity
@@ -71,14 +71,14 @@ public class UsuarioController {
 // Los parámetros son opcionales para mantener compatibilidad
 // con las llamadas existentes a GET /api/v1/users.
 @GetMapping
-public ResponseEntity<List<UsuarioDTO>> listarUsuarios(
+public ResponseEntity<List<UsuarioResponseDTO>> listarUsuarios(
         @RequestParam(required = false) String search,
         @RequestParam(required = false) Boolean activo,
         @RequestParam(required = false) String rol) {
 
     // Si no se envían filtros, el servicio igualmente devuelve
     // todos los usuarios, manteniendo el comportamiento anterior.
-    List<UsuarioDTO> usuarios =
+    List<UsuarioResponseDTO> usuarios =
             usuarioService.buscarConFiltros(
                     search,
                     activo,
@@ -95,13 +95,13 @@ public ResponseEntity<List<UsuarioDTO>> listarUsuarios(
 // =================================================
 
 @GetMapping("/{id}")
-public ResponseEntity<UsuarioDTO> buscarUsuarioPorId(
+public ResponseEntity<UsuarioResponseDTO> buscarUsuarioPorId(
         @PathVariable Long id) {
 
     Usuario usuario =
             usuarioService.obtenerPorId(id);
 
-    UsuarioDTO respuesta =
+    UsuarioResponseDTO respuesta =
             usuarioMapper.toDTO(usuario);
 
     return ResponseEntity
@@ -111,18 +111,18 @@ public ResponseEntity<UsuarioDTO> buscarUsuarioPorId(
 // Actualizar datos
 // =================================================
 @PutMapping("/{id}")
-public ResponseEntity<UsuarioDTO> acutalizarUsuario(
+public ResponseEntity<UsuarioResponseDTO> acutalizarUsuario(
 @PathVariable Long id,
-        @Valid @RequestBody UsuarioUpdateDTO request){
-    Usuario usuarioActualizado= 
+        @Valid @RequestBody UsuarioUpdateRequestDTO request){
+    Usuario usuarioActualizado=
             usuarioService.actualizar(id, request);
-    
-    UsuarioDTO respuesta = 
+
+    UsuarioResponseDTO respuesta =
             usuarioMapper.toDTO(usuarioActualizado);
-    
+
     return ResponseEntity.
             ok(respuesta);
-  
+
 }
 
 // =================================================
@@ -149,7 +149,7 @@ public ResponseEntity<Void> desactivarUsuario(
 // =================================================
 
 @PutMapping("/{idUsuario}/roles")
-public ResponseEntity<UsuarioDTO> asignarRoles(
+public ResponseEntity<UsuarioResponseDTO> asignarRoles(
         @PathVariable Long idUsuario,
         @Valid @RequestBody UsuarioRolesRequestDTO request) {
 
@@ -159,7 +159,7 @@ public ResponseEntity<UsuarioDTO> asignarRoles(
                     request.getIdRol()
             );
 
-    UsuarioDTO respuesta =
+    UsuarioResponseDTO respuesta =
             usuarioMapper.toDTO(usuarioActualizado);
 
     return ResponseEntity

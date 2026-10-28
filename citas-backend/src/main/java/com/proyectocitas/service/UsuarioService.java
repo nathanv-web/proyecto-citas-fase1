@@ -1,7 +1,7 @@
 package com.proyectocitas.service;
 
 import com.proyectocitas.model.Usuario;
-import com.proyectocitas.dto.UsuarioUpdateDTO;
+import com.proyectocitas.dto.request.UsuarioUpdateRequestDTO;
 import java.util.Set;
 
 import java.util.List;
@@ -27,14 +27,14 @@ List<Usuario> buscarConFiltros(
     Optional<Usuario> obtenerPorCorreo(String correo);
 
     Usuario guardar(Usuario usuario);
-    
+
     Usuario registrarPaciente(Usuario usuario);
 
-    Usuario actualizar(Long id, UsuarioUpdateDTO usuario);
+    Usuario actualizar(Long id, UsuarioUpdateRequestDTO usuario);
 
     Usuario asignarRol(Long id,
             Set<Long> idsRol );
-    
+
     void desactivar(Long id);
-    
+
 }

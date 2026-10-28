@@ -79,6 +79,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // Token inválido: se deja la petición sin autenticación.
         }
 
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof Usuario usuario
+                && usuario.isDebeCambiarPassword()
+                && !request.getRequestURI().equals("/api/v1/me")
+                && !request.getRequestURI().equals("/api/v1/me/password")) {
+            response.setStatus(403);
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write("{\"status\":403,\"code\":\"PASSWORD_CHANGE_REQUIRED\",\"message\":\"Debes cambiar tu contraseña antes de continuar\"}");
+            return;
+        }
         filterChain.doFilter(request, response);
     }
 }

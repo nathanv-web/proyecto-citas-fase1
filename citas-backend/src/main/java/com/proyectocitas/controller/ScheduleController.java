@@ -1,8 +1,8 @@
 package com.proyectocitas.controller;
 
-import com.proyectocitas.dto.HorarioDisponibleDTO;
-import com.proyectocitas.dto.HorarioDisponibleRequestDTO;
-import com.proyectocitas.dto.HorarioUpdateRequestDTO;
+import com.proyectocitas.dto.response.HorarioDisponibleResponseDTO;
+import com.proyectocitas.dto.request.HorarioDisponibleCreateRequestDTO;
+import com.proyectocitas.dto.request.HorarioDisponibleUpdateRequestDTO;
 
 import com.proyectocitas.exception.ResourceNotFoundException;
 import com.proyectocitas.exception.ScheduleConflictException;
@@ -62,11 +62,11 @@ public class ScheduleController {
     // =================================================
 
     @PostMapping
-    public ResponseEntity<HorarioDisponibleDTO>
+    public ResponseEntity<HorarioDisponibleResponseDTO>
             crearHorario(
                     @Valid
                     @RequestBody
-                    HorarioDisponibleRequestDTO request,
+                    HorarioDisponibleCreateRequestDTO request,
                     Principal principal) {
 
         // ---------------------------------------------
@@ -167,12 +167,12 @@ public class ScheduleController {
     // =================================================
 
     @GetMapping("/available")
-    public ResponseEntity<List<HorarioDisponibleDTO>>
+    public ResponseEntity<List<HorarioDisponibleResponseDTO>>
             obtenerHorariosDisponibles(
                     @RequestParam Long idMedico,
                     @RequestParam LocalDate fecha) {
 
-        List<HorarioDisponibleDTO> horarios =
+        List<HorarioDisponibleResponseDTO> horarios =
                 horarioRepository
                         .findByMedico_IdMedicoAndFecha(
                                 idMedico,
@@ -194,12 +194,12 @@ public class ScheduleController {
     // =================================================
 
     @PutMapping("/{id}")
-    public ResponseEntity<HorarioDisponibleDTO>
+    public ResponseEntity<HorarioDisponibleResponseDTO>
             actualizarHorario(
                     @PathVariable Long id,
                     @Valid
                     @RequestBody
-                    HorarioUpdateRequestDTO request,
+                    HorarioDisponibleUpdateRequestDTO request,
                     Principal principal) {
 
 

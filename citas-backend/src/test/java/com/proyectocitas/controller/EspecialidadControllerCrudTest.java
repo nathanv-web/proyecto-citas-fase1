@@ -1,7 +1,7 @@
 package com.proyectocitas.controller;
 
-import com.proyectocitas.dto.EspecialidadDTO;
-import com.proyectocitas.dto.EspecialidadRequestDTO;
+import com.proyectocitas.dto.response.EspecialidadResponseDTO;
+import com.proyectocitas.dto.request.EspecialidadRequestDTO;
 import com.proyectocitas.mapper.EspecialidadMapper;
 import com.proyectocitas.model.Especialidad;
 import com.proyectocitas.service.EspecialidadService;
@@ -94,8 +94,8 @@ class EspecialidadControllerCrudTest {
         // DTO RESPUESTA
         // =============================================
 
-        EspecialidadDTO respuesta =
-                new EspecialidadDTO();
+        EspecialidadResponseDTO respuesta =
+                new EspecialidadResponseDTO();
 
         respuesta.setIdEspecialidad(1L);
         respuesta.setNombre(

@@ -1,7 +1,7 @@
 package com.proyectocitas.mapper;
 
-import com.proyectocitas.dto.RolDTO;
-import com.proyectocitas.dto.RolRequestDTO;
+import com.proyectocitas.dto.response.RolResponseDTO;
+import com.proyectocitas.dto.request.RolCreateRequestDTO;
 import com.proyectocitas.model.Rol;
 
 import org.springframework.stereotype.Component;
@@ -9,18 +9,18 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class RolMapper {
-    
-    public Rol toEntity(RolRequestDTO dto){
+
+    public Rol toEntity(RolCreateRequestDTO dto){
         Rol rol = new Rol();
-        
+
         rol.setNombre(dto.getNombre());
         rol.setDescripcion(dto.getDescripcion());
-        
+
         return rol;
     }
-public RolDTO toDTO(Rol rol) {
+public RolResponseDTO toDTO(Rol rol) {
 
-    RolDTO dto = new RolDTO();
+    RolResponseDTO dto = new RolResponseDTO();
 
     dto.setIdRol(rol.getIdRol());
     dto.setNombre(rol.getNombre());

@@ -1,7 +1,7 @@
 package com.proyectocitas.service;
 
-import com.proyectocitas.dto.AppointmentRequestDTO;
-import com.proyectocitas.dto.AppointmentResponseDTO;
+import com.proyectocitas.dto.request.AppointmentCreateRequestDTO;
+import com.proyectocitas.dto.response.AppointmentResponseDTO;
 import com.proyectocitas.exception.ResourceNotFoundException;
 import com.proyectocitas.exception.ScheduleConflictException;
 import com.proyectocitas.mapper.AppointmentMapper;
@@ -13,7 +13,7 @@ import com.proyectocitas.repository.CitaRepository;
 import com.proyectocitas.repository.EstadoCitaRepository;
 import com.proyectocitas.repository.HorarioDisponibleRepository;
 import com.proyectocitas.repository.UsuarioRepository;
-import com.proyectocitas.dto.DiagnosisRequestDTO;
+import com.proyectocitas.dto.request.DiagnosisRequestDTO;
 import com.proyectocitas.exception.ResourceConflictException;
 import com.proyectocitas.model.Medico;
 import java.util.List;
@@ -91,8 +91,8 @@ class AppointmentServiceTest {
     @Test
     void debeAgendarCitaCorrectamente() {
 
-        AppointmentRequestDTO request =
-                new AppointmentRequestDTO();
+        AppointmentCreateRequestDTO request =
+                new AppointmentCreateRequestDTO();
 
         request.setIdHorario(10L);
         request.setMotivo("  Dolor de cabeza  ");
@@ -224,8 +224,8 @@ class AppointmentServiceTest {
     @Test
     void agendarDebeRetornar401SiPacienteNoExiste() {
 
-        AppointmentRequestDTO request =
-                new AppointmentRequestDTO();
+        AppointmentCreateRequestDTO request =
+                new AppointmentCreateRequestDTO();
 
         request.setIdHorario(10L);
         request.setMotivo("Consulta general");
@@ -264,8 +264,8 @@ class AppointmentServiceTest {
     @Test
     void agendarDebeFallarSiHorarioNoExiste() {
 
-        AppointmentRequestDTO request =
-                new AppointmentRequestDTO();
+        AppointmentCreateRequestDTO request =
+                new AppointmentCreateRequestDTO();
 
         request.setIdHorario(99L);
         request.setMotivo("Consulta general");
@@ -308,8 +308,8 @@ class AppointmentServiceTest {
     @Test
     void agendarDebeFallarSiHorarioNoEstaDisponible() {
 
-        AppointmentRequestDTO request =
-                new AppointmentRequestDTO();
+        AppointmentCreateRequestDTO request =
+                new AppointmentCreateRequestDTO();
 
         request.setIdHorario(10L);
         request.setMotivo("Consulta general");
@@ -362,8 +362,8 @@ class AppointmentServiceTest {
     @Test
 void agendarDebeFallarSiHorarioYaTieneCita() {
 
-    AppointmentRequestDTO request =
-            new AppointmentRequestDTO();
+    AppointmentCreateRequestDTO request =
+            new AppointmentCreateRequestDTO();
 
     request.setIdHorario(10L);
     request.setMotivo("Consulta general");

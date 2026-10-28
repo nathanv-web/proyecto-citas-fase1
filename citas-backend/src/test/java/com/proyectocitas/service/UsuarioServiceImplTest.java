@@ -1,6 +1,6 @@
 package com.proyectocitas.service;
 
-import com.proyectocitas.dto.UsuarioUpdateDTO;
+import com.proyectocitas.dto.request.UsuarioUpdateRequestDTO;
 import com.proyectocitas.exception.DuplicateResourceException;
 import com.proyectocitas.model.Usuario;
 import com.proyectocitas.repository.RolRepository;
@@ -54,8 +54,8 @@ class UsuarioServiceImplTest {
         usuarioExistente.setCorreo("actual@gmail.com");
 
 
-        UsuarioUpdateDTO updateDTO =
-                new UsuarioUpdateDTO();
+        UsuarioUpdateRequestDTO updateDTO =
+                new UsuarioUpdateRequestDTO();
 
         updateDTO.setCorreo("ocupado@gmail.com");
 

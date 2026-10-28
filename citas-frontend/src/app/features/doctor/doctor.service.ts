@@ -1,10 +1,11 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 
 import { inject, Injectable } from '@angular/core';
 import { API_BASE_URL } from '../../core/config/api.config';
 
 /** El modelo reúne los datos de una consulta que se presenta en la agenda del médico. */
 export interface DoctorAppointment {
+  fecha: string;
   idCita: number;
   paciente: string;
   horaInicio: string;
@@ -22,8 +23,10 @@ export class DoctorService {
 
   private apiUrl = API_BASE_URL;
 
-  getAgenda() {
-    return this.http.get<DoctorAppointment[]>(`${this.apiUrl}/appointments/my-agenda`);
+  getAgenda(fecha?: string, periodo = 'dia') {
+    let params = new HttpParams().set('periodo', periodo);
+    if (fecha) params = params.set('fecha', fecha);
+    return this.http.get<DoctorAppointment[]>(`${this.apiUrl}/appointments/my-agenda`, { params });
   }
 
   createSchedule(idMedico: number, fecha: string, horaInicio: string, horaFin: string) {

@@ -1,3 +1,5 @@
+<app-toast-container />
+<app-confirmation-dialog />
 @if (showPanelNavigation()) {
   <header class="panel-navigation">
     <app-user-profile />
@@ -8,11 +10,13 @@
         <small>Tu salud en un clic</small>
       </span>
     </a>
-    <nav aria-label="Navegación de paneles">
-      <a class="btn btn-transparente" routerLink="/panels"
-        >Cambiar de panel <span aria-hidden="true">→</span></a
-      >
-    </nav>
   </header>
 }
-<router-outlet />
+<div class="workspace" [class.with-sidebar]="showSidebar()">
+  @if (showSidebar()) {
+    <app-sidebar [currentUrl]="currentUrl()" />
+  }
+  <div class="workspace-content">
+    <router-outlet />
+  </div>
+</div>

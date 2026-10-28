@@ -1,6 +1,6 @@
 import { Component, ElementRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { NavigationEnd, Router } from '@angular/router';
+import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { filter } from 'rxjs';
 import { AuthService } from '../../core/auth/services/auth.service';
 
@@ -8,6 +8,7 @@ import { AuthService } from '../../core/auth/services/auth.service';
 @Component({
   selector: 'app-user-profile',
   standalone: true,
+  imports: [RouterLink],
   templateUrl: './user-profile.html',
   styleUrl: './user-profile.css',
   host: {

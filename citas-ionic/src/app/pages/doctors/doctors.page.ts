@@ -39,9 +39,7 @@ export class DoctorsPage implements OnInit {
       error: (error: HttpErrorResponse) => {
         this.loading = false;
 
-        this.errorMessage =
-          error.error?.message ||
-          'No fue posible cargar los médicos.';
+
       }
     });
   }

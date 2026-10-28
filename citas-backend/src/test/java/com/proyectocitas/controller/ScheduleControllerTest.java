@@ -1,8 +1,8 @@
 package com.proyectocitas.controller;
 
-import com.proyectocitas.dto.HorarioDisponibleDTO;
-import com.proyectocitas.dto.HorarioDisponibleRequestDTO;
-import com.proyectocitas.dto.HorarioUpdateRequestDTO;
+import com.proyectocitas.dto.response.HorarioDisponibleResponseDTO;
+import com.proyectocitas.dto.request.HorarioDisponibleCreateRequestDTO;
+import com.proyectocitas.dto.request.HorarioDisponibleUpdateRequestDTO;
 import com.proyectocitas.exception.ScheduleConflictException;
 import com.proyectocitas.mapper.HorarioDisponibleMapper;
 import com.proyectocitas.model.HorarioDisponible;
@@ -57,15 +57,15 @@ class ScheduleControllerTest {
         Medico medico = new Medico();
         medico.setIdMedico(1L);
 
-        HorarioDisponibleRequestDTO request =
-                new HorarioDisponibleRequestDTO();
+        HorarioDisponibleCreateRequestDTO request =
+                new HorarioDisponibleCreateRequestDTO();
 
         request.setFecha(LocalDate.now().plusDays(1));
         request.setHoraInicio(LocalTime.of(8, 0));
         request.setHoraFin(LocalTime.of(9, 0));
 
         HorarioDisponible horario = new HorarioDisponible();
-        HorarioDisponibleDTO dto = new HorarioDisponibleDTO();
+        HorarioDisponibleResponseDTO dto = new HorarioDisponibleResponseDTO();
 
         when(medicoRepository.findByUsuario_Correo("doctor@clinica.com"))
                 .thenReturn(Optional.of(medico));
@@ -104,8 +104,8 @@ class ScheduleControllerTest {
         Medico medico = new Medico();
         medico.setIdMedico(1L);
 
-        HorarioDisponibleRequestDTO request =
-                new HorarioDisponibleRequestDTO();
+        HorarioDisponibleCreateRequestDTO request =
+                new HorarioDisponibleCreateRequestDTO();
 
         request.setFecha(LocalDate.now().minusDays(1));
         request.setHoraInicio(LocalTime.of(8, 0));
@@ -139,8 +139,8 @@ class ScheduleControllerTest {
         horario.setHoraInicio(LocalTime.of(8, 0));
         horario.setHoraFin(LocalTime.of(9, 0));
 
-        HorarioUpdateRequestDTO request =
-                new HorarioUpdateRequestDTO();
+        HorarioDisponibleUpdateRequestDTO request =
+                new HorarioDisponibleUpdateRequestDTO();
 
         request.setFecha(LocalDate.now().minusDays(1));
         request.setHoraInicio(LocalTime.of(10, 0));

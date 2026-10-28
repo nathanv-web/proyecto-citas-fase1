@@ -12,6 +12,7 @@ export interface LoginUsuario {
 
 /** La respuesta contiene el token, su tipo y los datos de la cuenta autenticada. */
 export interface LoginResponse {
+  debeCambiarPassword: boolean;
   token: string;
   tipo: string;
   usuario: LoginUsuario;

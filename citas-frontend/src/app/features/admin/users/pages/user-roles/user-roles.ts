@@ -77,16 +77,12 @@ export class UserRoles implements OnInit {
               },
 
               error: (error) => {
-                this.error = error?.error?.message || 'No se pudieron cargar los roles.';
-
                 this.loading = false;
               },
             });
         },
 
         error: (error) => {
-          this.error = error?.error?.message || 'No se pudo cargar el usuario.';
-
           this.loading = false;
         },
       });
@@ -132,8 +128,6 @@ export class UserRoles implements OnInit {
         },
 
         error: (error) => {
-          this.error = error?.error?.message || 'No se pudieron asignar los roles.';
-
           this.saving = false;
         },
       });

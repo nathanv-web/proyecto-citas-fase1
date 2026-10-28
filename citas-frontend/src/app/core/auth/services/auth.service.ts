@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, finalize, shareReplay, tap } from 'rxjs';
 
 import { LoginRequest } from '../models/login-request.model';
 import { LoginResponse, LoginUsuario } from '../models/login-response.model';
@@ -12,6 +12,7 @@ import { RegisterRequest } from '../models/register-request.model';
   providedIn: 'root',
 })
 export class AuthService {
+  private sessionRequest?: Observable<Pick<LoginResponse, 'usuario' | 'debeCambiarPassword'>>;
   private readonly apiUrl = `${API_BASE_URL}/auth`;
   private readonly tokenKey = 'auth_token';
   private readonly userKey = 'auth_user';
@@ -26,13 +27,44 @@ export class AuthService {
   login(credentials: LoginRequest): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.apiUrl}/login`, credentials).pipe(
       tap((response) => {
+        this.setPasswordChangeRequired(response.debeCambiarPassword);
         localStorage.setItem(this.tokenKey, response.token);
         localStorage.setItem(this.userKey, JSON.stringify(response.usuario));
       }),
     );
   }
 
+  setPasswordChangeRequired(required: boolean): void {
+    localStorage.setItem('auth_password_change', String(required));
+  }
+
+  mustChangePassword(): boolean {
+    return localStorage.getItem('auth_password_change') === 'true';
+  }
+
+  refreshSession(): Observable<Pick<LoginResponse, 'usuario' | 'debeCambiarPassword'>> {
+    if (this.sessionRequest) return this.sessionRequest;
+    this.sessionRequest = this.http
+      .get<Pick<LoginResponse, 'usuario' | 'debeCambiarPassword'>>(`${API_BASE_URL}/me`)
+      .pipe(
+        tap((response) => {
+          localStorage.setItem(this.userKey, JSON.stringify(response.usuario));
+          this.setPasswordChangeRequired(response.debeCambiarPassword);
+        }),
+        finalize(() => {
+          this.sessionRequest = undefined;
+        }),
+        shareReplay({ bufferSize: 1, refCount: true }),
+      );
+    return this.sessionRequest;
+  }
+
+  changePassword(actual: string, nueva: string): Observable<{ message: string }> {
+    return this.http.put<{ message: string }>(`${API_BASE_URL}/me/password`, { actual, nueva });
+  }
+
   logout(): void {
+    localStorage.removeItem('auth_password_change');
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.userKey);
   }

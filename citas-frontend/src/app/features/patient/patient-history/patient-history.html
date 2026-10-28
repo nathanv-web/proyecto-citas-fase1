@@ -6,8 +6,84 @@
       <p>Consulta tus reservas y la información registrada durante tu atención.</p>
     </div>
   </header>
+  <section class="form-card form-grid" aria-label="Periodo de mis citas">
+    <div class="field">
+      <label for="history-period">Vista</label
+      ><select id="history-period" [ngModel]="period()" (ngModelChange)="period.set($event)">
+        <option value="todos">Historial completo</option>
+        <option value="dia">Día</option>
+        <option value="semana">Siete días desde la fecha</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="history-date">Fecha</label
+      ><input
+        id="history-date"
+        type="date"
+        [ngModel]="selectedDate()"
+        (ngModelChange)="selectedDate.set($event)"
+      />
+    </div>
+    <div class="field">
+      <label for="cancel-reason">Motivo de cancelación (opcional)</label
+      ><input id="cancel-reason" maxlength="500" [(ngModel)]="motivoCancelacion" />
+    </div>
+  </section>
+  @if (loading()) {
+    <p role="status">Cargando citas...</p>
+  }
+  @if (selected) {
+    <section class="form-card" aria-labelledby="reschedule-title">
+      <h2 id="reschedule-title">Reprogramar cita #{{ selected.idCita }}</h2>
+      <div class="form-grid">
+        <p>Médico: {{ selected.medico }}. La reprogramación conserva el mismo médico.</p>
+        <div class="field">
+          <label for="new-date">Fecha</label
+          ><input
+            id="new-date"
+            type="date"
+            [(ngModel)]="fecha"
+            (ngModelChange)="clearSchedules()"
+          />
+        </div>
+        <button
+          class="btn"
+          type="button"
+          (click)="searchSchedules()"
+          [disabled]="!idMedico || !fecha || busy()"
+        >
+          Consultar disponibilidad
+        </button>
+        <div class="field">
+          <label for="new-schedule">Nuevo horario</label
+          ><select id="new-schedule" [(ngModel)]="idHorarioNuevo">
+            <option [ngValue]="0">Selecciona un horario disponible</option>
+            @for (schedule of schedules(); track schedule.idHorario) {
+              <option [ngValue]="schedule.idHorario">
+                {{ schedule.horaInicio }} - {{ schedule.horaFin }}
+              </option>
+            }
+          </select>
+        </div>
+      </div>
+      @if (fecha && !schedules().length) {
+        <p role="status">Consulta la disponibilidad o selecciona otra fecha.</p>
+      }
+      <button
+        class="btn btn-primary"
+        type="button"
+        (click)="reschedule()"
+        [disabled]="busy() || !idHorarioNuevo"
+      >
+        Guardar nuevo horario
+      </button>
+      <button class="btn" type="button" (click)="selected = undefined" [disabled]="busy()">
+        Volver
+      </button>
+    </section>
+  }
   <section class="record-grid" aria-label="Historial de citas">
-    @for (appointment of appointments(); track appointment.idCita) {
+    @for (appointment of visibleAppointments(); track appointment.idCita) {
       <article class="record-card">
         <div class="record-header">
           <h2>Cita #{{ appointment.idCita }}</h2>
@@ -42,12 +118,34 @@
             <p>{{ appointment.observaciones }}</p>
           </div>
         }
+        @if (appointment.motivoCancelacion) {
+          <p>Motivo de cancelación: {{ appointment.motivoCancelacion }}</p>
+        }
+        @if (canRescheduleAppointment && appointment.estado === 'PENDIENTE') {
+          <button
+            class="btn btn-secondary"
+            type="button"
+            (click)="openReschedule(appointment)"
+            [disabled]="busy()"
+          >
+            Reprogramar
+          </button>
+        }
         @if (canCancelAppointment && appointment.estado === 'PENDIENTE') {
-          <button class="btn btn-danger" type="button" (click)="cancel(appointment.idCita)">
+          <button
+            class="btn btn-danger"
+            type="button"
+            (click)="cancel(appointment.idCita)"
+            [disabled]="busy()"
+          >
             Cancelar cita
           </button>
         }
       </article>
+    } @empty {
+      @if (!loading()) {
+        <p role="status">No hay citas en el periodo seleccionado.</p>
+      }
     }
   </section>
 </main>

@@ -1,6 +1,6 @@
 package com.proyectocitas.service.Impl;
 
-import com.proyectocitas.dto.UsuarioUpdateDTO;
+import com.proyectocitas.dto.request.UsuarioUpdateRequestDTO;
 import com.proyectocitas.model.Usuario;
 import com.proyectocitas.repository.UsuarioRepository;
 import com.proyectocitas.service.UsuarioService;
@@ -32,7 +32,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     //Constructor para inyectar el repositorio de usuarios
 
-    public UsuarioServiceImpl(UsuarioRepository usuarioRepository, 
+    public UsuarioServiceImpl(UsuarioRepository usuarioRepository,
             PasswordEncoder passwordEncoder,
             RolRepository rolRepository) {
         this.usuarioRepository = usuarioRepository;
@@ -94,11 +94,12 @@ public List<Usuario> buscarConFiltros(
 
     @Override
     public Usuario guardar(Usuario usuario) {
-        
+        usuario.setDebeCambiarPassword(true);
+
         if (usuarioRepository.existsByCorreo(usuario.getCorreo())) {
             throw new DuplicateResourceException("Ya existe un usuario registrado con este correo.");
         }
-        
+
         usuario.setContraseña(
         passwordEncoder.encode(usuario.getContrasena())
         );
@@ -108,13 +109,13 @@ public List<Usuario> buscarConFiltros(
     //Actualizar los datos principales de un usuario existente
 
     @Override
-    public Usuario actualizar(Long id,UsuarioUpdateDTO usuario) {
+    public Usuario actualizar(Long id,UsuarioUpdateRequestDTO usuario) {
 
     //Buscar el usuario existente en la base de datos
     Usuario usuarioDB = usuarioRepository.findById(id)
             .orElseThrow(()->
             new ResourceNotFoundException("El usuario Indicado no existe"));
-    
+
     //actualizar nombre
         if (usuario.getNombre() != null) {
             usuarioDB.setNombre(usuario.getNombre());
@@ -132,7 +133,7 @@ public List<Usuario> buscarConFiltros(
                 }
                 usuarioDB.setCorreo(usuario.getCorreo());
             }
-            
+
             //Actualizar telefono
             if (usuario.getTelefono() != null) {
             usuarioDB.setTelefono(usuario.getTelefono());
@@ -141,11 +142,11 @@ public List<Usuario> buscarConFiltros(
                 if (usuario.getActivo() != null) {
                     usuarioDB.setActivo(usuario.getActivo());
                 }
-            
+
                 return usuarioRepository.save(usuarioDB);
 
     }
-    
+
     // =================================================
 // ASIGNAR ROLES A UN USUARIO
 // =================================================
@@ -313,7 +314,7 @@ AuditoriaService.registrar(
 
 return usuarioActualizado;
 }
-    
+
     // =================================================
 // DESACTIVAR USUARIO
 // =================================================
@@ -377,35 +378,36 @@ AuditoriaService.registrar(
 }
 
     //Login usuario pacientes
-    @Override 
+    @Override
     public Usuario registrarPaciente(Usuario usuario){
-        
+        usuario.setDebeCambiarPassword(false);
+
         //Verificar correo dupĺicado
         if (usuarioRepository.existsByCorreo(usuario.getCorreo())) {
             throw  new DuplicateResourceException(
             "Ya existe un usuario registrado con ese correo"
             );
         }
-        
+
         //  Buscar el Rol del paciente
-        
+
         Rol rolPaciente = rolRepository.findByNombre("ROLE_PATIENT")
                 .orElseThrow(()->
                         new ResourceNotFoundException("El rol ROLE_PATIENT no existe")
                 );
-        
+
         //Cifrar Contraseña
-        
+
         usuario.setContraseña(passwordEncoder.encode(usuario.getContrasena()));
-        
+
         //Asignar automaticamente ROLE_PATIENT
-        
+
         usuario.getRoles().add(rolPaciente);
-        
+
         //Guardar Usuario
-        
+
          return usuarioRepository.save(usuario);
-        
+
     }
-    
+
 }

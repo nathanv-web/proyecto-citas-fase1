@@ -15,7 +15,7 @@ import java.util.Set;
 public class Usuario implements UserDetails { //Metodo de autenticazion y autorizacion de una persona
 
     // ATRIBUTOS DE LA TABLA USUARIO
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_usuario") //
@@ -23,25 +23,37 @@ public class Usuario implements UserDetails { //Metodo de autenticazion y autori
 
     @Column(nullable = false)
     private String nombre;
-    
+
     @Column(nullable = false)
     private String apellido;
 
     @Column(unique = true, nullable = false)
     private String correo;
-    
+
     @Column(nullable = false)
     private String telefono;
 
     @Column(nullable = false)
     private String contrasena;
-    
+
     @Column(name = "fecha_registro", nullable = false)
     private LocalDateTime fechaRegistro;
-       
+
     @Column(nullable = false)
     private Boolean activo = true;
-    
+
+    @Column(name = "debe_cambiar_password", nullable = false)
+    private boolean debeCambiarPassword;
+
+    @Column(name = "intentos_fallidos", nullable = false)
+    private int intentosFallidos;
+
+    @Column(name = "bloqueado_hasta")
+    private LocalDateTime bloqueadoHasta;
+
+    @Column(name = "version_sesion", nullable = false)
+    private long versionSesion;
+
     // RELACION USUARIO CON ROLES
     //Roles que tiene asignados el usuario
     @ManyToMany(fetch = FetchType.EAGER)
@@ -52,11 +64,11 @@ public class Usuario implements UserDetails { //Metodo de autenticazion y autori
 )
 private Set<Rol> roles = new HashSet<>();
     //CONSTRUCTOR VACIO
-    
+
     public Usuario(){}
 
-    //FECHAN DE REGISTRO 
-    
+    //FECHAN DE REGISTRO
+
     @PrePersist
     public void prePersist(){
         if (fechaRegistro == null) {
@@ -66,7 +78,7 @@ private Set<Rol> roles = new HashSet<>();
             activo = true;
         }
     }
-    
+
     // GETTER Y SETTERS
 
     public Long getIdUsuario() {
@@ -140,10 +152,43 @@ private Set<Rol> roles = new HashSet<>();
     public void setRoles(Set<Rol> roles) {
         this.roles = roles;
     }
-    
+
+    public boolean isDebeCambiarPassword() {
+        return debeCambiarPassword;
+    }
+
+    public void setDebeCambiarPassword(boolean valor) {
+        debeCambiarPassword = valor;
+    }
+
+    public int getIntentosFallidos() {
+        return intentosFallidos;
+    }
+
+    public void setIntentosFallidos(int valor) {
+        intentosFallidos = valor;
+    }
+
+    public LocalDateTime getBloqueadoHasta() {
+        return bloqueadoHasta;
+    }
+
+    public void setBloqueadoHasta(LocalDateTime valor) {
+        bloqueadoHasta = valor;
+    }
+
+    public long getVersionSesion() {
+        return versionSesion;
+    }
+
+    public void setVersionSesion(long valor) {
+        versionSesion = valor;
+    }
+
+
     // METODOS DE USERDETAILS
     // SPRING SECURITY
-    
+
 @Override
 public Collection<? extends GrantedAuthority> getAuthorities() {
 
@@ -181,7 +226,7 @@ public Collection<? extends GrantedAuthority> getAuthorities() {
 
     return authorities;
 }
-    
+
     @Override
     public String getUsername(){
         return correo;
@@ -194,11 +239,11 @@ public Collection<? extends GrantedAuthority> getAuthorities() {
     public boolean isAccountNonExpired(){
         return true;
     }
-    @Override 
+    @Override
     public boolean isAccountNonLocked(){
-        return true;
+        return bloqueadoHasta == null || !bloqueadoHasta.isAfter(LocalDateTime.now());
     }
-    @Override 
+    @Override
     public boolean isCredentialsNonExpired(){
         return true;
     }
@@ -206,6 +251,6 @@ public Collection<? extends GrantedAuthority> getAuthorities() {
     public boolean isEnabled() {
        return activo;
 }
-    
-    
+
+
 }

@@ -1,3 +1,4 @@
+import { catchError, map, of } from 'rxjs';
 import { inject } from '@angular/core';
 import { ActivatedRouteSnapshot, CanActivateFn, Router } from '@angular/router';
 
@@ -12,13 +13,14 @@ export const permissionGuard: CanActivateFn = (route: ActivatedRouteSnapshot) =>
   const permissions = route.data['permissions'] as string[] | undefined;
   const requiredPermissions = [...(permissions ?? []), ...(permission ? [permission] : [])];
 
-  if (requiredPermissions.length === 0) {
-    return true;
-  }
-
-  if (requiredPermissions.every((required) => authService.hasPermission(required))) {
-    return true;
-  }
-
-  return router.createUrlTree(['/access-denied']);
+  return authService.refreshSession().pipe(
+    map((session) => {
+      if (session.debeCambiarPassword) return router.createUrlTree(['/change-password']);
+      return (
+        requiredPermissions.every((required) => authService.hasPermission(required)) ||
+        router.createUrlTree(['/access-denied'])
+      );
+    }),
+    catchError(() => of(false)),
+  );
 };

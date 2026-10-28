@@ -19,6 +19,10 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     // Utilizado principalmente durante el proceso de login.
     Optional<Usuario> findByCorreo(String correo);
 
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT u FROM Usuario u WHERE u.correo = :correo")
+    Optional<Usuario> buscarParaAutenticacion(@Param("correo") String correo);
+
 
     // =================================================
     // VALIDAR CORREO DUPLICADO

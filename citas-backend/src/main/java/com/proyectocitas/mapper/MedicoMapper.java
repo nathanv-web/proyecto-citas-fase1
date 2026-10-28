@@ -1,22 +1,22 @@
 package com.proyectocitas.mapper;
 
-import com.proyectocitas.dto.MedicoDTO;
-import com.proyectocitas.dto.MedicoRequestDTO;
+import com.proyectocitas.dto.response.MedicoResponseDTO;
+import com.proyectocitas.dto.request.MedicoCreateRequestDTO;
 import com.proyectocitas.model.Medico;
 import org.springframework.stereotype.Component;
 
 @Component
 public class MedicoMapper {
 
-    //Convierte una entidad Medico a MedicoDTO
-    public MedicoDTO toDTO(Medico medico) {
+    //Convierte una entidad Medico a MedicoResponseDTO
+    public MedicoResponseDTO toDTO(Medico medico) {
 
         //Evitar error si el medico viene null
         if (medico == null) {
             return null;
         }
 
-        MedicoDTO dto = new MedicoDTO();
+        MedicoResponseDTO dto = new MedicoResponseDTO();
 
         dto.setIdMedico(medico.getIdMedico());
         dto.setColegiado(medico.getColegiado());
@@ -62,8 +62,8 @@ public class MedicoMapper {
     }
 
 
-    //Convierte un MedicoRequestDTO a una entidad Medico
-    public Medico toEntity(MedicoRequestDTO dto) {
+    //Convierte un MedicoCreateRequestDTO a una entidad Medico
+    public Medico toEntity(MedicoCreateRequestDTO dto) {
 
         //Evitar error si el DTO viene null
         if (dto == null) {

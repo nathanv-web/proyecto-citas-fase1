@@ -69,9 +69,7 @@ export class RoleForm implements OnInit {
           this.permissions = permissions;
         },
 
-        error: (error) => {
-          this.error = error?.error?.message || 'No se pudieron cargar los permisos.';
-        },
+        error: (error) => {},
       });
   }
 
@@ -93,8 +91,6 @@ export class RoleForm implements OnInit {
         },
 
         error: (error) => {
-          this.error = error?.error?.message || 'No se pudo cargar el rol.';
-
           this.loading = false;
         },
       });
@@ -163,18 +159,12 @@ export class RoleForm implements OnInit {
               },
 
               error: (error) => {
-                this.error =
-                  error?.error?.message ||
-                  'El rol fue creado, pero no se pudieron asignar los permisos.';
-
                 this.saving = false;
               },
             });
         },
 
         error: (error) => {
-          this.error = error?.error?.message || 'No se pudo crear el rol.';
-
           this.saving = false;
         },
       });
@@ -205,18 +195,12 @@ export class RoleForm implements OnInit {
               },
 
               error: (error) => {
-                this.error =
-                  error?.error?.message ||
-                  'El rol fue actualizado, pero no se pudieron guardar los permisos.';
-
                 this.saving = false;
               },
             });
         },
 
         error: (error) => {
-          this.error = error?.error?.message || 'No se pudo actualizar el rol.';
-
           this.saving = false;
         },
       });

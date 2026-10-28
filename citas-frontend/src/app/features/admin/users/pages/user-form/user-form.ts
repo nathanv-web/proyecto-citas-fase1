@@ -78,8 +78,6 @@ export class UserForm implements OnInit {
         },
 
         error: (error) => {
-          this.error = error?.error?.message || 'No se pudo cargar el usuario.';
-
           this.loading = false;
         },
       });
@@ -109,8 +107,8 @@ export class UserForm implements OnInit {
   }
 
   private createUser(): void {
-    if (this.form.contrasena.length < 8 || this.form.contrasena.length > 12) {
-      this.error = 'La contraseña debe tener entre 8 y 12 caracteres.';
+    if (this.form.contrasena.length < 8 || this.form.contrasena.length > 64) {
+      this.error = 'La contraseña debe tener entre 8 y 64 caracteres.';
 
       this.saving = false;
       return;
@@ -146,8 +144,6 @@ export class UserForm implements OnInit {
       },
 
       error: (error) => {
-        this.error = error?.error?.message || 'No se pudo crear el usuario.';
-
         this.saving = false;
       },
     });
@@ -176,8 +172,6 @@ export class UserForm implements OnInit {
         },
 
         error: (error) => {
-          this.error = error?.error?.message || 'No se pudo actualizar el usuario.';
-
           this.saving = false;
         },
       });

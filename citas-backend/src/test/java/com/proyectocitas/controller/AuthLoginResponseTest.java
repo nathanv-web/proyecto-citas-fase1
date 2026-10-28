@@ -123,7 +123,7 @@ class AuthLoginResponseTest {
 
         when(
                 jwtService.generateToken(
-                        "doctor@clinica.com"
+                        usuario
                 )
         )
                 .thenReturn(

@@ -1,3 +1,4 @@
+import { ConfirmationService } from '../../../../core/notifications/confirmation.service';
 import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
@@ -16,6 +17,7 @@ import { finalize } from 'rxjs';
   styleUrl: './role-list.css',
 })
 export class RoleList implements OnInit {
+  private readonly confirmation = inject(ConfirmationService);
   private readonly changeDetector = inject(ChangeDetectorRef);
 
   private readonly roleService = inject(RoleService);
@@ -49,19 +51,17 @@ export class RoleList implements OnInit {
         },
 
         error: (error) => {
-          this.error = error?.error?.message || 'No se pudieron cargar los roles.';
-
           this.loading = false;
         },
       });
   }
 
-  deleteRole(role: Role): void {
+  async deleteRole(role: Role): Promise<void> {
     if (!this.canDeleteRole) {
       return;
     }
 
-    const confirmed = confirm(`¿Deseas eliminar el rol ${role.nombre}?`);
+    const confirmed = await this.confirmation.confirm(`¿Deseas eliminar el rol ${role.nombre}?`);
 
     if (!confirmed) {
       return;
@@ -79,9 +79,7 @@ export class RoleList implements OnInit {
           this.loadRoles();
         },
 
-        error: (error) => {
-          this.error = error?.error?.message || 'No se pudo eliminar el rol.';
-        },
+        error: (error) => {},
       });
   }
 }

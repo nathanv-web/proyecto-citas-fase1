@@ -1,52 +1,57 @@
-import { ChangeDetectorRef, Component, inject, signal } from '@angular/core';
-
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-
-import { AppointmentService, Horario } from '../appointment.service';
 import { finalize } from 'rxjs';
 
-/** El componente busca horarios disponibles para un médico y una fecha. */
+import { AppointmentService, Horario, Medico } from '../appointment.service';
+
+/** La disponibilidad se consulta eligiendo al médico por nombre y especialidad. */
 @Component({
   selector: 'app-patient-schedules',
   standalone: true,
   imports: [FormsModule],
   templateUrl: './patient-schedules.html',
 })
-export class PatientSchedules {
-  private readonly changeDetector = inject(ChangeDetectorRef);
+export class PatientSchedules implements OnInit {
+  private readonly service = inject(AppointmentService);
 
-  private service = inject(AppointmentService);
+  readonly doctors = signal<Medico[]>([]);
+  readonly schedules = signal<Horario[]>([]);
+  readonly loadingDoctors = signal(false);
+  readonly loading = signal(false);
+  readonly message = signal('');
 
-  schedules = signal<Horario[]>([]);
-
-  idMedico?: number;
-
+  idMedico = 0;
   fecha = '';
 
-  message = '';
-
-  search() {
-    if (!this.idMedico || !this.fecha) {
-      this.message = 'Ingrese médico y fecha';
-
-      return;
-    }
-
+  ngOnInit(): void {
+    this.loadingDoctors.set(true);
     this.service
-      .getAvailableSchedules(this.idMedico, this.fecha)
-      .pipe(finalize(() => this.changeDetector.markForCheck()))
+      .getDoctors('', '', 'ACTIVO')
+      .pipe(finalize(() => this.loadingDoctors.set(false)))
+      .subscribe({ next: (doctors) => this.doctors.set(doctors), error: () => {} });
+  }
+
+  clearSchedules(): void {
+    this.schedules.set([]);
+    this.message.set('');
+  }
+
+  search(): void {
+    if (!this.idMedico || !this.fecha || this.loading()) return;
+    this.clearSchedules();
+    this.loading.set(true);
+    const medico = this.idMedico;
+    const fecha = this.fecha;
+    this.service
+      .getAvailableSchedules(medico, fecha)
+      .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
-        next: (data) => {
-          this.schedules.set(data);
-
-          this.message = data.length === 0 ? 'No hay horarios disponibles' : '';
+        next: (schedules) => {
+          if (this.idMedico !== medico || this.fecha !== fecha) return;
+          this.schedules.set(schedules);
+          this.message.set(schedules.length ? '' : 'No hay horarios disponibles para esta fecha.');
         },
-
-        error: (error) => {
-          console.error(error);
-
-          this.message = error.error?.message ?? 'No se pudieron consultar los horarios';
-        },
+        error: () => {},
       });
   }
 }

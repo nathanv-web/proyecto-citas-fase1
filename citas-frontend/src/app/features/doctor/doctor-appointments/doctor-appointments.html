@@ -2,17 +2,35 @@
   <header class="page-header">
     <div>
       <span class="eyebrow">CitaNova · Atención médica</span>
-      <h1>{{ canViewAgenda ? 'Agenda de hoy' : 'Registrar diagnóstico' }}</h1>
+      <h1>{{ canViewAgenda ? 'Mi agenda' : 'Registrar diagnóstico' }}</h1>
       <p>Gestiona las consultas y registra la información de la atención.</p>
     </div>
   </header>
 
-  @if (canViewAgenda) {
+  @if (canViewAgenda || canRegisterDiagnosis) {
+    <section class="form-card form-grid" aria-label="Periodo de mi agenda">
+      <div class="field">
+        <label for="agenda-date">Fecha</label
+        ><input id="agenda-date" type="date" [(ngModel)]="fecha" />
+      </div>
+      <div class="field">
+        <label for="agenda-period">Vista</label
+        ><select id="agenda-period" [(ngModel)]="periodo">
+          <option value="dia">Día</option>
+          <option value="semana">Semana</option>
+        </select>
+      </div>
+      <button
+        class="btn btn-primary"
+        type="button"
+        (click)="loadAgenda()"
+        [disabled]="loading() || saving() || !fecha"
+      >
+        Consultar mi agenda
+      </button>
+    </section>
     @if (loading()) {
       <p class="loading" role="status">Cargando citas...</p>
-    }
-    @if (message()) {
-      <p class="alert error" role="alert">{{ message() }}</p>
     }
     <section class="record-grid" aria-label="Citas del día">
       @for (appointment of appointments(); track appointment.idCita) {
@@ -28,6 +46,8 @@
           </div>
           <h2>{{ appointment.paciente }}</h2>
           <dl class="record-details">
+            <dt>Fecha</dt>
+            <dd>{{ appointment.fecha }}</dd>
             <dt>Horario</dt>
             <dd>{{ appointment.horaInicio }} - {{ appointment.horaFin }}</dd>
             <dt>Motivo</dt>
@@ -37,15 +57,16 @@
             <button
               class="btn btn-secondary"
               type="button"
-              (click)="appointmentId = appointment.idCita"
+              (click)="selectAppointment(appointment.idCita)"
+              [disabled]="saving()"
             >
               Seleccionar para diagnóstico
             </button>
           }
         </article>
       } @empty {
-        @if (!loading() && !message()) {
-          <p class="empty-state" role="status">No hay citas para hoy.</p>
+        @if (!loading()) {
+          <p class="empty-state" role="status">No hay citas en el periodo seleccionado.</p>
         }
       }
     </section>
@@ -55,13 +76,24 @@
     <section class="form-card list-section" aria-labelledby="diagnostico">
       <h2 id="diagnostico">Registrar diagnóstico</h2>
       <div class="field">
-        <label for="diagnosis-appointment">ID Cita</label>
-        <input
+        <label for="diagnosis-appointment">Cita pendiente</label>
+        <select
           id="diagnosis-appointment"
-          type="number"
-          [(ngModel)]="appointmentId"
-          placeholder="Ej. 7"
-        />
+          [ngModel]="appointmentId"
+          (ngModelChange)="selectAppointment($event)"
+          [disabled]="loading() || saving()"
+        >
+          <option [ngValue]="undefined">Selecciona un paciente y horario</option>
+          @for (appointment of pendingAppointments(); track appointment.idCita) {
+            <option [ngValue]="appointment.idCita">
+              {{ appointment.paciente }} · {{ appointment.fecha }} · {{ appointment.horaInicio }} -
+              {{ appointment.horaFin }}
+            </option>
+          }
+        </select>
+        @if (!loading() && !pendingAppointments().length) {
+          <small>No hay citas pendientes en el periodo seleccionado.</small>
+        }
       </div>
       <div class="form-grid">
         <div class="field">
@@ -84,7 +116,12 @@
         </div>
       </div>
       <div class="form-actions">
-        <button class="btn btn-primary" type="button" (click)="saveDiagnosis()">
+        <button
+          class="btn btn-primary"
+          type="button"
+          (click)="saveDiagnosis()"
+          [disabled]="!appointmentId || !diagnosticoReceta.trim() || loading() || saving()"
+        >
           Guardar diagnóstico
         </button>
       </div>

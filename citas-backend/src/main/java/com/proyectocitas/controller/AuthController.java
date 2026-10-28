@@ -1,19 +1,19 @@
 package com.proyectocitas.controller;
 
-import com.proyectocitas.dto.LoginRequest;
+import com.proyectocitas.dto.request.LoginRequestDTO;
 import com.proyectocitas.security.JwtService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import com.proyectocitas.dto.LoginResponseDTO;
-import com.proyectocitas.dto.LoginUsuarioDTO;
+import com.proyectocitas.dto.response.LoginResponseDTO;
+import com.proyectocitas.dto.response.LoginUsuarioResponseDTO;
 
 import java.util.HashSet;
 import java.util.Set;
-import com.proyectocitas.dto.UsuarioDTO;
-import com.proyectocitas.dto.UsuarioRequestDTO;
+import com.proyectocitas.dto.response.UsuarioResponseDTO;
+import com.proyectocitas.dto.request.UsuarioCreateRequestDTO;
 import com.proyectocitas.mapper.UsuarioMapper;
 import com.proyectocitas.model.Usuario;
 import com.proyectocitas.service.UsuarioService;
@@ -42,24 +42,19 @@ public class AuthController {
         this.jwtService = jwtService;
         this.usuarioService = usuarioService;
         this.usuarioMapper = usuarioMapper;
-        
+
     }
 
    @PostMapping("/login")
 public ResponseEntity<LoginResponseDTO> login(
-        @RequestBody LoginRequest loginRequest
+        @Valid @RequestBody LoginRequestDTO loginRequest
 ) {
 
     // =================================================
     // AUTENTICAR CREDENCIALES
     // =================================================
-    Authentication authentication =
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            loginRequest.getEmail(),
-                            loginRequest.getPassword()
-                    )
-            );
+    Authentication authentication = authenticationManager.authenticate(
+            new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
     // =================================================
     // USUARIO AUTENTICADO
     // =================================================
@@ -71,7 +66,7 @@ public ResponseEntity<LoginResponseDTO> login(
     // =================================================
     String jwt =
             jwtService.generateToken(
-                    loginRequest.getEmail()
+                    usuario
             );
     // =================================================
     // OBTENER ROLES Y PERMISOS
@@ -97,8 +92,8 @@ public ResponseEntity<LoginResponseDTO> login(
     // INFORMACIÓN DEL USUARIO
     // =================================================
 
-    LoginUsuarioDTO usuarioLogin =
-            new LoginUsuarioDTO(
+    LoginUsuarioResponseDTO usuarioLogin =
+            new LoginUsuarioResponseDTO(
                     usuario.getIdUsuario(),
                     usuario.getNombre(),
                     usuario.getApellido(),
@@ -116,24 +111,25 @@ public ResponseEntity<LoginResponseDTO> login(
                     "Bearer",
                     usuarioLogin
             );
+    respuesta.setDebeCambiarPassword(usuario.isDebeCambiarPassword());
     return ResponseEntity.ok(
             respuesta
     );
 }
     @PostMapping("/register")
-    public ResponseEntity<UsuarioDTO> register(
-    @Valid 
-    @RequestBody UsuarioRequestDTO usuarioRequestDTO){
-        
+    public ResponseEntity<UsuarioResponseDTO> register(
+    @Valid
+    @RequestBody UsuarioCreateRequestDTO usuarioRequestDTO){
+
         // Convertir DTO de entrada a entidad de Usuario
         Usuario usuario = usuarioMapper.toEntity(usuarioRequestDTO);
-        
+
         //Registrar usuario asignado automaticamente como ROLE_PATIENT
         Usuario usuarioguardado = usuarioService.registrarPaciente(usuario);
-        
+
         //Convertir entidad guardada a DTO de respuesta
-        UsuarioDTO usuarioDTO = usuarioMapper.toDTO(usuarioguardado);
-        
+        UsuarioResponseDTO usuarioDTO = usuarioMapper.toDTO(usuarioguardado);
+
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(usuarioDTO);

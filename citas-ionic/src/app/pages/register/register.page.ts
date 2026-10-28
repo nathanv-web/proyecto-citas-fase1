@@ -84,15 +84,8 @@ export class RegisterPage {
       error: (error: HttpErrorResponse) => {
         this.loading = false;
 
-        if (error.status === 0) {
-          this.errorMessage =
-            'No se pudo conectar con el servidor.';
-          return;
-        }
 
-        this.errorMessage =
-          error.error?.message ||
-          'No se pudo crear la cuenta.';
+
       }
     });
   }

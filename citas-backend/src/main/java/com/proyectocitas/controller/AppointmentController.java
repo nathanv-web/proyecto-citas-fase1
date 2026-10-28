@@ -1,15 +1,15 @@
 package com.proyectocitas.controller;
 
-import com.proyectocitas.dto.AppointmentRequestDTO;
-import com.proyectocitas.dto.AppointmentResponseDTO;
-import com.proyectocitas.dto.DiagnosisRequestDTO;
-import com.proyectocitas.dto.DoctorAgendaDTO;
+import com.proyectocitas.dto.request.AppointmentCreateRequestDTO;
+import com.proyectocitas.dto.response.AppointmentResponseDTO;
+import com.proyectocitas.dto.request.DiagnosisRequestDTO;
+import com.proyectocitas.dto.response.DoctorAgendaResponseDTO;
 import com.proyectocitas.service.AppointmentService;
 
 import jakarta.validation.Valid;
 
-import com.proyectocitas.dto.CancelAppointmentRequestDTO;
-import com.proyectocitas.dto.RescheduleRequestDTO;
+import com.proyectocitas.dto.request.CancelAppointmentRequestDTO;
+import com.proyectocitas.dto.request.RescheduleRequestDTO;
 
 import java.time.LocalDate;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -41,7 +41,7 @@ public class AppointmentController {
     // Crear una nueva cita médica
     @PostMapping
     public ResponseEntity<AppointmentResponseDTO> crearCita(
-            @Valid @RequestBody AppointmentRequestDTO request,
+            @Valid @RequestBody AppointmentCreateRequestDTO request,
             Principal principal) {
 
         if (principal == null) {
@@ -114,13 +114,13 @@ public class AppointmentController {
 
         return ResponseEntity.ok(historial);
     }
-            
+
 // =================================================
 // CONSULTAR AGENDA DEL MEDICO CON FILTROS
 // =================================================
 
 @GetMapping("/my-agenda")
-public ResponseEntity<List<DoctorAgendaDTO>> obtenerMiAgenda(
+public ResponseEntity<List<DoctorAgendaResponseDTO>> obtenerMiAgenda(
 
         @RequestParam(required = false)
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
@@ -146,7 +146,7 @@ public ResponseEntity<List<DoctorAgendaDTO>> obtenerMiAgenda(
         );
     }
 
-    List<DoctorAgendaDTO> agenda =
+    List<DoctorAgendaResponseDTO> agenda =
             appointmentService.obtenerMiAgenda(
                     principal.getName(),
                     fecha,
@@ -157,7 +157,7 @@ public ResponseEntity<List<DoctorAgendaDTO>> obtenerMiAgenda(
 
     return ResponseEntity.ok(agenda);
 }
-            
+
 // =================================================
 // CANCELAR CITA CON MOTIVO
 // =================================================
