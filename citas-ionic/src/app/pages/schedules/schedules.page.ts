@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { Medico } from '../../core/models/medico';
 import { HorarioDisponible } from '../../core/models/horario-disponible';
@@ -31,10 +31,11 @@ export class SchedulesPage implements OnInit {
   fechaMinima = '';
 
   constructor(
-    private medicoService: MedicoService,
-    private horarioService: HorarioDisponibleService,
-    private route: ActivatedRoute
-  ) {}
+  private medicoService: MedicoService,
+  private horarioService: HorarioDisponibleService,
+  private route: ActivatedRoute,
+  private router: Router
+) {}
 
   ngOnInit(): void {
     this.fechaMinima = this.obtenerFechaActual();
@@ -104,6 +105,24 @@ export class SchedulesPage implements OnInit {
         }
       });
   }
+
+  seleccionarHorario(
+  horario: HorarioDisponible
+): void {
+
+  this.router.navigate(
+    ['/confirm-appointment'],
+    {
+      queryParams: {
+        idHorario: horario.idHorario,
+        medico: horario.medico,
+        fecha: horario.fecha,
+        horaInicio: horario.horaInicio,
+        horaFin: horario.horaFin
+      }
+    }
+  );
+}
 
   private obtenerFechaActual(): string {
 

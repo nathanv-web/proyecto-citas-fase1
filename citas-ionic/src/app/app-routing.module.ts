@@ -43,6 +43,19 @@ const routes: Routes = [
     path: 'register',
     loadChildren: () => import('./pages/register/register.module').then( m => m.RegisterPageModule)
   },
+  {
+    path: 'confirm-appointment',
+    loadChildren: () => import('./features/appointments/pages/confirm-appointment/confirm-appointment.module').then( m => m.ConfirmAppointmentPageModule)
+  },
+  {
+    path: 'my-appointments',
+    loadChildren: () => import('./features/appointments/pages/my-appointments/my-appointments.module').then( m => m.MyAppointmentsPageModule)
+  },
+  {
+    path: 'appointment-detail',
+    loadChildren: () => import('./features/appointments/pages/appointment-detail/appointment-detail.module').then( m => m.AppointmentDetailPageModule)
+  },
+
 ];
 
 @NgModule({

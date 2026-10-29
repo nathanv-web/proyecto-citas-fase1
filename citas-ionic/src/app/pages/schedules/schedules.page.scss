@@ -266,6 +266,20 @@
   }
 }
 
+.reserve-button {
+  --background: #0f6f78;
+  --background-hover: #0c6068;
+  --background-activated: #0b5960;
+  --border-radius: 12px;
+
+  margin-top: 16px;
+  min-height: 44px;
+
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: none;
+}
+
 @media (min-width: 700px) {
   .schedule-list {
     display: grid;

@@ -1,0 +1,252 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+
+    <ion-buttons slot="start">
+      <ion-back-button
+      defaultHref="/my-appointments">
+    </ion-back-button>
+    </ion-buttons>
+
+    <ion-title>Detalle de cita</ion-title>
+
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+
+  <div class="detail-container">
+
+    <!-- CARGANDO -->
+    <div
+      class="state-container"
+      *ngIf="loading">
+
+      <ion-spinner name="crescent"></ion-spinner>
+
+      <p>
+        Cargando información de la cita...
+      </p>
+
+    </div>
+
+    <!-- ERROR -->
+    <div
+      class="error-message"
+      *ngIf="!loading && errorMessage">
+
+      <ion-icon name="alert-circle-outline"></ion-icon>
+
+      <span>
+        {{ errorMessage }}
+      </span>
+
+    </div>
+
+    <!-- DETALLE -->
+    <section
+      *ngIf="!loading && cita">
+
+      <div class="page-intro">
+
+        <p class="eyebrow">
+          Portal del paciente
+        </p>
+
+        <h1>Detalle de tu cita</h1>
+
+        <p>
+          Consultá la información completa
+          de tu reservación médica.
+        </p>
+
+      </div>
+
+      <!-- ESTADO -->
+      <div class="status-container">
+
+        <span>Estado de la cita</span>
+
+        <ion-badge
+          [color]="
+            cita.estado === 'CANCELADA'
+              ? 'danger'
+              : cita.estado === 'COMPLETADA'
+              ? 'success'
+              : 'warning'
+          ">
+
+          {{ cita.estado }}
+
+        </ion-badge>
+
+      </div>
+
+      <!-- INFORMACIÓN PRINCIPAL -->
+      <ion-card>
+
+        <ion-card-header>
+          <ion-card-title>
+            Información médica
+          </ion-card-title>
+        </ion-card-header>
+
+        <ion-card-content>
+
+          <div class="detail-row">
+
+            <ion-icon name="person-outline"></ion-icon>
+
+            <div>
+              <strong>Médico</strong>
+              <p>{{ cita.medico }}</p>
+            </div>
+
+          </div>
+
+          <div class="detail-row">
+
+            <ion-icon name="medical-outline"></ion-icon>
+
+            <div>
+              <strong>Especialidad</strong>
+              <p>{{ cita.especialidad }}</p>
+            </div>
+
+          </div>
+
+          <div class="detail-row">
+
+            <ion-icon name="calendar-outline"></ion-icon>
+
+            <div>
+              <strong>Fecha</strong>
+              <p>{{ cita.fecha }}</p>
+            </div>
+
+          </div>
+
+          <div class="detail-row">
+
+            <ion-icon name="time-outline"></ion-icon>
+
+            <div>
+              <strong>Horario</strong>
+
+              <p>
+                {{ cita.horaInicio }}
+                -
+                {{ cita.horaFin }}
+              </p>
+
+            </div>
+
+          </div>
+
+        </ion-card-content>
+
+      </ion-card>
+
+      <!-- MOTIVO -->
+      <ion-card>
+
+        <ion-card-header>
+          <ion-card-title>
+            Motivo de consulta
+          </ion-card-title>
+        </ion-card-header>
+
+        <ion-card-content>
+
+          <p class="text-content">
+            {{ cita.motivo }}
+          </p>
+
+        </ion-card-content>
+
+      </ion-card>
+
+      <!-- CANCELACIÓN -->
+      <ion-card
+        *ngIf="cita.motivoCancelacion">
+
+        <ion-card-header>
+          <ion-card-title>
+            Motivo de cancelación
+          </ion-card-title>
+        </ion-card-header>
+
+        <ion-card-content>
+
+          <p class="text-content">
+            {{ cita.motivoCancelacion }}
+          </p>
+
+        </ion-card-content>
+
+      </ion-card>
+
+      <!-- DIAGNÓSTICO -->
+      <ion-card
+        *ngIf="cita.diagnosticoReceta">
+
+        <ion-card-header>
+          <ion-card-title>
+            Diagnóstico / receta
+          </ion-card-title>
+        </ion-card-header>
+
+        <ion-card-content>
+
+          <p class="text-content">
+            {{ cita.diagnosticoReceta }}
+          </p>
+
+        </ion-card-content>
+
+      </ion-card>
+
+      <!-- OBSERVACIONES -->
+      <ion-card
+        *ngIf="cita.observaciones">
+
+        <ion-card-header>
+          <ion-card-title>
+            Observaciones
+          </ion-card-title>
+        </ion-card-header>
+
+        <ion-card-content>
+
+          <p class="text-content">
+            {{ cita.observaciones }}
+          </p>
+
+        </ion-card-content>
+
+      </ion-card>
+
+      <!-- BOTÓN CANCELAR -->
+      <ion-button
+        *ngIf="puedeCancelar()"
+        expand="block"
+        color="danger"
+        fill="outline"
+        [disabled]="cancelling"
+        (click)="solicitarCancelacion()">
+
+        <ion-spinner
+          *ngIf="cancelling"
+          name="crescent">
+        </ion-spinner>
+
+        <span *ngIf="!cancelling">
+          Cancelar cita
+        </span>
+
+      </ion-button>
+
+    </section>
+
+  </div>
+
+</ion-content>
