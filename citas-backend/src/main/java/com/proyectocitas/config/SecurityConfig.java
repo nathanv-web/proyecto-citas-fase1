@@ -153,6 +153,11 @@ public class SecurityConfig {
                         // =================================================
                         // Login y registro de pacientes no necesitan JWT.
 
+                        .requestMatchers(HttpMethod.POST,
+                                "/api/v1/auth/password/forgot", "/api/v1/auth/password/reset",
+                                "/api/v1/auth/email/request", "/api/v1/auth/email/verify")
+                        .permitAll()
+
                         .requestMatchers(
                                 "/api/v1/auth/login", "/api/v1/auth/register"
                         )

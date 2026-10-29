@@ -17,6 +17,7 @@ import com.proyectocitas.dto.request.UsuarioCreateRequestDTO;
 import com.proyectocitas.mapper.UsuarioMapper;
 import com.proyectocitas.model.Usuario;
 import com.proyectocitas.service.UsuarioService;
+import com.proyectocitas.service.EmailVerificationService;
 
 import jakarta.validation.Valid;
 
@@ -31,17 +32,20 @@ public class AuthController {
     private final JwtService jwtService;
     private final UsuarioService usuarioService;
     private final UsuarioMapper usuarioMapper;
+    private final EmailVerificationService emailVerification;
 
     public AuthController(
             AuthenticationManager authenticationManager,
             JwtService jwtService,
             UsuarioService usuarioService,
-            UsuarioMapper usuarioMapper
+            UsuarioMapper usuarioMapper,
+            EmailVerificationService emailVerification
     ) {
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.usuarioService = usuarioService;
         this.usuarioMapper = usuarioMapper;
+        this.emailVerification = emailVerification;
 
     }
 
@@ -112,6 +116,7 @@ public ResponseEntity<LoginResponseDTO> login(
                     usuarioLogin
             );
     respuesta.setDebeCambiarPassword(usuario.isDebeCambiarPassword());
+    usuarioLogin.setCorreoVerificado(usuario.isCorreoVerificado());
     return ResponseEntity.ok(
             respuesta
     );
@@ -126,6 +131,7 @@ public ResponseEntity<LoginResponseDTO> login(
 
         //Registrar usuario asignado automaticamente como ROLE_PATIENT
         Usuario usuarioguardado = usuarioService.registrarPaciente(usuario);
+        emailVerification.requestAfterRegistration(usuarioguardado.getCorreo());
 
         //Convertir entidad guardada a DTO de respuesta
         UsuarioResponseDTO usuarioDTO = usuarioMapper.toDTO(usuarioguardado);

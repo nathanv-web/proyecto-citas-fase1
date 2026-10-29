@@ -33,6 +33,8 @@ CREATE TABLE IF NOT EXISTS usuarios (
     intentos_fallidos INT NOT NULL DEFAULT 0,
     bloqueado_hasta DATETIME NULL,
     version_sesion BIGINT NOT NULL DEFAULT 0,
+    version_registro BIGINT NOT NULL DEFAULT 0,
+    correo_verificado BOOLEAN NOT NULL DEFAULT FALSE,
 
     fecha_registro DATETIME NOT NULL
         DEFAULT CURRENT_TIMESTAMP,
@@ -41,6 +43,39 @@ CREATE TABLE IF NOT EXISTS usuarios (
         DEFAULT TRUE
 );
 
+
+-- =====================================================
+-- 2.1. TOKENS DE IDENTIDAD (SOLO HASH)
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+    id_token BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id_usuario BIGINT NOT NULL,
+    token_hash VARCHAR(64) NOT NULL UNIQUE,
+    correo VARCHAR(255) NOT NULL,
+    version_sesion BIGINT NOT NULL,
+    creado_en DATETIME(6) NOT NULL,
+    expira_en DATETIME(6) NOT NULL,
+    usado_en DATETIME(6) NULL,
+    INDEX idx_password_reset_usuario (id_usuario),
+    INDEX idx_password_reset_expira (expira_en),
+    CONSTRAINT fk_password_reset_usuario FOREIGN KEY (id_usuario)
+        REFERENCES usuarios(id_usuario)
+);
+
+CREATE TABLE IF NOT EXISTS email_verification_tokens (
+    id_token BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id_usuario BIGINT NOT NULL,
+    token_hash VARCHAR(64) NOT NULL UNIQUE,
+    correo VARCHAR(255) NOT NULL,
+    creado_en DATETIME(6) NOT NULL,
+    expira_en DATETIME(6) NOT NULL,
+    usado_en DATETIME(6) NULL,
+    INDEX idx_email_verification_usuario (id_usuario),
+    INDEX idx_email_verification_expira (expira_en),
+    CONSTRAINT fk_email_verification_usuario FOREIGN KEY (id_usuario)
+        REFERENCES usuarios(id_usuario)
+);
 
 -- =====================================================
 -- 3. ROLES

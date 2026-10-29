@@ -9,6 +9,7 @@ public class LoginUsuarioResponseDTO {
     private String nombre;
     private String apellido;
     private String correo;
+    private boolean correoVerificado;
 
     private Set<String> roles;
     private Set<String> permisos;
@@ -54,6 +55,9 @@ public class LoginUsuarioResponseDTO {
     public String getCorreo() {
         return correo;
     }
+
+    public boolean isCorreoVerificado() { return correoVerificado; }
+    public void setCorreoVerificado(boolean value) { correoVerificado = value; }
 
     public Set<String> getRoles() {
         return roles;

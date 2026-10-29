@@ -11,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import java.time.LocalDateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 
 @Service
 public class AutenticacionService {
@@ -18,17 +20,21 @@ public class AutenticacionService {
     private final UsuarioRepository repository;
     private final PasswordEncoder encoder;
     private final String hashSimulado;
+    private final EntityManager entityManager;
 
-    public AutenticacionService(UsuarioRepository repository, PasswordEncoder encoder) {
+    public AutenticacionService(UsuarioRepository repository, PasswordEncoder encoder, EntityManager entityManager) {
         this.repository = repository;
         this.encoder = encoder;
+        this.entityManager = entityManager;
         this.hashSimulado = encoder.encode(java.util.UUID.randomUUID().toString());
     }
 
     // Conservar el contador incluso cuando se rechazan las credenciales.
     @Transactional(noRollbackFor = ResponseStatusException.class)
     public Usuario autenticar(String correo, String password) {
-        Usuario usuario = correo == null ? null : repository.buscarParaAutenticacion(correo).orElse(null);
+        Usuario usuario = correo == null ? null : repository.findByCorreo(correo).orElse(null);
+        // refresh adquiere el bloqueo y reemplaza cualquier copia anterior de JWT/OSIV.
+        if (usuario != null) entityManager.refresh(usuario, LockModeType.PESSIMISTIC_WRITE);
         boolean coincide = encoder.matches(password == null ? "" : password,
                 usuario == null ? hashSimulado : usuario.getPassword());
         if (usuario == null || !usuario.isEnabled() || !usuario.isAccountNonLocked()) {
@@ -48,7 +54,8 @@ public class AutenticacionService {
 
     @Transactional(noRollbackFor = ResponseStatusException.class)
     public void cambiarPassword(String correo, PasswordChangeRequestDTO request) {
-        Usuario usuario = repository.buscarParaAutenticacion(correo).orElseThrow(this::credencialesInvalidas);
+        Usuario usuario = repository.findByCorreo(correo).orElseThrow(this::credencialesInvalidas);
+        entityManager.refresh(usuario, LockModeType.PESSIMISTIC_WRITE);
         if (!usuario.isEnabled() || !usuario.isAccountNonLocked()) throw credencialesInvalidas();
         if (!encoder.matches(request.getActual(), usuario.getPassword())) {
             registrarFallo(usuario);

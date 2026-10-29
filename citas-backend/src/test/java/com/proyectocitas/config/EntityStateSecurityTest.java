@@ -76,6 +76,13 @@ class EntityStateSecurityTest {
     }
 
     @Test
+    void recuperacionEsPublicaPeroNoElRestoDelNamespaceAuth() throws Exception {
+        mvc.perform(post("/api/v1/auth/password/forgot")).andExpect(status().isNoContent());
+        mvc.perform(post("/api/v1/auth/password/reset")).andExpect(status().isNoContent());
+        mvc.perform(post("/api/v1/auth/password/otro")).andExpect(status().isUnauthorized());
+    }
+
+    @Test
     void estadisticasExigeAccesoAdminYTodosLosPermisosDeConsulta() throws Exception {
         String[] required = {"ACCESO_ADMIN", "VER_USUARIOS", "VER_MEDICOS", "VER_ROLES", "VER_CITAS"};
         mvc.perform(get("/api/v1/admin/statistics")).andExpect(status().isUnauthorized());
@@ -107,6 +114,8 @@ class EntityStateSecurityTest {
 
     @RestController
     static class StatusEndpoints {
+        @PostMapping({"/api/v1/auth/password/forgot", "/api/v1/auth/password/reset"})
+        ResponseEntity<Void> recovery() { return ResponseEntity.noContent().build(); }
         @GetMapping("/api/v1/admin/statistics")
         ResponseEntity<Void> statistics() { return ResponseEntity.noContent().build(); }
         @PatchMapping("/api/v1/especialidades/{id}/estado")

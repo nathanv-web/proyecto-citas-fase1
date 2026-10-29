@@ -54,6 +54,14 @@ public class Usuario implements UserDetails { //Metodo de autenticazion y autori
     @Column(name = "version_sesion", nullable = false)
     private long versionSesion;
 
+    @Column(name = "correo_verificado", nullable = false)
+    private boolean correoVerificado;
+
+    // Control de escrituras concurrentes; no es la versión utilizada para revocar JWT.
+    @Version
+    @Column(name = "version_registro", nullable = false)
+    private long versionRegistro;
+
     // RELACION USUARIO CON ROLES
     //Roles que tiene asignados el usuario
     @ManyToMany(fetch = FetchType.EAGER)
@@ -180,6 +188,12 @@ private Set<Rol> roles = new HashSet<>();
     public long getVersionSesion() {
         return versionSesion;
     }
+
+    public boolean isCorreoVerificado() { return correoVerificado; }
+
+    public void setCorreoVerificado(boolean valor) { correoVerificado = valor; }
+
+    public long getVersionRegistro() { return versionRegistro; }
 
     public void setVersionSesion(long valor) {
         versionSesion = valor;

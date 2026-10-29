@@ -130,6 +130,7 @@ public List<Usuario> buscarConFiltros(
                     if (usuarioRepository.existsByCorreo(usuario.getCorreo())) {
                         throw new DuplicateResourceException("Ya existe un usuario registrado con este correo");
                     }
+                    usuarioDB.setCorreoVerificado(false);
                 }
                 usuarioDB.setCorreo(usuario.getCorreo());
             }

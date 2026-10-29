@@ -22,8 +22,10 @@ public class MeController {
         Set<String> roles = usuario.getRoles().stream().map(r -> r.getNombre()).collect(Collectors.toSet());
         Set<String> permisos = usuario.getAuthorities().stream().map(a -> a.getAuthority())
                 .filter(a -> !a.startsWith("ROLE_")).collect(Collectors.toSet());
-        return Map.of("usuario", new LoginUsuarioResponseDTO(usuario.getIdUsuario(), usuario.getNombre(),
-                usuario.getApellido(), usuario.getCorreo(), roles, permisos),
+        var profile = new LoginUsuarioResponseDTO(usuario.getIdUsuario(), usuario.getNombre(),
+                usuario.getApellido(), usuario.getCorreo(), roles, permisos);
+        profile.setCorreoVerificado(usuario.isCorreoVerificado());
+        return Map.of("usuario", profile,
                 "debeCambiarPassword", usuario.isDebeCambiarPassword());
     }
 

@@ -65,7 +65,8 @@ class AuthLoginErrorTest {
                         authenticationManager,
                         jwtService,
                         usuarioService,
-                        usuarioMapper
+                        usuarioMapper,
+                        mock(com.proyectocitas.service.EmailVerificationService.class)
                 );
 
 

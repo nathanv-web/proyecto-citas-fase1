@@ -30,6 +30,19 @@ public class GlobalExceptionHandler {
     private static final Logger logger = 
             LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
+    @ExceptionHandler({org.springframework.dao.OptimisticLockingFailureException.class,
+            jakarta.persistence.OptimisticLockException.class})
+    public ResponseEntity<Map<String, Object>> manejarConflictoConcurrente(
+            Exception ex, HttpServletRequest request) {
+        Map<String, Object> respuesta = new LinkedHashMap<>();
+        respuesta.put("timestamp", LocalDateTime.now());
+        respuesta.put("status", HttpStatus.CONFLICT.value());
+        respuesta.put("error", HttpStatus.CONFLICT.getReasonPhrase());
+        respuesta.put("message", "El registro cambió durante la operación. Actualiza los datos e intenta nuevamente.");
+        respuesta.put("path", request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(respuesta);
+    }
+
     // =================================================
     // PARÁMETROS OBLIGATORIOS FALTANTES
     // =================================================
