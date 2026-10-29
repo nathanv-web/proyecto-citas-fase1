@@ -58,9 +58,10 @@
         </ion-label>
 
         <ion-select
-          [(ngModel)]="idMedicoSeleccionado"
-          placeholder="Seleccioná un médico"
-          interface="action-sheet">
+        [(ngModel)]="idMedicoSeleccionado"
+        [selectedText]="textoMedicoSeleccionado"
+        placeholder="Seleccioná un médico"
+        interface="action-sheet">
 
           <ion-select-option
             *ngFor="let medico of medicos"
@@ -211,20 +212,24 @@
                   {{ horario.fecha }}
                 </span>
 
-                <ion-badge color="success">
+                <ion-badge
+                  [color]="horario.estado === 'DISPONIBLE' ? 'success' : 'medium'">
+
                   {{ horario.estado }}
+
                 </ion-badge>
 
               </div>
 
               <ion-button
-              expand="block"
-              class="reserve-button"
-              (click)="seleccionarHorario(horario)">
+                *ngIf="horario.estado === 'DISPONIBLE'"
+                expand="block"
+                class="reserve-button"
+                (click)="seleccionarHorario(horario)">
 
-              Reservar este horario
+                Reservar este horario
 
-            </ion-button>
+              </ion-button>
 
             </div>
 

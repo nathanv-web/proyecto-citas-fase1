@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { Medico } from '../../core/models/medico';
@@ -18,7 +18,8 @@ export class DoctorsPage implements OnInit {
   errorMessage = '';
 
   constructor(
-    private medicoService: MedicoService
+    private medicoService: MedicoService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -31,16 +32,21 @@ export class DoctorsPage implements OnInit {
     this.errorMessage = '';
 
     this.medicoService.obtenerMedicos().subscribe({
+
       next: (medicos) => {
         this.medicos = medicos;
         this.loading = false;
+
+        this.cdr.markForCheck();
       },
 
       error: (error: HttpErrorResponse) => {
         this.loading = false;
+        this.errorMessage = 'No fue posible cargar los médicos.';
 
-
+        this.cdr.markForCheck();
       }
+
     });
   }
 

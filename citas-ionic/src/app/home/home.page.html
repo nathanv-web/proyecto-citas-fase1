@@ -6,26 +6,35 @@
       <ion-button
         aria-label="Cerrar sesión"
         (click)="cerrarSesion()">
+
         <ion-icon
           slot="icon-only"
           name="log-out-outline">
         </ion-icon>
+
       </ion-button>
     </ion-buttons>
+
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="home-content">
+<ion-content
+  [fullscreen]="true"
+  class="home-content">
 
   <div class="home-container">
 
     <section class="welcome-card">
+
       <div class="welcome-icon">
         <ion-icon name="person-circle-outline"></ion-icon>
       </div>
 
       <div>
-        <p class="welcome-label">Bienvenido</p>
+
+        <p class="welcome-label">
+          Bienvenido
+        </p>
 
         <h1>
           {{ usuario?.nombre }} {{ usuario?.apellido }}
@@ -34,15 +43,28 @@
         <p>
           Gestioná tu atención médica de forma rápida y sencilla.
         </p>
+
       </div>
+
     </section>
+
 
     <section class="section-header">
-      <h2>¿Qué necesitás hacer?</h2>
-      <p>Seleccioná una opción para continuar.</p>
+
+      <h2>
+        ¿Qué necesitás hacer?
+      </h2>
+
+      <p>
+        Seleccioná una opción para continuar.
+      </p>
+
     </section>
 
+
     <div class="options-grid">
+
+      <!-- MÉDICOS -->
 
       <ion-card
         class="option-card"
@@ -50,11 +72,14 @@
         button="true">
 
         <ion-card-content>
+
           <div class="option-icon">
             <ion-icon name="medkit-outline"></ion-icon>
           </div>
 
-          <h3>Médicos</h3>
+          <h3>
+            Médicos
+          </h3>
 
           <p>
             Consultá los médicos disponibles y elegí con quién atenderte.
@@ -64,9 +89,13 @@
             Ver médicos
             <ion-icon name="arrow-forward-outline"></ion-icon>
           </div>
+
         </ion-card-content>
 
       </ion-card>
+
+
+      <!-- ESPECIALIDADES -->
 
       <ion-card
         class="option-card"
@@ -74,38 +103,14 @@
         button="true">
 
         <ion-card-content>
+
           <div class="option-icon">
             <ion-icon name="heart-outline"></ion-icon>
           </div>
 
-          <h3>Especialidades</h3>
-
-          <ion-card
-  class="option-card"
-  routerLink="/my-appointments"
-  button="true">
-
-  <ion-card-content>
-
-    <div class="option-icon">
-      <ion-icon name="calendar-outline"></ion-icon>
-    </div>
-
-    <h3>Mis citas</h3>
-
-    <p>
-      Consultá tus citas médicas,
-      revisá su estado y accedé al detalle.
-    </p>
-
-    <div class="option-link">
-      Ver mis citas
-      <ion-icon name="arrow-forward-outline"></ion-icon>
-    </div>
-
-  </ion-card-content>
-
-</ion-card>
+          <h3>
+            Especialidades
+          </h3>
 
           <p>
             Explorá las especialidades médicas disponibles.
@@ -115,22 +120,62 @@
             Ver especialidades
             <ion-icon name="arrow-forward-outline"></ion-icon>
           </div>
+
+        </ion-card-content>
+
+      </ion-card>
+
+
+      <!-- MIS CITAS -->
+
+      <ion-card
+        class="option-card"
+        routerLink="/my-appointments"
+        button="true">
+
+        <ion-card-content>
+
+          <div class="option-icon">
+            <ion-icon name="calendar-outline"></ion-icon>
+          </div>
+
+          <h3>
+            Mis citas
+          </h3>
+
+          <p>
+            Consultá tus citas médicas, revisá su estado y accedé al detalle.
+          </p>
+
+          <div class="option-link">
+            Ver mis citas
+            <ion-icon name="arrow-forward-outline"></ion-icon>
+          </div>
+
         </ion-card-content>
 
       </ion-card>
 
     </div>
 
+
     <div class="info-card">
+
       <ion-icon name="information-circle-outline"></ion-icon>
 
       <div>
-        <strong>Tu salud, más cerca</strong>
+
+        <strong>
+          Tu salud, más cerca
+        </strong>
+
         <p>
           Desde este portal podrás encontrar médicos y consultar
           horarios disponibles para solicitar una cita.
         </p>
+
       </div>
+
     </div>
 
   </div>

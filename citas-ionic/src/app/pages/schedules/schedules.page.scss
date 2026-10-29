@@ -85,6 +85,22 @@
   }
 }
 
+/* TEXTO DEL MÉDICO SELECCIONADO */
+ion-select::part(text) {
+  color: #183b40;
+  opacity: 1;
+}
+
+ion-select::part(placeholder) {
+  color: #899a9d;
+  opacity: 1;
+}
+
+ion-select::part(icon) {
+  color: #0f6f78;
+  opacity: 1;
+}
+
 .search-button {
   --background: #0f6f78;
   --background-hover: #0c6068;

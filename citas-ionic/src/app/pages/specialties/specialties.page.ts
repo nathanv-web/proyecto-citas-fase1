@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { Especialidad } from '../../core/models/especialidad';
@@ -18,7 +18,8 @@ export class SpecialtiesPage implements OnInit {
   errorMessage = '';
 
   constructor(
-    private especialidadService: EspecialidadService
+    private especialidadService: EspecialidadService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -33,16 +34,24 @@ export class SpecialtiesPage implements OnInit {
     this.especialidadService
       .obtenerEspecialidades()
       .subscribe({
+
         next: (especialidades) => {
           this.especialidades = especialidades;
           this.loading = false;
+
+          this.cdr.markForCheck();
         },
 
         error: (error: HttpErrorResponse) => {
           this.loading = false;
 
+          this.errorMessage =
+            error.error?.message ??
+            'No fue posible cargar las especialidades.';
 
+          this.cdr.markForCheck();
         }
+
       });
   }
 

@@ -1,6 +1,5 @@
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import { Router } from '@angular/router';
-
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { AppointmentService } from '../../services/appointment.service';
@@ -20,24 +19,29 @@ export class MyAppointmentsPage {
   errorMessage = '';
 
   constructor(
-  private appointmentService: AppointmentService,
-  private router: Router
-) {}
+    private appointmentService: AppointmentService,
+    private router: Router,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ionViewWillEnter(): void {
     this.cargarCitas();
   }
 
   cargarCitas(): void {
+
     this.loading = true;
     this.errorMessage = '';
 
     this.appointmentService
       .obtenerHistorial()
       .subscribe({
+
         next: (citas) => {
           this.citas = citas;
           this.loading = false;
+
+          this.cdr.markForCheck();
         },
 
         error: (error: HttpErrorResponse) => {
@@ -46,18 +50,23 @@ export class MyAppointmentsPage {
           this.errorMessage =
             error.error?.message ??
             'No fue posible cargar tus citas.';
+
+          this.cdr.markForCheck();
         }
+
       });
   }
 
   verDetalle(cita: AppointmentResponse): void {
-  this.router.navigate(
-    ['/appointment-detail'],
-    {
-      queryParams: {
-        idCita: cita.idCita
+
+    this.router.navigate(
+      ['/appointment-detail'],
+      {
+        queryParams: {
+          idCita: cita.idCita
+        }
       }
-    }
-  );
-}
+    );
+  }
+
 }

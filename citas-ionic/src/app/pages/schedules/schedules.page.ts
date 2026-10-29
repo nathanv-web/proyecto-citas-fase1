@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 
@@ -31,15 +31,15 @@ export class SchedulesPage implements OnInit {
   fechaMinima = '';
 
   constructor(
-  private medicoService: MedicoService,
-  private horarioService: HorarioDisponibleService,
-  private route: ActivatedRoute,
-  private router: Router
-) {}
+    private medicoService: MedicoService,
+    private horarioService: HorarioDisponibleService,
+    private route: ActivatedRoute,
+    private router: Router,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     this.fechaMinima = this.obtenerFechaActual();
-    this.cargarMedicos();
 
     const idMedico =
       this.route.snapshot.queryParamMap.get('idMedico');
@@ -47,6 +47,8 @@ export class SchedulesPage implements OnInit {
     if (idMedico) {
       this.idMedicoSeleccionado = Number(idMedico);
     }
+
+    this.cargarMedicos();
   }
 
   cargarMedicos(): void {
@@ -55,16 +57,22 @@ export class SchedulesPage implements OnInit {
     this.errorMessage = '';
 
     this.medicoService.obtenerMedicos().subscribe({
+
       next: (medicos) => {
         this.medicos = medicos;
         this.loadingMedicos = false;
+
+        this.cdr.markForCheck();
       },
 
       error: (error: HttpErrorResponse) => {
         this.loadingMedicos = false;
+        this.errorMessage =
+          'No fue posible cargar los médicos.';
 
-
+        this.cdr.markForCheck();
       }
+
     });
   }
 
@@ -80,6 +88,8 @@ export class SchedulesPage implements OnInit {
     ) {
       this.errorMessage =
         'Seleccioná un médico y una fecha.';
+
+      this.cdr.markForCheck();
       return;
     }
 
@@ -91,37 +101,55 @@ export class SchedulesPage implements OnInit {
         this.fechaSeleccionada
       )
       .subscribe({
+
         next: (horarios) => {
           this.horarios = horarios;
           this.loadingHorarios = false;
           this.busquedaRealizada = true;
+
+          this.cdr.markForCheck();
         },
 
         error: (error: HttpErrorResponse) => {
           this.loadingHorarios = false;
           this.busquedaRealizada = true;
+          this.errorMessage =
+            'No fue posible cargar los horarios disponibles.';
 
-
+          this.cdr.markForCheck();
         }
+
       });
   }
 
   seleccionarHorario(
-  horario: HorarioDisponible
-): void {
+    horario: HorarioDisponible
+  ): void {
 
-  this.router.navigate(
-    ['/confirm-appointment'],
-    {
-      queryParams: {
-        idHorario: horario.idHorario,
-        medico: horario.medico,
-        fecha: horario.fecha,
-        horaInicio: horario.horaInicio,
-        horaFin: horario.horaFin
+    this.router.navigate(
+      ['/confirm-appointment'],
+      {
+        queryParams: {
+          idHorario: horario.idHorario,
+          medico: horario.medico,
+          fecha: horario.fecha,
+          horaInicio: horario.horaInicio,
+          horaFin: horario.horaFin
+        }
       }
-    }
+    );
+  }
+
+  get textoMedicoSeleccionado(): string {
+  const medico = this.medicos.find(
+    m => m.idMedico === this.idMedicoSeleccionado
   );
+
+  if (!medico) {
+    return '';
+  }
+
+  return `${medico.nombre} - ${medico.especialidad}`;
 }
 
   private obtenerFechaActual(): string {

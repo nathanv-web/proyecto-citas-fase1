@@ -15,16 +15,20 @@
   <div class="appointments-container">
 
     <div class="page-intro">
+
       <p class="eyebrow">
         Portal del paciente
       </p>
 
-      <h1>Historial de citas</h1>
+      <h1>
+        Historial de citas
+      </h1>
 
       <p>
         Consultá tus citas médicas y revisá
         la información de cada reservación.
       </p>
+
     </div>
 
     <!-- CARGANDO -->
@@ -64,7 +68,9 @@
 
       <ion-icon name="calendar-outline"></ion-icon>
 
-      <h2>No tenés citas registradas</h2>
+      <h2>
+        No tenés citas registradas
+      </h2>
 
       <p>
         Cuando reservés una cita médica,
@@ -89,6 +95,7 @@
           <div class="appointment-header">
 
             <div>
+
               <h2>
                 {{ cita.medico }}
               </h2>
@@ -96,6 +103,7 @@
               <p>
                 {{ cita.especialidad }}
               </p>
+
             </div>
 
             <ion-badge
@@ -115,35 +123,18 @@
 
           <div class="appointment-info">
 
-            <ion-button
-            expand="block"
-            fill="outline"
-            class="detail-button"
-            (click)="verDetalle(cita)">
-
-            Ver detalle
-
-            </ion-button>
-
             <div class="info-row">
+
               <ion-icon name="calendar-outline"></ion-icon>
 
               <span>
                 {{ cita.fecha }}
               </span>
+
             </div>
 
-            <ion-button
-            expand="block"
-            fill="outline"
-            class="detail-button"
-            (click)="verDetalle(cita)">
-
-            Ver detalle
-
-            </ion-button>
-
             <div class="info-row">
+
               <ion-icon name="time-outline"></ion-icon>
 
               <span>
@@ -151,15 +142,28 @@
                 -
                 {{ cita.horaFin }}
               </span>
+
             </div>
 
             <div class="info-row">
+
               <ion-icon name="document-text-outline"></ion-icon>
 
               <span>
                 {{ cita.motivo }}
               </span>
+
             </div>
+
+            <ion-button
+              expand="block"
+              fill="outline"
+              class="detail-button"
+              (click)="verDetalle(cita)">
+
+              Ver detalle
+
+            </ion-button>
 
           </div>
 

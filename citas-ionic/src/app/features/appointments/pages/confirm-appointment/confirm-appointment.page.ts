@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 
@@ -29,7 +29,8 @@ export class ConfirmAppointmentPage implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private appointmentService: AppointmentService
+    private appointmentService: AppointmentService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -61,16 +62,21 @@ export class ConfirmAppointmentPage implements OnInit {
     if (this.idHorario === null) {
       this.errorMessage =
         'No se encontró el horario seleccionado.';
+
+      this.cdr.markForCheck();
       return;
     }
 
     if (!this.motivo.trim()) {
       this.errorMessage =
         'Ingresá el motivo de la consulta.';
+
+      this.cdr.markForCheck();
       return;
     }
 
     this.loading = true;
+    this.cdr.markForCheck();
 
     this.appointmentService
       .crearCita({
@@ -78,9 +84,12 @@ export class ConfirmAppointmentPage implements OnInit {
         motivo: this.motivo.trim()
       })
       .subscribe({
+
         next: (cita) => {
           this.citaCreada = cita;
           this.loading = false;
+
+          this.cdr.markForCheck();
         },
 
         error: (error: HttpErrorResponse) => {
@@ -89,7 +98,10 @@ export class ConfirmAppointmentPage implements OnInit {
           this.errorMessage =
             error.error?.message ??
             'No fue posible reservar la cita. Intentá nuevamente.';
+
+          this.cdr.markForCheck();
         }
+
       });
   }
 }

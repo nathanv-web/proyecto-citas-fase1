@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AlertController } from '@ionic/angular';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -26,16 +26,20 @@ export class AppointmentDetailPage {
   constructor(
     private route: ActivatedRoute,
     private appointmentService: AppointmentService,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ionViewWillEnter(): void {
+
     const id =
       this.route.snapshot.queryParamMap.get('idCita');
 
     if (!id) {
       this.errorMessage =
         'No se encontró la cita seleccionada.';
+
+      this.cdr.markForCheck();
       return;
     }
 
@@ -45,6 +49,7 @@ export class AppointmentDetailPage {
   }
 
   cargarDetalle(): void {
+
     if (this.idCita === null) {
       return;
     }
@@ -55,6 +60,7 @@ export class AppointmentDetailPage {
     this.appointmentService
       .obtenerHistorial()
       .subscribe({
+
         next: (citas) => {
 
           this.cita =
@@ -68,19 +74,26 @@ export class AppointmentDetailPage {
             this.errorMessage =
               'No fue posible encontrar la cita.';
           }
+
+          this.cdr.markForCheck();
         },
 
         error: (error: HttpErrorResponse) => {
+
           this.loading = false;
 
           this.errorMessage =
             error.error?.message ??
             'No fue posible cargar el detalle de la cita.';
+
+          this.cdr.markForCheck();
         }
+
       });
   }
 
   puedeCancelar(): boolean {
+
     return (
       this.cita !== null &&
       this.cita.estado !== 'CANCELADA' &&
@@ -94,41 +107,51 @@ export class AppointmentDetailPage {
       return;
     }
 
-    const alert = await this.alertController.create({
-      header: 'Cancelar cita',
-      message:
-        'Indicá brevemente el motivo de la cancelación.',
-      inputs: [
-        {
-          name: 'motivo',
-          type: 'textarea',
-          placeholder: 'Motivo de cancelación'
-        }
-      ],
-      buttons: [
-        {
-          text: 'Volver',
-          role: 'cancel'
-        },
-        {
-          text: 'Cancelar cita',
-          role: 'destructive',
-          handler: (data) => {
+    const alert =
+      await this.alertController.create({
 
-            const motivo =
-              data.motivo?.trim();
+        header: 'Cancelar cita',
 
-            if (!motivo) {
-              return false;
-            }
+        message:
+          'Indicá brevemente el motivo de la cancelación.',
 
-            this.cancelarCita(motivo);
-
-            return true;
+        inputs: [
+          {
+            name: 'motivo',
+            type: 'textarea',
+            placeholder: 'Motivo de cancelación'
           }
-        }
-      ]
-    });
+        ],
+
+        buttons: [
+
+          {
+            text: 'Volver',
+            role: 'cancel'
+          },
+
+          {
+            text: 'Cancelar cita',
+            role: 'destructive',
+
+            handler: (data) => {
+
+              const motivo =
+                data.motivo?.trim();
+
+              if (!motivo) {
+                return false;
+              }
+
+              this.cancelarCita(motivo);
+
+              return true;
+            }
+          }
+
+        ]
+
+      });
 
     await alert.present();
   }
@@ -150,18 +173,26 @@ export class AppointmentDetailPage {
         motivoCancelacion
       )
       .subscribe({
+
         next: (citaActualizada) => {
+
           this.cita = citaActualizada;
           this.cancelling = false;
+
+          this.cdr.markForCheck();
         },
 
         error: (error: HttpErrorResponse) => {
+
           this.cancelling = false;
 
           this.errorMessage =
             error.error?.message ??
             'No fue posible cancelar la cita.';
+
+          this.cdr.markForCheck();
         }
+
       });
   }
 
