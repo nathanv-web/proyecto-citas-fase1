@@ -1,0 +1,43 @@
+<main class="page">
+  <header class="page-header">
+    <div>
+      <span class="eyebrow">CitaNova · Administración</span>
+      <h1>Estadísticas generales</h1>
+      <p>Resumen de los registros del sistema.</p>
+    </div>
+    <button type="button" class="btn btn-primary" [disabled]="loading()" (click)="load()">
+      {{ error() ? 'Reintentar' : 'Actualizar' }}
+    </button>
+  </header>
+
+  @if (loading()) {
+    <p class="loading" role="status">Consultando estadísticas...</p>
+  }
+  @if (error()) {
+    <p class="alert error" role="alert">{{ error() }}</p>
+  }
+  @if (summary(); as data) {
+    <section class="metrics" aria-label="Indicadores del sistema">
+      <article class="record-card">
+        <h2>Usuarios registrados</h2>
+        <strong data-metric="users">{{ data.totalUsuarios }}</strong>
+        <p>Incluye cuentas activas e inactivas.</p>
+      </article>
+      <article class="record-card">
+        <h2>Médicos registrados</h2>
+        <strong data-metric="doctors">{{ data.totalMedicos }}</strong>
+        <p>Perfiles profesionales del sistema.</p>
+      </article>
+      <article class="record-card">
+        <h2>Citas del mes</h2>
+        <strong data-metric="appointments">{{ data.totalCitasMes }}</strong>
+        <p>Fecha de atención en {{ data.mes }}. Incluye canceladas.</p>
+      </article>
+      <article class="record-card">
+        <h2>Roles registrados</h2>
+        <strong data-metric="roles">{{ data.totalRoles }}</strong>
+        <p>Perfiles de acceso configurados.</p>
+      </article>
+    </section>
+  }
+</main>

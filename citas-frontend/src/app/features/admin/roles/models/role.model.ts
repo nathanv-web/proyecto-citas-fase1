@@ -6,6 +6,13 @@ export interface Role {
   permisos: string[];
 }
 
+export interface RolePage {
+  content: Role[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+}
+
 /** El modelo reúne el nombre y la descripción necesarios para crear un rol. */
 export interface RoleRequest {
   nombre: string;

@@ -75,6 +75,22 @@ class EntityStateSecurityTest {
         mvc.perform(patch("/api/v1/especialidades/1/estado")).andExpect(status().isUnauthorized());
     }
 
+    @Test
+    void estadisticasExigeAccesoAdminYTodosLosPermisosDeConsulta() throws Exception {
+        String[] required = {"ACCESO_ADMIN", "VER_USUARIOS", "VER_MEDICOS", "VER_ROLES", "VER_CITAS"};
+        mvc.perform(get("/api/v1/admin/statistics")).andExpect(status().isUnauthorized());
+        for (String missing : required) {
+            var authorities = java.util.Arrays.stream(required)
+                    .filter(permission -> !permission.equals(missing))
+                    .map(SimpleGrantedAuthority::new).toList();
+            mvc.perform(get("/api/v1/admin/statistics").with(user("ana").authorities(authorities)))
+                    .andExpect(status().isForbidden());
+        }
+        mvc.perform(get("/api/v1/admin/statistics").with(user("ana").authorities(
+                        java.util.Arrays.stream(required).map(SimpleGrantedAuthority::new).toList())))
+                .andExpect(status().isNoContent());
+    }
+
     @Configuration
     @EnableWebMvc
     @EnableWebSecurity
@@ -91,6 +107,8 @@ class EntityStateSecurityTest {
 
     @RestController
     static class StatusEndpoints {
+        @GetMapping("/api/v1/admin/statistics")
+        ResponseEntity<Void> statistics() { return ResponseEntity.noContent().build(); }
         @PatchMapping("/api/v1/especialidades/{id}/estado")
         ResponseEntity<Void> patchState() { return ResponseEntity.noContent().build(); }
         @PutMapping({"/api/v1/users/{id}", "/api/v1/medicos/{id}"})

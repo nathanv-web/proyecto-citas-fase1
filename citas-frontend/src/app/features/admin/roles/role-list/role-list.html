@@ -11,6 +11,31 @@
     }
   </header>
 
+  <form class="form-card admin-filters" (ngSubmit)="searchRoles()" aria-label="Buscar roles">
+    <div class="field">
+      <label for="role-search">Nombre del rol</label>
+      <input
+        id="role-search"
+        name="search"
+        type="search"
+        [(ngModel)]="searchTerm"
+        placeholder="Ej. ROLE_ADMIN"
+        [disabled]="loading || deleting"
+      />
+    </div>
+    <div class="actions">
+      <button type="submit" class="btn btn-primary" [disabled]="loading || deleting">Buscar</button>
+      <button
+        type="button"
+        class="btn btn-secondary"
+        [disabled]="loading || deleting"
+        (click)="clearFilters()"
+      >
+        Limpiar
+      </button>
+    </div>
+  </form>
+
   @if (success) {
     <div class="alert success" role="status">
       {{ success }}
@@ -28,7 +53,7 @@
   }
 
   @if (!loading && !error && roles.length === 0) {
-    <div class="message" role="status">No hay roles registrados.</div>
+    <div class="message" role="status">No se encontraron roles con estos filtros.</div>
   }
 
   @if (!loading && roles.length > 0) {
@@ -72,7 +97,12 @@
                   }
 
                   @if (canDeleteRole) {
-                    <button type="button" class="btn btn-danger" (click)="deleteRole(role)">
+                    <button
+                      type="button"
+                      class="btn btn-danger"
+                      [disabled]="deleting"
+                      (click)="deleteRole(role)"
+                    >
                       Eliminar
                     </button>
                   }
@@ -83,5 +113,30 @@
         </tbody>
       </table>
     </div>
+  }
+
+  @if (!loading && !error && totalElements > 0) {
+    <nav class="admin-pagination" aria-label="Páginas de roles">
+      <button
+        type="button"
+        class="btn btn-secondary"
+        [disabled]="page === 0 || deleting"
+        (click)="loadRoles(page - 1)"
+      >
+        Anterior
+      </button>
+      <span role="status"
+        >Página {{ page + 1 }} de {{ totalPages }} · {{ totalElements }} roles</span
+      >
+      <button
+        type="button"
+        class="btn btn-secondary"
+        data-action="next-page"
+        [disabled]="page + 1 >= totalPages || deleting"
+        (click)="loadRoles(page + 1)"
+      >
+        Siguiente
+      </button>
+    </nav>
   }
 </main>

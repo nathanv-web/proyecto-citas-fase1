@@ -1,5 +1,28 @@
 /* La paleta Nord Blue define los colores compartidos de CitaNova. */
 
+.admin-filters {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.admin-filters .field {
+  flex: 1 1 220px;
+  margin-bottom: 0;
+}
+.admin-filters .actions {
+  margin: 0;
+}
+.admin-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
 :root {
   /* Los colores principales identifican las acciones y los enlaces. */
   --app-primary: #356f9f;

@@ -1,9 +1,11 @@
 import { TestBed } from '@angular/core/testing';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter, Router } from '@angular/router';
 import { Login } from './login';
 import { AccessDenied } from '../access-denied/access-denied';
+import { authInterceptor } from '../../../../core/auth/interceptors/auth.interceptor';
+import { ToastContainer } from '../../../../core/notifications/toast-container';
 
 describe('Inicio de sesión', () => {
   let http: HttpTestingController;
@@ -13,7 +15,8 @@ describe('Inicio de sesión', () => {
     TestBed.configureTestingModule({
       imports: [Login],
       providers: [
-        provideHttpClient(), provideHttpClientTesting(),
+        provideHttpClient(withInterceptors([authInterceptor])),
+        provideHttpClientTesting(),
         provideRouter([
           { path: 'login', component: Login },
           { path: 'panels', component: AccessDenied },
@@ -41,13 +44,24 @@ describe('Inicio de sesión', () => {
     ['ROLE_SIN_PERMISOS', []],
   ])('lleva al usuario %s al selector sin decidir por su rol', async (role, permisos) => {
     const fixture = TestBed.createComponent(Login);
-    fixture.componentInstance.loginForm.setValue({ email: 'ana@example.com', password: '12345678' });
+    fixture.componentInstance.loginForm.setValue({
+      email: 'ana@example.com',
+      password: '12345678',
+    });
     fixture.componentInstance.iniciarSesion();
-    const request = http.expectOne(req => req.url.endsWith('/auth/login'));
+    const request = http.expectOne((req) => req.url.endsWith('/auth/login'));
     expect(request.request.body).toEqual({ email: 'ana@example.com', password: '12345678' });
     request.flush({
-      token: 'new-token', tipo: 'Bearer',
-      usuario: { idUsuario: 1, nombre: 'Ana', apellido: 'Lopez', correo: 'ana@example.com', roles: [role], permisos },
+      token: 'new-token',
+      tipo: 'Bearer',
+      usuario: {
+        idUsuario: 1,
+        nombre: 'Ana',
+        apellido: 'Lopez',
+        correo: 'ana@example.com',
+        roles: [role],
+        permisos,
+      },
     });
     await fixture.whenStable();
     expect(TestBed.inject(Router).url).toBe('/panels');
@@ -55,12 +69,22 @@ describe('Inicio de sesión', () => {
   });
 
   it('muestra el error de credenciales y permite volver a intentarlo', async () => {
+    const toasts = TestBed.createComponent(ToastContainer);
+    toasts.detectChanges();
     const fixture = TestBed.createComponent(Login);
-    fixture.componentInstance.loginForm.setValue({ email: 'ana@example.com', password: 'incorrecta' });
+    fixture.componentInstance.loginForm.setValue({
+      email: 'ana@example.com',
+      password: 'incorrecta',
+    });
     fixture.componentInstance.iniciarSesion();
-    http.expectOne(req => req.url.endsWith('/auth/login')).flush({}, { status: 401, statusText: 'Unauthorized' });
-    await fixture.whenStable();
-    expect(fixture.nativeElement.textContent).toContain('Correo o contraseña incorrectos.');
+    http
+      .expectOne((req) => req.url.endsWith('/auth/login'))
+      .flush(
+        { message: 'Correo o contraseña incorrectos.' },
+        { status: 401, statusText: 'Unauthorized' },
+      );
+    await toasts.whenStable();
+    expect(toasts.nativeElement.textContent).toContain('Correo o contraseña incorrectos.');
     expect(fixture.componentInstance.loading()).toBe(false);
   });
 });

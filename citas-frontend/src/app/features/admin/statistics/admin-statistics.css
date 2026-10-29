@@ -1,0 +1,22 @@
+:host {
+  display: block;
+}
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 1.25rem;
+}
+.metrics h2 {
+  font-size: 1rem;
+  color: var(--app-text-muted);
+}
+.metrics strong {
+  display: block;
+  margin: 1rem 0;
+  font-size: 2.5rem;
+  color: var(--app-primary);
+}
+.metrics p {
+  color: var(--app-text-muted);
+  line-height: 1.5;
+}

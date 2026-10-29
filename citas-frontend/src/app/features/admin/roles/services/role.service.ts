@@ -1,9 +1,15 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from '../../../../core/config/api.config';
 
-import { Role, RoleRequest, RoleUpdate, RolePermissionsRequest } from '../models/role.model';
+import {
+  Role,
+  RolePage,
+  RoleRequest,
+  RoleUpdate,
+  RolePermissionsRequest,
+} from '../models/role.model';
 
 /** El servicio consulta y administra roles, además del catálogo y la asignación de permisos. */
 @Injectable({
@@ -18,6 +24,12 @@ export class RoleService {
 
   getAll(): Observable<Role[]> {
     return this.http.get<Role[]>(this.rolesUrl);
+  }
+
+  getPage(search = '', page = 0, size = 10): Observable<RolePage> {
+    let params = new HttpParams().set('page', page).set('size', size);
+    if (search.trim()) params = params.set('search', search.trim());
+    return this.http.get<RolePage>(this.rolesUrl, { params });
   }
 
   getById(id: number): Observable<Role> {

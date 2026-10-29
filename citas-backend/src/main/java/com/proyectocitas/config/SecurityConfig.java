@@ -20,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
 
 
 @Configuration
@@ -127,6 +128,12 @@ public class SecurityConfig {
                 // =================================================
 
                 .authorizeHttpRequests(auth -> auth
+
+                        .requestMatchers(HttpMethod.GET, "/api/v1/admin/statistics")
+                        .access(new WebExpressionAuthorizationManager(
+                                "hasAuthority('ACCESO_ADMIN') and hasAuthority('VER_USUARIOS') "
+                                + "and hasAuthority('VER_MEDICOS') and hasAuthority('VER_ROLES') "
+                                + "and hasAuthority('VER_CITAS')"))
 
 
                         // =================================================

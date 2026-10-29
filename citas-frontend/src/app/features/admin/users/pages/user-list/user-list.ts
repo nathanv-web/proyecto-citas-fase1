@@ -1,6 +1,8 @@
 import { ConfirmationService } from '../../../../../core/notifications/confirmation.service';
 import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { apiErrorMessage } from '../../../../../core/notifications/api-error';
 
 import { User } from '../../models/user.model';
 import { UserService } from '../../services/user.service';
@@ -12,7 +14,7 @@ import { finalize, Observable } from 'rxjs';
 @Component({
   selector: 'app-user-list',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, FormsModule],
   templateUrl: './user-list.html',
   styleUrl: './user-list.css',
 })
@@ -31,6 +33,8 @@ export class UserList implements OnInit {
   readonly canActivateUser = this.authService.hasPermission('ACTUALIZAR_USUARIOS');
 
   users: User[] = [];
+  searchTerm = '';
+  statusFilter = '';
 
   loading = false;
   error = '';
@@ -42,11 +46,15 @@ export class UserList implements OnInit {
   }
 
   loadUsers(): void {
+    if (this.loading || this.changingState) return;
     this.loading = true;
     this.error = '';
 
     this.userService
-      .getAll()
+      .getAll({
+        search: this.searchTerm,
+        activo: this.statusFilter === '' ? undefined : this.statusFilter === 'true',
+      })
       .pipe(finalize(() => this.changeDetector.markForCheck()))
       .subscribe({
         next: (users) => {
@@ -55,28 +63,41 @@ export class UserList implements OnInit {
         },
 
         error: (error) => {
+          this.error = apiErrorMessage(error);
           this.loading = false;
         },
       });
   }
 
+  clearFilters(): void {
+    this.searchTerm = '';
+    this.statusFilter = '';
+    this.loadUsers();
+  }
+
   async changeUserState(user: User): Promise<void> {
     const activate = !user.activo;
-    if (this.changingState || !(activate ? this.canActivateUser : this.canDeactivateUser)) {
+    if (
+      this.loading ||
+      this.changingState ||
+      !(activate ? this.canActivateUser : this.canDeactivateUser)
+    ) {
       return;
     }
 
+    this.changingState = true;
     const confirmed = await this.confirmation.confirm(
       `¿Deseas ${activate ? 'activar' : 'desactivar'} al usuario ${user.nombre} ${user.apellido}?`,
     );
 
     if (!confirmed) {
+      this.changingState = false;
+      this.changeDetector.markForCheck();
       return;
     }
 
     this.error = '';
     this.success = '';
-    this.changingState = true;
 
     const request: Observable<unknown> = activate
       ? this.userService.activate(user.idUsuario)
@@ -91,10 +112,13 @@ export class UserList implements OnInit {
       .subscribe({
         next: () => {
           this.success = `Usuario ${activate ? 'activado' : 'desactivado'} correctamente.`;
+          this.changingState = false;
           this.loadUsers();
         },
 
-        error: (error) => {},
+        error: (error) => {
+          this.error = apiErrorMessage(error);
+        },
       });
   }
 }

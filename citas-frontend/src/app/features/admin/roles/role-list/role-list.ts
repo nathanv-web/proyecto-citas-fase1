@@ -1,6 +1,8 @@
 import { ConfirmationService } from '../../../../core/notifications/confirmation.service';
 import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { apiErrorMessage } from '../../../../core/notifications/api-error';
 
 import { Role } from '../models/role.model';
 import { RoleService } from '../services/role.service';
@@ -12,7 +14,7 @@ import { finalize } from 'rxjs';
 @Component({
   selector: 'app-role-list',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, FormsModule],
   templateUrl: './role-list.html',
   styleUrl: './role-list.css',
 })
@@ -28,6 +30,12 @@ export class RoleList implements OnInit {
   readonly canDeleteRole = this.authService.hasPermission('ELIMINAR_ROLES');
 
   roles: Role[] = [];
+  searchTerm = '';
+  private appliedSearch = '';
+  page = 0;
+  totalPages = 0;
+  totalElements = 0;
+  deleting = false;
 
   loading = false;
   error = '';
@@ -37,27 +45,43 @@ export class RoleList implements OnInit {
     this.loadRoles();
   }
 
-  loadRoles(): void {
+  loadRoles(page = this.page): void {
+    if (this.loading || page < 0) return;
     this.loading = true;
     this.error = '';
 
     this.roleService
-      .getAll()
+      .getPage(this.appliedSearch, page)
       .pipe(finalize(() => this.changeDetector.markForCheck()))
       .subscribe({
-        next: (roles) => {
-          this.roles = roles;
+        next: (result) => {
+          this.roles = result.content;
+          this.page = result.number;
+          this.totalPages = result.totalPages;
+          this.totalElements = result.totalElements;
           this.loading = false;
+          if (this.roles.length === 0 && this.page > 0) this.loadRoles(this.page - 1);
         },
 
         error: (error) => {
+          this.error = apiErrorMessage(error);
           this.loading = false;
         },
       });
   }
 
+  searchRoles(): void {
+    this.appliedSearch = this.searchTerm.trim();
+    this.loadRoles(0);
+  }
+
+  clearFilters(): void {
+    this.searchTerm = '';
+    this.searchRoles();
+  }
+
   async deleteRole(role: Role): Promise<void> {
-    if (!this.canDeleteRole) {
+    if (!this.canDeleteRole || this.deleting || this.loading) {
       return;
     }
 
@@ -69,17 +93,25 @@ export class RoleList implements OnInit {
 
     this.error = '';
     this.success = '';
+    this.deleting = true;
 
     this.roleService
       .delete(role.idRol)
-      .pipe(finalize(() => this.changeDetector.markForCheck()))
+      .pipe(
+        finalize(() => {
+          this.deleting = false;
+          this.changeDetector.markForCheck();
+        }),
+      )
       .subscribe({
         next: () => {
           this.success = 'Rol eliminado correctamente.';
           this.loadRoles();
         },
 
-        error: (error) => {},
+        error: (error) => {
+          this.error = apiErrorMessage(error);
+        },
       });
   }
 }

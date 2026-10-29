@@ -22,14 +22,14 @@ public class UsuarioUpdateRequestDTO {
         max = 100,
         message = "El apellido debe tener entre 2 y 100 caracteres"
     )
+    @Pattern(
+        regexp = "^[\\p{L} .'-]+$",
+        message = "El apellido solo puede contener letras"
+    )
     private String apellido;
 
     @Email(
         message = "El correo debe tener un formato válido"
-    )
-        @Pattern(
-            regexp = "^[\\p{L} .'-]+$",
-            message = "El apellido solo puede contener letras"
     )
     private String correo;
 

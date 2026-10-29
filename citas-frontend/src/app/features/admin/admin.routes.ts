@@ -22,6 +22,14 @@ import { DoctorList } from './doctors/doctor-list/doctor-list';
 /** Las rutas administrativas se cargan bajo /admin y conservan los permisos específicos de cada operación. */
 export const ADMIN_ROUTES: Routes = [
   {
+    path: 'statistics',
+    canActivate: [authGuard, permissionGuard],
+    data: {
+      permissions: ['ACCESO_ADMIN', 'VER_USUARIOS', 'VER_MEDICOS', 'VER_ROLES', 'VER_CITAS'],
+    },
+    loadComponent: () => import('./statistics/admin-statistics').then((m) => m.AdminStatistics),
+  },
+  {
     path: '',
     pathMatch: 'full',
     canActivate: [authGuard],

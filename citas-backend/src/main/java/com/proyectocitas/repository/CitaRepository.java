@@ -16,6 +16,9 @@ import java.util.Optional;
 public interface CitaRepository
         extends JpaRepository<Cita, Long> {
 
+    // Conteo por fecha de atención, incluyendo citas canceladas conservadas en el historial.
+    long countByHorario_FechaBetween(LocalDate desde, LocalDate hasta);
+
     //Buscar citas de un paciente
     
     List<Cita> findByPaciente_IdUsuario(Long idUsuario);

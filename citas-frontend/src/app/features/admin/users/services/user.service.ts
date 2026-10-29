@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import { User } from '../models/user.model';
@@ -7,6 +7,11 @@ import { UserRequest } from '../models/user-request.model';
 import { UserUpdate } from '../models/user-update.model';
 import { UserRolesRequest } from '../models/user-roles-request.model';
 import { API_BASE_URL } from '../../../../core/config/api.config';
+
+export interface UserFilters {
+  search?: string;
+  activo?: boolean;
+}
 
 /** El servicio reúne las solicitudes de usuarios, sus cambios de estado y la asignación de roles. */
 @Injectable({
@@ -17,8 +22,11 @@ export class UserService {
 
   private readonly apiUrl = `${API_BASE_URL}/users`;
 
-  getAll(): Observable<User[]> {
-    return this.http.get<User[]>(this.apiUrl);
+  getAll(filters: UserFilters = {}): Observable<User[]> {
+    let params = new HttpParams();
+    if (filters.search?.trim()) params = params.set('search', filters.search.trim());
+    if (filters.activo !== undefined) params = params.set('activo', filters.activo);
+    return this.http.get<User[]>(this.apiUrl, { params });
   }
 
   getById(id: number): Observable<User> {

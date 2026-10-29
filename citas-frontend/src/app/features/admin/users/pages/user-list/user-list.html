@@ -11,6 +11,53 @@
     }
   </header>
 
+  <form class="form-card admin-filters" (ngSubmit)="loadUsers()" aria-label="Filtrar usuarios">
+    <div class="field">
+      <label for="user-search">Buscar por nombre, apellido o correo</label>
+      <input
+        id="user-search"
+        name="search"
+        type="search"
+        [(ngModel)]="searchTerm"
+        list="user-suggestions"
+        placeholder="Escribe el nombre o correo"
+        [disabled]="loading || changingState"
+      />
+      <datalist id="user-suggestions">
+        @for (user of users; track user.idUsuario) {
+          <option [value]="user.correo">{{ user.nombre }} {{ user.apellido }}</option>
+        }
+      </datalist>
+    </div>
+    <div class="field">
+      <label for="user-status">Estado</label>
+      <select
+        id="user-status"
+        name="status"
+        [(ngModel)]="statusFilter"
+        [disabled]="loading || changingState"
+      >
+        <option value="">Todos los estados</option>
+        <option value="true">Activos</option>
+        <option value="false">Inactivos</option>
+      </select>
+    </div>
+    <div class="actions">
+      <button type="submit" class="btn btn-primary" [disabled]="loading || changingState">
+        Buscar
+      </button>
+      <button
+        type="button"
+        class="btn btn-secondary"
+        data-action="clear-filters"
+        [disabled]="loading || changingState"
+        (click)="clearFilters()"
+      >
+        Limpiar
+      </button>
+    </div>
+  </form>
+
   @if (success) {
     <div class="alert success" role="status">
       {{ success }}
@@ -28,7 +75,7 @@
   }
 
   @if (!loading && !error && users.length === 0) {
-    <div class="empty" role="status">No hay usuarios registrados.</div>
+    <div class="empty" role="status">No se encontraron usuarios con estos filtros.</div>
   }
 
   @if (!loading && users.length > 0) {

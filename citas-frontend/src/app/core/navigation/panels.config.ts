@@ -32,6 +32,13 @@ export const PANELS: readonly PanelDefinition[] = [
     description: 'Usuarios, roles, especialidades y perfiles médicos.',
     functions: [
       {
+        id: 'statistics',
+        label: 'Estadísticas generales',
+        description: 'Consulta los totales de usuarios, médicos, citas del mes y roles.',
+        route: '/admin/statistics',
+        permissions: ['VER_USUARIOS', 'VER_MEDICOS', 'VER_ROLES', 'VER_CITAS'],
+      },
+      {
         id: 'users',
         label: 'Listar usuarios',
         description: 'Consulta los usuarios del sistema.',
