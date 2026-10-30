@@ -1,9 +1,7 @@
 <ion-header class="ion-no-border">
   <ion-toolbar class="doctors-toolbar">
     <ion-buttons slot="start">
-      <ion-back-button
-        defaultHref="/home">
-      </ion-back-button>
+      <ion-back-button defaultHref="/home" text="" color="light"></ion-back-button>
     </ion-buttons>
 
     <ion-title>Médicos</ion-title>
@@ -16,127 +14,94 @@
 
     <section class="page-intro">
       <p class="eyebrow">Portal del paciente</p>
-      <h1>Elegí un médico</h1>
+      <h1>Elige un médico</h1>
       <p>
-        Consultá los profesionales disponibles y revisá su especialidad.
+        Consulta los profesionales disponibles y selecciona uno para ver sus horarios.
       </p>
+
+      <!-- Barra de búsqueda -->
+      <ion-searchbar
+        placeholder="Buscar por nombre o especialidad..."
+        [(ngModel)]="filtroBusqueda"
+        (ionInput)="filtrarMedicos()"
+        class="custom-searchbar">
+      </ion-searchbar>
     </section>
 
-    <div
-      class="state-card"
-      *ngIf="loading">
-
-      <ion-spinner name="crescent"></ion-spinner>
-
+    <!-- Estado Carga -->
+    <div class="state-card" *ngIf="loading">
+      <ion-spinner name="crescent" color="primary"></ion-spinner>
       <p>Cargando médicos...</p>
     </div>
 
-    <div
-      class="state-card error"
-      *ngIf="!loading && errorMessage">
-
+    <!-- Estado Error -->
+    <div class="state-card error" *ngIf="!loading && errorMessage">
       <ion-icon name="alert-circle-outline"></ion-icon>
-
       <p>{{ errorMessage }}</p>
-
-      <ion-button
-        fill="outline"
-        size="small"
-        (click)="cargarMedicos()">
+      <ion-button fill="outline" size="small" (click)="cargarMedicos()" class="btn-retry">
         Intentar de nuevo
       </ion-button>
     </div>
 
-    <div
-      class="state-card"
-      *ngIf="
-        !loading &&
-        !errorMessage &&
-        medicos.length === 0
-      ">
-
+    <!-- Estado Vacío -->
+    <div class="state-card" *ngIf="!loading && !errorMessage && medicosFiltrados.length === 0">
       <ion-icon name="medkit-outline"></ion-icon>
-
-      <p>No hay médicos disponibles en este momento.</p>
+      <p *ngIf="filtroBusqueda">No se encontraron médicos que coincidan con "{{ filtroBusqueda }}".</p>
+      <p *ngIf="!filtroBusqueda">No hay médicos disponibles en este momento.</p>
     </div>
 
-    <div
-      class="doctors-list"
-      *ngIf="
-        !loading &&
-        !errorMessage &&
-        medicos.length > 0
-      ">
+    <!-- Lista de Médicos -->
+    <div class="doctors-list" *ngIf="!loading && !errorMessage && medicosFiltrados.length > 0">
 
       <ion-card
-      class="doctor-card"
-      *ngFor="let medico of medicos"
-      [routerLink]="['/schedules']"
-      [queryParams]="{ idMedico: medico.idMedico }"
-      button="true">
+        class="doctor-card"
+        *ngFor="let medico of medicosFiltrados"
+        [routerLink]="['/schedules']"
+        [queryParams]="{ idMedico: medico.idMedico }"
+        button="true">
 
         <ion-card-content>
 
           <div class="doctor-header">
-
             <div class="doctor-avatar">
               <ion-icon name="person-outline"></ion-icon>
             </div>
 
             <div class="doctor-main">
               <h2>{{ medico.nombre }}</h2>
-
-              <p class="specialty">
-                {{ medico.especialidad }}
-              </p>
+              <p class="specialty">{{ medico.especialidad }}</p>
             </div>
-
           </div>
 
           <div class="doctor-info">
 
-            <div class="info-row">
+            <div class="info-row" *ngIf="medico.correo">
               <ion-icon name="mail-outline"></ion-icon>
-
-              <span>
-                {{ medico.correo }}
-              </span>
+              <span>{{ medico.correo }}</span>
             </div>
 
-            <div class="info-row">
+            <div class="info-row" *ngIf="medico.colegiado">
               <ion-icon name="ribbon-outline"></ion-icon>
-
-              <span>
-                Colegiado: {{ medico.colegiado }}
-              </span>
+              <span>Colegiado: {{ medico.colegiado }}</span>
             </div>
 
-            <div class="info-row">
+            <div class="info-row" *ngIf="medico.aniosExperiencia">
               <ion-icon name="time-outline"></ion-icon>
-
-              <span>
-                {{ medico.aniosExperiencia }}
-                años de experiencia
-              </span>
+              <span>{{ medico.aniosExperiencia }} años de experiencia</span>
             </div>
 
           </div>
 
-          <p
-            class="biography"
-            *ngIf="medico.biografia">
+          <p class="biography" *ngIf="medico.biografia">
             {{ medico.biografia }}
           </p>
 
-          <div class="status-row">
+          <div class="card-footer-action">
             <ion-badge
-              [color]="
-                medico.estado === 'ACTIVO'
-                  ? 'success'
-                  : 'medium'
-              ">
+              [color]="medico.estado === 'ACTIVO' ? 'success' : 'medium'">
               {{ medico.estado }}
             </ion-badge>
+            <span class="action-text">Ver Horarios &rarr;</span>
           </div>
 
         </ion-card-content>
@@ -147,4 +112,4 @@
 
   </div>
 
-</ion-content>  
+</ion-content>

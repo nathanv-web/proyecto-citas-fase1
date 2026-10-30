@@ -18,6 +18,7 @@ export class RegisterPage {
   registerForm: FormGroup;
   loading = false;
   errorMessage = '';
+  verContrasena = false;
 
   constructor(
     private fb: FormBuilder,
@@ -50,6 +51,10 @@ export class RegisterPage {
         Validators.maxLength(12)
       ]]
     });
+  }
+
+  toggleContrasena(): void {
+    this.verContrasena = !this.verContrasena;
   }
 
   registrar(): void {

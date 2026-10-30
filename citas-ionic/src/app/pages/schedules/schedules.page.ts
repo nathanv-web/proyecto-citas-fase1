@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { Medico } from '../../core/models/medico';
 import { HorarioDisponible } from '../../core/models/horario-disponible';
@@ -33,23 +33,21 @@ export class SchedulesPage implements OnInit {
   constructor(
     private medicoService: MedicoService,
     private horarioService: HorarioDisponibleService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
     this.fechaMinima = this.obtenerFechaActual();
     this.cargarMedicos();
 
-    const idMedico =
-      this.route.snapshot.queryParamMap.get('idMedico');
-
+    const idMedico = this.route.snapshot.queryParamMap.get('idMedico');
     if (idMedico) {
       this.idMedicoSeleccionado = Number(idMedico);
     }
   }
 
   cargarMedicos(): void {
-
     this.loadingMedicos = true;
     this.errorMessage = '';
 
@@ -58,10 +56,12 @@ export class SchedulesPage implements OnInit {
         this.medicos = medicos;
         this.loadingMedicos = false;
       },
-
       error: (error: HttpErrorResponse) => {
         this.loadingMedicos = false;
-
+        if (error.status === 0) {
+          this.errorMessage = 'No se pudo conectar con el servidor.';
+          return;
+        }
         this.errorMessage =
           error.error?.message ||
           'No fue posible cargar los médicos.';
@@ -70,17 +70,12 @@ export class SchedulesPage implements OnInit {
   }
 
   buscarHorarios(): void {
-
     this.errorMessage = '';
     this.horarios = [];
     this.busquedaRealizada = false;
 
-    if (
-      this.idMedicoSeleccionado === null ||
-      !this.fechaSeleccionada
-    ) {
-      this.errorMessage =
-        'Seleccioná un médico y una fecha.';
+    if (this.idMedicoSeleccionado === null || !this.fechaSeleccionada) {
+      this.errorMessage = 'Selecciona un médico y una fecha.';
       return;
     }
 
@@ -97,11 +92,13 @@ export class SchedulesPage implements OnInit {
           this.loadingHorarios = false;
           this.busquedaRealizada = true;
         },
-
         error: (error: HttpErrorResponse) => {
           this.loadingHorarios = false;
           this.busquedaRealizada = true;
-
+          if (error.status === 0) {
+            this.errorMessage = 'No se pudo conectar con el servidor.';
+            return;
+          }
           this.errorMessage =
             error.error?.message ||
             'No fue posible consultar los horarios disponibles.';
@@ -109,20 +106,27 @@ export class SchedulesPage implements OnInit {
       });
   }
 
+  seleccionarHorario(horario: HorarioDisponible): void {
+    const medicoEncontrado = this.medicos.find(m => m.idMedico === this.idMedicoSeleccionado);
+
+    this.router.navigate(['/appointments/confirm'], {
+      queryParams: {
+        idHorario: horario.idHorario,
+        idMedico: this.idMedicoSeleccionado,
+        nombreMedico: medicoEncontrado?.nombre || horario.medico || '',
+        especialidad: medicoEncontrado?.especialidad || '',
+        fecha: horario.fecha || this.fechaSeleccionada,
+        horaInicio: horario.horaInicio,
+        horaFin: horario.horaFin
+      }
+    });
+  }
+
   private obtenerFechaActual(): string {
-
     const hoy = new Date();
-
     const anio = hoy.getFullYear();
-
-    const mes = String(
-      hoy.getMonth() + 1
-    ).padStart(2, '0');
-
-    const dia = String(
-      hoy.getDate()
-    ).padStart(2, '0');
-
+    const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+    const dia = String(hoy.getDate()).padStart(2, '0');
     return `${anio}-${mes}-${dia}`;
   }
 }
