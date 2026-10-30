@@ -15,43 +15,47 @@
       <form [formGroup]="loginForm" (ngSubmit)="iniciarSesion()">
 
         <div class="form-group">
-          <ion-label>Correo electrónico</ion-label>
-
           <ion-input
             type="email"
-            formControlName="email"
-            placeholder="correo@ejemplo.com"
-            fill="outline">
+            label="Correo electrónico"
+            labelPlacement="floating"
+            fill="outline"
+            formControlName="email">
           </ion-input>
 
-          <ion-note
-            color="danger"
+          <div
+            class="validation-message"
             *ngIf="
               loginForm.controls['email'].touched &&
               loginForm.controls['email'].invalid
             ">
             Ingresa un correo electrónico válido.
-          </ion-note>
+          </div>
         </div>
 
         <div class="form-group">
-          <ion-label>Contraseña</ion-label>
-
           <ion-input
-            type="password"
-            formControlName="password"
-            placeholder="Ingresa tu contraseña"
-            fill="outline">
+            [type]="verPassword ? 'text' : 'password'"
+            label="Contraseña"
+            labelPlacement="floating"
+            fill="outline"
+            formControlName="password">
+            <ion-icon 
+              slot="end" 
+              [name]="verPassword ? 'eye-off-outline' : 'eye-outline'"
+              (click)="togglePassword()" 
+              class="eye-icon">
+            </ion-icon>
           </ion-input>
 
-          <ion-note
-            color="danger"
+          <div
+            class="validation-message"
             *ngIf="
               loginForm.controls['password'].touched &&
               loginForm.controls['password'].invalid
             ">
             La contraseña es obligatoria.
-          </ion-note>
+          </div>
         </div>
 
         <div
@@ -63,7 +67,8 @@
         <ion-button
           expand="block"
           type="submit"
-          [disabled]="loading">
+          [disabled]="loading"
+          class="btn-submit">
 
           <ion-spinner
             *ngIf="loading"
@@ -71,12 +76,17 @@
           </ion-spinner>
 
           <span *ngIf="!loading">
-            Iniciar sesión
+            INICIAR SESIÓN
           </span>
 
         </ion-button>
 
       </form>
+
+      <div class="card-footer-link">
+        <span>¿No tienes cuenta?</span>
+        <a routerLink="/register" class="link-text">Regístrate aquí</a>
+      </div>
 
     </div>
 

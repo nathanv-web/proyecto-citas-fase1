@@ -17,13 +17,14 @@ export class LoginPage implements OnInit {
 
   loading = false;
   errorMessage = '';
+  verPassword = false;
 
   constructor(
-  private formBuilder: FormBuilder,
-  private authService: Auth,
-  private router: Router,
-  private route: ActivatedRoute
-) {
+    private formBuilder: FormBuilder,
+    private authService: Auth,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {
     this.loginForm = this.formBuilder.group({
       email: [
         '',
@@ -42,6 +43,10 @@ export class LoginPage implements OnInit {
   }
 
   ngOnInit(): void {
+  }
+
+  togglePassword(): void {
+    this.verPassword = !this.verPassword;
   }
 
   iniciarSesion(): void {
@@ -65,15 +70,15 @@ export class LoginPage implements OnInit {
         this.loading = false;
 
         const returnUrl =
-  this.route.snapshot.queryParamMap.get('returnUrl')
-  || '/home';
+          this.route.snapshot.queryParamMap.get('returnUrl')
+          || '/home';
 
-this.router.navigateByUrl(
-  returnUrl,
-  {
-    replaceUrl: true
-  }
-);  
+        this.router.navigateByUrl(
+          returnUrl,
+          {
+            replaceUrl: true
+          }
+        );  
       },
 
       error: (error: HttpErrorResponse) => {
