@@ -1,6 +1,9 @@
 <ion-header class="ion-no-border">
   <ion-toolbar class="home-toolbar">
-    <ion-title>Portal del Paciente</ion-title>
+
+    <ion-title>
+      {{ tituloPortal }}
+    </ion-title>
 
     <ion-buttons slot="end">
       <ion-button
@@ -24,10 +27,19 @@
 
   <div class="home-container">
 
+    <!-- BIENVENIDA -->
     <section class="welcome-card">
 
       <div class="welcome-icon">
-        <ion-icon name="person-circle-outline"></ion-icon>
+        <ion-icon
+          [name]="
+            esAdministrador
+              ? 'shield-checkmark-outline'
+              : esDoctor
+              ? 'medkit-outline'
+              : 'person-circle-outline'
+          ">
+        </ion-icon>
       </div>
 
       <div>
@@ -41,7 +53,7 @@
         </h1>
 
         <p>
-          Gestioná tu atención médica de forma rápida y sencilla.
+          {{ mensajeBienvenida }}
         </p>
 
       </div>
@@ -49,134 +61,275 @@
     </section>
 
 
-    <section class="section-header">
+    <!-- ============================= -->
+    <!-- PACIENTE -->
+    <!-- ============================= -->
 
-      <h2>
-        ¿Qué necesitás hacer?
-      </h2>
+    <ng-container *ngIf="esPaciente">
 
-      <p>
-        Seleccioná una opción para continuar.
-      </p>
+      <section class="section-header">
 
-    </section>
-
-
-    <div class="options-grid">
-
-      <!-- MÉDICOS -->
-
-      <ion-card
-        class="option-card"
-        routerLink="/doctors"
-        button="true">
-
-        <ion-card-content>
-
-          <div class="option-icon">
-            <ion-icon name="medkit-outline"></ion-icon>
-          </div>
-
-          <h3>
-            Médicos
-          </h3>
-
-          <p>
-            Consultá los médicos disponibles y elegí con quién atenderte.
-          </p>
-
-          <div class="option-link">
-            Ver médicos
-            <ion-icon name="arrow-forward-outline"></ion-icon>
-          </div>
-
-        </ion-card-content>
-
-      </ion-card>
-
-
-      <!-- ESPECIALIDADES -->
-
-      <ion-card
-        class="option-card"
-        routerLink="/specialties"
-        button="true">
-
-        <ion-card-content>
-
-          <div class="option-icon">
-            <ion-icon name="heart-outline"></ion-icon>
-          </div>
-
-          <h3>
-            Especialidades
-          </h3>
-
-          <p>
-            Explorá las especialidades médicas disponibles.
-          </p>
-
-          <div class="option-link">
-            Ver especialidades
-            <ion-icon name="arrow-forward-outline"></ion-icon>
-          </div>
-
-        </ion-card-content>
-
-      </ion-card>
-
-
-      <!-- MIS CITAS -->
-
-      <ion-card
-        class="option-card"
-        routerLink="/my-appointments"
-        button="true">
-
-        <ion-card-content>
-
-          <div class="option-icon">
-            <ion-icon name="calendar-outline"></ion-icon>
-          </div>
-
-          <h3>
-            Mis citas
-          </h3>
-
-          <p>
-            Consultá tus citas médicas, revisá su estado y accedé al detalle.
-          </p>
-
-          <div class="option-link">
-            Ver mis citas
-            <ion-icon name="arrow-forward-outline"></ion-icon>
-          </div>
-
-        </ion-card-content>
-
-      </ion-card>
-
-    </div>
-
-
-    <div class="info-card">
-
-      <ion-icon name="information-circle-outline"></ion-icon>
-
-      <div>
-
-        <strong>
-          Tu salud, más cerca
-        </strong>
+        <h2>
+          ¿Qué necesitás hacer?
+        </h2>
 
         <p>
-          Desde este portal podrás encontrar médicos y consultar
-          horarios disponibles para solicitar una cita.
+          Seleccioná una opción para continuar.
         </p>
+
+      </section>
+
+
+      <div class="options-grid">
+
+        <!-- MÉDICOS -->
+        <ion-card
+          class="option-card"
+          routerLink="/doctors"
+          button="true">
+
+          <ion-card-content>
+
+            <div class="option-icon">
+              <ion-icon name="medkit-outline"></ion-icon>
+            </div>
+
+            <h3>
+              Médicos
+            </h3>
+
+            <p>
+              Consultá los médicos disponibles y elegí con quién atenderte.
+            </p>
+
+            <div class="option-link">
+              Ver médicos
+              <ion-icon name="arrow-forward-outline"></ion-icon>
+            </div>
+
+          </ion-card-content>
+
+        </ion-card>
+
+
+        <!-- ESPECIALIDADES -->
+        <ion-card
+          class="option-card"
+          routerLink="/specialties"
+          button="true">
+
+          <ion-card-content>
+
+            <div class="option-icon">
+              <ion-icon name="heart-outline"></ion-icon>
+            </div>
+
+            <h3>
+              Especialidades
+            </h3>
+
+            <p>
+              Explorá las especialidades médicas disponibles.
+            </p>
+
+            <div class="option-link">
+              Ver especialidades
+              <ion-icon name="arrow-forward-outline"></ion-icon>
+            </div>
+
+          </ion-card-content>
+
+        </ion-card>
+
+
+        <!-- MIS CITAS -->
+        <ion-card
+          class="option-card"
+          routerLink="/my-appointments"
+          button="true">
+
+          <ion-card-content>
+
+            <div class="option-icon">
+              <ion-icon name="calendar-outline"></ion-icon>
+            </div>
+
+            <h3>
+              Mis citas
+            </h3>
+
+            <p>
+              Consultá tus citas médicas, revisá su estado y accedé al detalle.
+            </p>
+
+            <div class="option-link">
+              Ver mis citas
+              <ion-icon name="arrow-forward-outline"></ion-icon>
+            </div>
+
+          </ion-card-content>
+
+        </ion-card>
 
       </div>
 
-    </div>
+
+      <div class="info-card">
+
+        <ion-icon name="information-circle-outline"></ion-icon>
+
+        <div>
+
+          <strong>
+            Tu salud, más cerca
+          </strong>
+
+          <p>
+            Desde este portal podrás encontrar médicos y consultar
+            horarios disponibles para solicitar una cita.
+          </p>
+
+        </div>
+
+      </div>
+
+    </ng-container>
+
+
+    <!-- ============================= -->
+    <!-- DOCTOR -->
+    <!-- ============================= -->
+
+    <ng-container *ngIf="esDoctor">
+
+      <section class="section-header">
+
+        <h2>
+          Perfil médico
+        </h2>
+
+        <p>
+          Sesión iniciada correctamente.
+        </p>
+
+      </section>
+
+
+      <ion-card class="option-card">
+
+        <ion-card-content>
+
+          <div class="option-icon">
+            <ion-icon name="medical-outline"></ion-icon>
+          </div>
+
+          <h3>
+            {{ nombreRol }}
+          </h3>
+
+          <p>
+            Tu cuenta corresponde al personal médico de CitaNova.
+          </p>
+
+          <p>
+            La gestión clínica, consulta de pacientes y administración
+            de citas médicas se realiza desde el portal web del sistema.
+          </p>
+
+        </ion-card-content>
+
+      </ion-card>
+
+
+      <div class="info-card">
+
+        <ion-icon name="information-circle-outline"></ion-icon>
+
+        <div>
+
+          <strong>
+            Acceso reconocido
+          </strong>
+
+          <p>
+            CitaNova identificó correctamente tu rol como médico.
+            La aplicación móvil está orientada principalmente
+            a las funciones del paciente.
+          </p>
+
+        </div>
+
+      </div>
+
+    </ng-container>
+
+
+    <!-- ============================= -->
+    <!-- ADMINISTRADOR -->
+    <!-- ============================= -->
+
+    <ng-container *ngIf="esAdministrador">
+
+      <section class="section-header">
+
+        <h2>
+          Administración del sistema
+        </h2>
+
+        <p>
+          Sesión iniciada correctamente.
+        </p>
+
+      </section>
+
+
+      <ion-card class="option-card">
+
+        <ion-card-content>
+
+          <div class="option-icon">
+            <ion-icon name="shield-checkmark-outline"></ion-icon>
+          </div>
+
+          <h3>
+            {{ nombreRol }}
+          </h3>
+
+          <p>
+            Tu cuenta posee permisos administrativos dentro de CitaNova.
+          </p>
+
+          <p>
+            La gestión de usuarios, médicos, permisos y demás funciones
+            administrativas se realiza desde el portal web del sistema.
+          </p>
+
+        </ion-card-content>
+
+      </ion-card>
+
+
+      <div class="info-card">
+
+        <ion-icon name="information-circle-outline"></ion-icon>
+
+        <div>
+
+          <strong>
+            Acceso reconocido
+          </strong>
+
+          <p>
+            CitaNova identificó correctamente tu rol como administrador.
+            La aplicación móvil está orientada principalmente
+            a la experiencia del paciente.
+          </p>
+
+        </div>
+
+      </div>
+
+    </ng-container>
 
   </div>
 
