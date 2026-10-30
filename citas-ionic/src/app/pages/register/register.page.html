@@ -31,109 +31,125 @@
       (ngSubmit)="registrar()"
       class="register-form">
 
-      <ion-input
-        type="text"
-        label="Nombre"
-        labelPlacement="floating"
-        fill="outline"
-        formControlName="nombre">
-        <ion-icon
-          name="person-outline"
-          slot="start">
-        </ion-icon>
-      </ion-input>
+      <div class="form-group">
+        <ion-input
+          type="text"
+          label="Nombre"
+          labelPlacement="floating"
+          fill="outline"
+          formControlName="nombre">
+          <ion-icon
+            name="person-outline"
+            slot="start">
+          </ion-icon>
+        </ion-input>
 
-      <div
-        class="validation-message"
-        *ngIf="
-          registerForm.controls['nombre'].touched &&
-          registerForm.controls['nombre'].invalid
-        ">
-        Ingresa un nombre válido de al menos 2 caracteres.
+        <div
+          class="validation-message"
+          *ngIf="
+            registerForm.controls['nombre'].touched &&
+            registerForm.controls['nombre'].invalid
+          ">
+          Ingresa un nombre válido de al menos 2 caracteres.
+        </div>
       </div>
 
-      <ion-input
-        type="text"
-        label="Apellido"
-        labelPlacement="floating"
-        fill="outline"
-        formControlName="apellido">
-        <ion-icon
-          name="person-outline"
-          slot="start">
-        </ion-icon>
-      </ion-input>
+      <div class="form-group">
+        <ion-input
+          type="text"
+          label="Apellido"
+          labelPlacement="floating"
+          fill="outline"
+          formControlName="apellido">
+          <ion-icon
+            name="person-outline"
+            slot="start">
+          </ion-icon>
+        </ion-input>
 
-      <div
-        class="validation-message"
-        *ngIf="
-          registerForm.controls['apellido'].touched &&
-          registerForm.controls['apellido'].invalid
-        ">
-        Ingresa un apellido válido de al menos 2 caracteres.
+        <div
+          class="validation-message"
+          *ngIf="
+            registerForm.controls['apellido'].touched &&
+            registerForm.controls['apellido'].invalid
+          ">
+          Ingresa un apellido válido de al menos 2 caracteres.
+        </div>
       </div>
 
-      <ion-input
-        type="email"
-        label="Correo electrónico"
-        labelPlacement="floating"
-        fill="outline"
-        formControlName="correo">
-        <ion-icon
-          name="mail-outline"
-          slot="start">
-        </ion-icon>
-      </ion-input>
+      <div class="form-group">
+        <ion-input
+          type="email"
+          label="Correo electrónico"
+          labelPlacement="floating"
+          fill="outline"
+          formControlName="correo">
+          <ion-icon
+            name="mail-outline"
+            slot="start">
+          </ion-icon>
+        </ion-input>
 
-      <div
-        class="validation-message"
-        *ngIf="
-          registerForm.controls['correo'].touched &&
-          registerForm.controls['correo'].invalid
-        ">
-        Ingresa un correo electrónico válido.
+        <div
+          class="validation-message"
+          *ngIf="
+            registerForm.controls['correo'].touched &&
+            registerForm.controls['correo'].invalid
+          ">
+          Ingresa un correo electrónico válido.
+        </div>
       </div>
 
-      <ion-input
-        type="tel"
-        label="Teléfono"
-        labelPlacement="floating"
-        fill="outline"
-        formControlName="telefono">
-        <ion-icon
-          name="call-outline"
-          slot="start">
-        </ion-icon>
-      </ion-input>
+      <div class="form-group">
+        <ion-input
+          type="tel"
+          label="Teléfono"
+          labelPlacement="floating"
+          fill="outline"
+          formControlName="telefono">
+          <ion-icon
+            name="call-outline"
+            slot="start">
+          </ion-icon>
+        </ion-input>
 
-      <div
-        class="validation-message"
-        *ngIf="
-          registerForm.controls['telefono'].touched &&
-          registerForm.controls['telefono'].invalid
-        ">
-        El teléfono es obligatorio.
+        <div
+          class="validation-message"
+          *ngIf="
+            registerForm.controls['telefono'].touched &&
+            registerForm.controls['telefono'].invalid
+          ">
+          El teléfono es obligatorio.
+        </div>
       </div>
 
-      <ion-input
-        type="password"
-        label="Contraseña"
-        labelPlacement="floating"
-        fill="outline"
-        formControlName="contrasena">
-        <ion-icon
-          name="lock-closed-outline"
-          slot="start">
-        </ion-icon>
-      </ion-input>
+      <div class="form-group">
+        <ion-input
+          [type]="verContrasena ? 'text' : 'password'"
+          label="Contraseña"
+          labelPlacement="floating"
+          fill="outline"
+          formControlName="contrasena">
+          <ion-icon
+            name="lock-closed-outline"
+            slot="start">
+          </ion-icon>
+          <ion-icon 
+            slot="end" 
+            [name]="verContrasena ? 'eye-off-outline' : 'eye-outline'"
+            (click)="toggleContrasena()" 
+            class="eye-icon">
+          </ion-icon>
+        </ion-input>
 
-      <div
-        class="validation-message"
-        *ngIf="
-          registerForm.controls['contrasena'].touched &&
-          registerForm.controls['contrasena'].invalid
-        ">
-        La contraseña debe tener entre 8 y 12 caracteres.
+        <div
+          class="validation-message"
+          *ngIf="
+            registerForm.controls['contrasena'].touched &&
+            registerForm.controls['contrasena'].invalid
+          ">
+          La contraseña debe tener entre 8 y 12 caracteres.
+        </div>
       </div>
 
       <div
@@ -146,7 +162,6 @@
       <ion-button
         type="submit"
         expand="block"
-        shape="round"
         class="register-button"
         [disabled]="loading">
 
@@ -162,19 +177,14 @@
           slot="start">
         </ion-icon>
 
-        {{ loading ? 'Creando cuenta...' : 'Crear cuenta' }}
+        <span>{{ loading ? 'Creando cuenta...' : 'Crear cuenta' }}</span>
       </ion-button>
 
     </form>
 
     <div class="login-link">
       <span>¿Ya tienes una cuenta?</span>
-
-      <ion-button
-        fill="clear"
-        routerLink="/login">
-        Iniciar sesión
-      </ion-button>
+      <a routerLink="/login" class="link-text">Iniciar sesión</a>
     </div>
 
   </div>

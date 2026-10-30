@@ -39,6 +39,7 @@ export class SchedulesPage implements OnInit {
   ) {}
 
   ngOnInit(): void {
+
     this.fechaMinima = this.obtenerFechaActual();
 
     const idMedico =
@@ -59,6 +60,7 @@ export class SchedulesPage implements OnInit {
     this.medicoService.obtenerMedicos().subscribe({
 
       next: (medicos) => {
+
         this.medicos = medicos;
         this.loadingMedicos = false;
 
@@ -66,9 +68,17 @@ export class SchedulesPage implements OnInit {
       },
 
       error: (error: HttpErrorResponse) => {
+
         this.loadingMedicos = false;
-        this.errorMessage =
-          'No fue posible cargar los médicos.';
+
+        if (error.status === 0) {
+          this.errorMessage =
+            'No se pudo conectar con el servidor.';
+        } else {
+          this.errorMessage =
+            error.error?.message ??
+            'No fue posible cargar los médicos.';
+        }
 
         this.cdr.markForCheck();
       }
@@ -86,6 +96,7 @@ export class SchedulesPage implements OnInit {
       this.idMedicoSeleccionado === null ||
       !this.fechaSeleccionada
     ) {
+
       this.errorMessage =
         'Seleccioná un médico y una fecha.';
 
@@ -94,6 +105,7 @@ export class SchedulesPage implements OnInit {
     }
 
     this.loadingHorarios = true;
+    this.cdr.markForCheck();
 
     this.horarioService
       .obtenerHorariosDisponibles(
@@ -103,6 +115,7 @@ export class SchedulesPage implements OnInit {
       .subscribe({
 
         next: (horarios) => {
+
           this.horarios = horarios;
           this.loadingHorarios = false;
           this.busquedaRealizada = true;
@@ -111,10 +124,21 @@ export class SchedulesPage implements OnInit {
         },
 
         error: (error: HttpErrorResponse) => {
+
           this.loadingHorarios = false;
           this.busquedaRealizada = true;
-          this.errorMessage =
-            'No fue posible cargar los horarios disponibles.';
+
+          if (error.status === 0) {
+
+            this.errorMessage =
+              'No se pudo conectar con el servidor.';
+
+          } else {
+
+            this.errorMessage =
+              error.error?.message ??
+              'No fue posible consultar los horarios disponibles.';
+          }
 
           this.cdr.markForCheck();
         }
@@ -126,46 +150,75 @@ export class SchedulesPage implements OnInit {
     horario: HorarioDisponible
   ): void {
 
+    const medicoEncontrado =
+      this.medicos.find(
+        medico =>
+          medico.idMedico ===
+          this.idMedicoSeleccionado
+      );
+
     this.router.navigate(
       ['/confirm-appointment'],
       {
         queryParams: {
-          idHorario: horario.idHorario,
-          medico: horario.medico,
-          fecha: horario.fecha,
-          horaInicio: horario.horaInicio,
-          horaFin: horario.horaFin
+
+          idHorario:
+            horario.idHorario,
+
+          medico:
+            medicoEncontrado?.nombre ??
+            horario.medico ??
+            '',
+
+          fecha:
+            horario.fecha ??
+            this.fechaSeleccionada,
+
+          horaInicio:
+            horario.horaInicio,
+
+          horaFin:
+            horario.horaFin
+
         }
       }
     );
   }
 
   get textoMedicoSeleccionado(): string {
-  const medico = this.medicos.find(
-    m => m.idMedico === this.idMedicoSeleccionado
-  );
 
-  if (!medico) {
-    return '';
+    const medico =
+      this.medicos.find(
+        medico =>
+          medico.idMedico ===
+          this.idMedicoSeleccionado
+      );
+
+    if (!medico) {
+      return '';
+    }
+
+    return `${medico.nombre} - ${medico.especialidad}`;
   }
-
-  return `${medico.nombre} - ${medico.especialidad}`;
-}
 
   private obtenerFechaActual(): string {
 
     const hoy = new Date();
 
-    const anio = hoy.getFullYear();
+    const anio =
+      hoy.getFullYear();
 
-    const mes = String(
-      hoy.getMonth() + 1
-    ).padStart(2, '0');
+    const mes =
+      String(
+        hoy.getMonth() + 1
+      ).padStart(2, '0');
 
-    const dia = String(
-      hoy.getDate()
-    ).padStart(2, '0');
+    const dia =
+      String(
+        hoy.getDate()
+      ).padStart(2, '0');
 
     return `${anio}-${mes}-${dia}`;
   }
+
 }

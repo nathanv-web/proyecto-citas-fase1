@@ -3,7 +3,9 @@
 
     <ion-buttons slot="start">
       <ion-back-button
-        defaultHref="/doctors">
+        defaultHref="/doctors"
+        text=""
+        color="light">
       </ion-back-button>
     </ion-buttons>
 
@@ -39,7 +41,10 @@
       class="state-card"
       *ngIf="loadingMedicos">
 
-      <ion-spinner name="crescent"></ion-spinner>
+      <ion-spinner
+        name="crescent"
+        color="primary">
+      </ion-spinner>
 
       <p>
         Cargando médicos...
@@ -58,10 +63,11 @@
         </ion-label>
 
         <ion-select
-        [(ngModel)]="idMedicoSeleccionado"
-        [selectedText]="textoMedicoSeleccionado"
-        placeholder="Seleccioná un médico"
-        interface="action-sheet">
+          [(ngModel)]="idMedicoSeleccionado"
+          [selectedText]="textoMedicoSeleccionado"
+          placeholder="Seleccioná un médico"
+          interface="action-sheet"
+          class="custom-select">
 
           <ion-select-option
             *ngFor="let medico of medicos"
@@ -85,7 +91,8 @@
         <ion-input
           type="date"
           [(ngModel)]="fechaSeleccionada"
-          [min]="fechaMinima">
+          [min]="fechaMinima"
+          class="custom-input">
         </ion-input>
 
       </div>
@@ -185,9 +192,7 @@
           <ion-card-content>
 
             <div class="schedule-icon">
-              <ion-icon
-                name="time-outline">
-              </ion-icon>
+              <ion-icon name="time-outline"></ion-icon>
             </div>
 
             <div class="schedule-info">
@@ -198,25 +203,24 @@
                 {{ horario.horaFin }}
               </h3>
 
-              <p>
+              <p *ngIf="horario.medico">
                 {{ horario.medico }}
               </p>
 
               <div class="schedule-meta">
 
                 <span>
-                  <ion-icon
-                    name="calendar-outline">
-                  </ion-icon>
-
+                  <ion-icon name="calendar-outline"></ion-icon>
                   {{ horario.fecha }}
                 </span>
 
                 <ion-badge
-                  [color]="horario.estado === 'DISPONIBLE' ? 'success' : 'medium'">
-
+                  [color]="
+                    horario.estado === 'DISPONIBLE'
+                      ? 'success'
+                      : 'medium'
+                  ">
                   {{ horario.estado }}
-
                 </ion-badge>
 
               </div>
