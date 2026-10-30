@@ -16,7 +16,7 @@ public class Cita {
     
     //RELACIONES 
     
-    @OneToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_horario", nullable = false)
     private HorarioDisponible horario;
 

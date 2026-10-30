@@ -7,6 +7,8 @@ import com.proyectocitas.exception.ResourceConflictException;
 import com.proyectocitas.exception.ResourceNotFoundException;
 import com.proyectocitas.exception.ScheduleConflictException;
 
+import org.springframework.context.ApplicationEventPublisher;
+
 import com.proyectocitas.mapper.AppointmentMapper;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.annotation.Isolation;
@@ -45,20 +47,22 @@ public class AppointmentService {
     private final EstadoCitaRepository estadoCitaRepository;
     private final HorarioDisponibleRepository horarioRepository;
     private final AppointmentMapper appointmentMapper;
-
+    private final ApplicationEventPublisher publicadorEventos;
 
     public AppointmentService(
             CitaRepository citaRepository,
             UsuarioRepository usuarioRepository,
             EstadoCitaRepository estadoCitaRepository,
             HorarioDisponibleRepository horarioRepository,
-            AppointmentMapper appointmentMapper) {
-
+            AppointmentMapper appointmentMapper,
+            ApplicationEventPublisher publicadorEventos) {
+        
         this.citaRepository = citaRepository;
         this.usuarioRepository = usuarioRepository;
         this.estadoCitaRepository = estadoCitaRepository;
         this.horarioRepository = horarioRepository;
         this.appointmentMapper = appointmentMapper;
+        this.publicadorEventos = publicadorEventos;
     }
 
 
@@ -131,6 +135,15 @@ if (tieneCitaActiva) {
                                         "No existe el estado PENDIENTE"
                                 )
                         );
+        // Validar que el horario tenga un medico registrado
+        if (horario.getMedico() == null
+        || horario.getMedico().getUsuario() == null
+        || horario.getMedico().getUsuario().getIdUsuario() == null) {
+
+        throw new ResourceConflictException(
+            "El horario no tiene un medico asignado correctamente"
+        );
+        }
 
 
         // 6. Crear la cita
@@ -156,12 +169,23 @@ if (tieneCitaActiva) {
 
         // 8. Guardar la cita
         Cita citaGuardada =
-                citaRepository.save(cita);
+        citaRepository.save(cita);
 
+        // 9. Publicar evento de reserva
+        publicadorEventos.publishEvent(
+        new CitaReservadaEvent(
+                citaGuardada.getIdCita(),
+                horario.getMedico()
+                        .getUsuario()
+                        .getIdUsuario(),
+                emailPaciente,
+                horario.getFecha(),
+                horario.getHoraInicio()
+        )
+);
 
-        // 9. Devolver DTO
-        return appointmentMapper
-                .toDTO(citaGuardada);
+        // 10. Devolver DTO
+        return appointmentMapper.toDTO(citaGuardada);
     }
 
 
