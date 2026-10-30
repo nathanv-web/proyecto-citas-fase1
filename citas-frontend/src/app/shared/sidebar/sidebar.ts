@@ -3,12 +3,13 @@ import { Router, RouterLink } from '@angular/router';
 
 import { PanelAccessService } from '../../core/navigation/panel-access.service';
 import { PanelFunction, PanelId } from '../../core/navigation/panels.config';
+import { NotificationBellComponent } from '../notification-bell/notification-bell';
 
 /** El menú lateral permite explorar paneles y abrir únicamente las acciones autorizadas. */
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink , NotificationBellComponent],
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.css',
 })
