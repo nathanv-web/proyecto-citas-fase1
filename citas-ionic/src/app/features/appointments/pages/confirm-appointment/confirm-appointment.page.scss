@@ -169,7 +169,6 @@ ion-button {
 
   .success-icon {
     margin: 0 auto 14px;
-
     color: var(--ion-color-success);
     font-size: 82px;
   }
@@ -194,12 +193,22 @@ ion-button {
 
   .detail-row {
     display: block;
+  }
 
-    ion-badge {
-      margin-top: 7px;
-      padding: 6px 10px;
-      border-radius: 9px;
-    }
+  .status-badge {
+    display: inline-block;
+    margin-top: 7px;
+    padding: 7px 12px;
+
+    border-radius: 9px;
+
+    background: #f59e0b;
+    color: #ffffff;
+
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: 0.3px;
   }
 }
 
