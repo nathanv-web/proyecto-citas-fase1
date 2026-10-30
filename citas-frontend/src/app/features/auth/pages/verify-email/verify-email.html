@@ -1,0 +1,131 @@
+<main class="login-page">
+
+  <section class="login-intro">
+    <a class="app-brand" routerLink="/">
+      <span class="brand-copy">
+        <strong>Cita<span>Nova</span></strong>
+        <small>Tu salud en un clic</small>
+      </span>
+    </a>
+
+    <span class="eyebrow">Seguridad de tu cuenta</span>
+
+    <h2>Verificacion de correo</h2>
+
+    <p>
+      Confirma tu direccion de correo para completar
+      la verificacion de tu cuenta CitaNova.
+    </p>
+  </section>
+
+  <section class="login-card">
+
+    <h1>Verificar correo</h1>
+
+    @if (validToken && !verified()) {
+
+      <p class="subtitle">
+        Haz clic para confirmar tu correo electronico.
+      </p>
+
+      @if (errorMessage()) {
+        <div class="message error-message" role="alert">
+          {{ errorMessage() }}
+        </div>
+      }
+
+      <button
+        type="button"
+        class="btn btn-primary"
+        [disabled]="verifying()"
+        (click)="verificar()"
+      >
+        {{ verifying() ? 'Verificando...' : 'Verificar correo' }}
+      </button>
+
+      <p class="login-links">
+        <a routerLink="/verify-email">Solicitar otro enlace</a>
+      </p>
+
+    } @else if (verified()) {
+
+      <div class="message success-message" role="status">
+        Tu correo fue verificado correctamente.
+        Ya puedes continuar con tu cuenta.
+      </div>
+
+      <p class="login-links">
+        <a routerLink="/login">Ir al inicio de sesion</a>
+      </p>
+
+    } @else {
+
+      @if (token) {
+        <div class="message error-message" role="alert">
+          El enlace no tiene un formato valido.
+          Puedes solicitar uno nuevo.
+        </div>
+      }
+
+      <p class="subtitle">
+        Ingresa tu correo para solicitar
+        un enlace de verificacion.
+      </p>
+
+      @if (requestSent()) {
+
+        <div class="message success-message" role="status">
+          Si tu cuenta necesita verificar el correo,
+          recibiras un enlace de confirmacion.
+        </div>
+
+      } @else {
+
+        <form [formGroup]="form" (ngSubmit)="solicitar()">
+
+          <div class="form-group">
+            <label for="email">Correo electronico</label>
+
+            <input
+              id="email"
+              type="email"
+              formControlName="email"
+              autocomplete="email"
+              placeholder="correo@ejemplo.com"
+            />
+
+            @if (form.controls.email.touched &&
+                 form.controls.email.invalid) {
+              <small class="field-error">
+                Ingresa un correo electronico valido.
+              </small>
+            }
+          </div>
+
+          @if (errorMessage()) {
+            <div class="message error-message" role="alert">
+              {{ errorMessage() }}
+            </div>
+          }
+
+          <button
+            class="btn btn-primary"
+            type="submit"
+            [disabled]="requesting() || form.invalid"
+          >
+            {{ requesting() ? 'Enviando...' : 'Solicitar enlace' }}
+          </button>
+
+        </form>
+
+      }
+
+      <p class="login-links">
+        <a routerLink="/login">Volver al inicio de sesion</a>
+      </p>
+
+    }
+
+  </section>
+
+</main>

@@ -19,13 +19,28 @@ import { PatientHistory } from './features/patient/patient-history/patient-histo
 
 import { Welcome } from './features/public/welcome/welcome';
 
-/** Las rutas conectan las pantallas públicas y privadas con los controles de sesión y acceso a paneles. */
+/** Las rutas conectan las pantallas pÃºblicas y privadas con los controles de sesiÃ³n y acceso a paneles. */
 export const routes: Routes = [
   {
     path: 'change-password',
     canActivate: [authGuard],
     loadComponent: () =>
       import('./features/auth/pages/change-password/change-password').then((m) => m.ChangePassword),
+  },
+  {
+    path: 'forgot-password',
+    loadComponent: () =>
+      import('./features/auth/pages/forgot-password/forgot-password').then((m) => m.ForgotPassword),
+  },
+  {
+    path: 'reset-password',
+    loadComponent: () =>
+      import('./features/auth/pages/reset-password/reset-password').then((m) => m.ResetPassword),
+  },
+  {
+    path: 'verify-email',
+    loadComponent: () =>
+      import('./features/auth/pages/verify-email/verify-email').then((m) => m.VerifyEmail),
   },
   {
     path: 'login',

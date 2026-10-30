@@ -7,7 +7,7 @@ import { LoginResponse, LoginUsuario } from '../models/login-response.model';
 import { API_BASE_URL } from '../../config/api.config';
 import { RegisterRequest } from '../models/register-request.model';
 
-/** El servicio gestiona la autenticación, conserva la sesión local y consulta los roles y permisos recibidos. */
+/** El servicio gestiona la autenticaciÃ³n, conserva la sesiÃ³n local y consulta los roles y permisos recibidos. */
 @Injectable({
   providedIn: 'root',
 })
@@ -23,7 +23,7 @@ export class AuthService {
     return this.http.post(`${this.apiUrl}/register`, request);
   }
 
-  // La sesión se guarda únicamente después de una respuesta correcta de la API.
+  // La sesiÃ³n se guarda Ãºnicamente despuÃ©s de una respuesta correcta de la API.
   login(credentials: LoginRequest): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.apiUrl}/login`, credentials).pipe(
       tap((response) => {
@@ -63,6 +63,33 @@ export class AuthService {
     return this.http.put<{ message: string }>(`${API_BASE_URL}/me/password`, { actual, nueva });
   }
 
+  forgotPassword(email: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(
+      `${this.apiUrl}/password/forgot`,
+      { email }
+    );
+  }
+
+  resetPassword(token: string, nueva: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(
+      `${this.apiUrl}/password/reset`,
+      { token, nueva }
+    );
+  }
+
+  requestEmailVerification(email: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(
+      `${this.apiUrl}/email/request`,
+      { email }
+    );
+  }
+
+  verifyEmail(token: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(
+      `${this.apiUrl}/email/verify`,
+      { token }
+    );
+  }
   logout(): void {
     localStorage.removeItem('auth_password_change');
     localStorage.removeItem(this.tokenKey);
@@ -77,7 +104,7 @@ export class AuthService {
     return localStorage.getItem(this.tokenKey);
   }
 
-  // Una sesión con datos ilegibles se descarta para evitar permisos inconsistentes.
+  // Una sesiÃ³n con datos ilegibles se descarta para evitar permisos inconsistentes.
   getUsuario(): LoginUsuario | null {
     const usuario = localStorage.getItem(this.userKey);
 

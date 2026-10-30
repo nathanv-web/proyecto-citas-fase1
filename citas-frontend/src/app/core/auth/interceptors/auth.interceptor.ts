@@ -7,14 +7,21 @@ import { API_BASE_URL } from '../../config/api.config';
 import { NotificationService } from '../../notifications/notification.service';
 import { apiErrorMessage } from '../../notifications/api-error';
 
-/** Un único punto presenta los mensajes de la API para todas las pantallas. */
+/** Un Ãºnico punto presenta los mensajes de la API para todas las pantallas. */
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   if (!req.url.startsWith(`${API_BASE_URL}/`)) return next(req);
   const auth = inject(AuthService);
   const router = inject(Router);
   const notifications = inject(NotificationService);
   const isPublic =
-    req.url === `${API_BASE_URL}/auth/login` || req.url === `${API_BASE_URL}/auth/register`;
+    [
+      `${API_BASE_URL}/auth/login`,
+      `${API_BASE_URL}/auth/register`,
+      `${API_BASE_URL}/auth/password/forgot`,
+      `${API_BASE_URL}/auth/password/reset`,
+      `${API_BASE_URL}/auth/email/request`,
+      `${API_BASE_URL}/auth/email/verify`,
+    ].includes(req.url.split('?')[0]);
   const token = auth.getToken();
   const request =
     !isPublic && token ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } }) : req;

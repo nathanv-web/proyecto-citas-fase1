@@ -61,6 +61,9 @@
       @if (successMessage()) {
         <div class="message success-message" role="status">
           {{ successMessage() }}
+          <a routerLink="/verify-email">
+            Verificar correo
+          </a>
         </div>
       }
 
@@ -70,7 +73,7 @@
     </form>
     <p class="login-links">
       <a routerLink="/">Volver al inicio</a> ·
-      <a routerLink="/register">Crear cuenta</a>
+      <a routerLink="/register">Crear cuenta</a> | <a routerLink="/forgot-password">Olvidaste tu contrasena?</a>
     </p>
   </section>
 </main>
