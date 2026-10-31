@@ -12,8 +12,8 @@ public class UsuarioUpdateRequestDTO {
         message = "El nombre debe tener entre 2 y 100 caracteres"
     )
         @Pattern(
-            regexp = "^[\\p{L} .'-]+$",
-            message = "El nombre solo puede contener letras"
+            regexp = "^\\p{Lu}\\p{Ll}+$",
+            message = "El nombre debe iniciar con mayúscula y continuar con minúsculas, sin espacios"
     )
     private String nombre;
 
@@ -23,8 +23,8 @@ public class UsuarioUpdateRequestDTO {
         message = "El apellido debe tener entre 2 y 100 caracteres"
     )
     @Pattern(
-        regexp = "^[\\p{L} .'-]+$",
-        message = "El apellido solo puede contener letras"
+        regexp = "^\\p{Lu}\\p{Ll}+$",
+        message = "El apellido debe iniciar con mayúscula y continuar con minúsculas, sin espacios"
     )
     private String apellido;
 

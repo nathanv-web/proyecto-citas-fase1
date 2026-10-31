@@ -117,6 +117,7 @@ public ResponseEntity<LoginResponseDTO> login(
             );
     respuesta.setDebeCambiarPassword(usuario.isDebeCambiarPassword());
     usuarioLogin.setCorreoVerificado(usuario.isCorreoVerificado());
+    usuarioLogin.setTelefono(usuario.getTelefono());
     return ResponseEntity.ok(
             respuesta
     );

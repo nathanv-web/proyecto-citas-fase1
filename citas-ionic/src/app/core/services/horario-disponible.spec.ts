@@ -1,12 +1,13 @@
 import { TestBed } from '@angular/core/testing';
-import { HorarioDisponible } from './horario-disponible';
+import { provideHttpClient } from '@angular/common/http';
+import { HorarioDisponibleService } from './horario-disponible';
 
-describe('HorarioDisponible', () => {
-  let service: HorarioDisponible;
+describe('HorarioDisponibleService', () => {
+  let service: HorarioDisponibleService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
-    service = TestBed.inject(HorarioDisponible);
+    TestBed.configureTestingModule({ providers: [provideHttpClient()] });
+    service = TestBed.inject(HorarioDisponibleService);
   });
 
   it('should be created', () => {

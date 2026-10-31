@@ -56,4 +56,34 @@
       </button>
     </div>
   </form>
+  <section class="list-section" aria-labelledby="my-schedules-title">
+    <div class="page-header">
+      <h2 id="my-schedules-title">Mis horarios asignados</h2>
+      <button
+        class="btn btn-secondary"
+        type="button"
+        (click)="loadSchedules()"
+        [disabled]="loadingSchedules()"
+      >
+        Actualizar horarios
+      </button>
+    </div>
+    @if (loadingSchedules()) {
+      <p role="status">Cargando horarios...</p>
+    } @else if (schedulesError()) {
+      <p class="alert error" role="alert">{{ schedulesError() }}</p>
+    } @else {
+      <div class="record-grid">
+        @for (schedule of schedules(); track schedule.idHorario) {
+          <article class="record-card">
+            <h3>{{ schedule.fecha }}</h3>
+            <p>{{ schedule.horaInicio }} - {{ schedule.horaFin }}</p>
+            <span class="status">{{ schedule.estado }}</span>
+          </article>
+        } @empty {
+          <p role="status">No tienes horarios asignados.</p>
+        }
+      </div>
+    }
+  </section>
 </main>

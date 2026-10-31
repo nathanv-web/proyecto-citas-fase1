@@ -2,6 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 
 import { inject, Injectable } from '@angular/core';
 import { API_BASE_URL } from '../../core/config/api.config';
+import { Horario } from '../patient/appointment.service';
 
 /** El modelo reúne los datos de una consulta que se presenta en la agenda del médico. */
 export interface DoctorAppointment {
@@ -38,6 +39,10 @@ export class DoctorService {
     };
 
     return this.http.post(`${this.apiUrl}/schedules`, body);
+  }
+
+  getSchedules() {
+    return this.http.get<Horario[]>(`${this.apiUrl}/schedules/my-schedules`);
   }
 
   registerDiagnosis(idCita: number, diagnosticoReceta: string, observaciones: string) {

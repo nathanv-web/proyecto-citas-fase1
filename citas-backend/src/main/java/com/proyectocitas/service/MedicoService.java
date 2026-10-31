@@ -23,6 +23,8 @@ public interface MedicoService {
 
     Medico guardar(Medico medico);
 
+    Medico crearConRolDoctor(Medico medico);
+
     //Actualizar solo los datos enviados
 
     Medico actualizar(Medico medico, Long id);

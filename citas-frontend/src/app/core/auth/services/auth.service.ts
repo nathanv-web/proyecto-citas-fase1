@@ -74,7 +74,7 @@ export class AuthService {
     return this.http.post<{ message: string }>(
       `${this.apiUrl}/password/reset`,
       { token, nueva }
-    );
+    ).pipe(tap(() => this.logout()));
   }
 
   requestEmailVerification(email: string): Observable<{ message: string }> {

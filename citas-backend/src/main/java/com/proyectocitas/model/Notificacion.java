@@ -22,6 +22,10 @@ public class Notificacion {
 
     public enum Tipo {
         CITA_RESERVADA,
+        CITA_REPROGRAMADA,
+        CITA_CANCELADA,
+        DIAGNOSTICO_DISPONIBLE,
+        RECORDATORIO_CITA,
         SISTEMA
     }
 
@@ -41,7 +45,7 @@ public class Notificacion {
     private String mensaje;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 30)
+    @Column(nullable = false, length = 30, columnDefinition = "VARCHAR(30)")
     private Tipo tipo;
 
     @Column(nullable = false)

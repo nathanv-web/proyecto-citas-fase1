@@ -26,8 +26,8 @@ public class MedicoCreateRequestDTO {
         message = "El colegiado no puede superar los 50 caracteres"
     )
     @Pattern(
-            regexp = "^[A-Za-z0-9-]+$",
-            message = "El colegiado solo puede contener letras, números y guiones"
+            regexp = "^COL-[0-9]{4}$",
+            message = "El colegiado debe tener el formato COL-0000 (cuatro dígitos)"
     )
     private String colegiado;
 

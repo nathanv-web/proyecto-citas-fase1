@@ -25,6 +25,7 @@ public class MeController {
         var profile = new LoginUsuarioResponseDTO(usuario.getIdUsuario(), usuario.getNombre(),
                 usuario.getApellido(), usuario.getCorreo(), roles, permisos);
         profile.setCorreoVerificado(usuario.isCorreoVerificado());
+        profile.setTelefono(usuario.getTelefono());
         return Map.of("usuario", profile,
                 "debeCambiarPassword", usuario.isDebeCambiarPassword());
     }

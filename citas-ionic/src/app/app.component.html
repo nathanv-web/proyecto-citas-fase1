@@ -1,3 +1,12 @@
 <ion-app>
+  @if (connectionStatus === 'offline') {
+    <div class="connection-notice offline" role="status" aria-live="polite">
+      Sin conexión a Internet. Algunas funciones no estarán disponibles.
+    </div>
+  } @else if (connectionStatus === 'restored') {
+    <div class="connection-notice restored" role="status" aria-live="polite">
+      Conexión a Internet restablecida.
+    </div>
+  }
   <ion-router-outlet></ion-router-outlet>
 </ion-app>

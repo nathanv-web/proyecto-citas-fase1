@@ -5,8 +5,9 @@
       <h2>Paneles y acciones</h2>
     </div>
 
-    <!-- Tu campana (Integrante 4) -->
-    <app-notification-bell></app-notification-bell>
+    @if (currentPanel()?.id === 'patient' || currentPanel()?.id === 'doctor') {
+      <app-notification-bell></app-notification-bell>
+    }
 
     <button
       class="mobile-toggle"

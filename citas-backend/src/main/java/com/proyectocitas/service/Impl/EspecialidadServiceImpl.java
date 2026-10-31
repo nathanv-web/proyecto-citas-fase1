@@ -2,8 +2,10 @@ package com.proyectocitas.service.Impl;
 
 import com.proyectocitas.exception.DuplicateResourceException;
 import com.proyectocitas.exception.ResourceNotFoundException;
+import com.proyectocitas.exception.ResourceConflictException;
 
 import com.proyectocitas.model.Especialidad;
+import com.proyectocitas.model.Medico;
 
 import com.proyectocitas.repository.EspecialidadRepository;
 
@@ -159,6 +161,7 @@ public class EspecialidadServiceImpl
     // =================================================
 
     @Override
+    @Transactional
     public Especialidad actualizar(
             Especialidad especialidad,
             Long id
@@ -254,6 +257,10 @@ public class EspecialidadServiceImpl
                 especialidad.getActivo() != null
         ) {
 
+            if (Boolean.FALSE.equals(especialidad.getActivo())) {
+                validarDesactivacion(id);
+            }
+
             especialidadDB.setActivo(
                     especialidad.getActivo()
             );
@@ -292,7 +299,16 @@ public class EspecialidadServiceImpl
                         );
 
 
+        validarDesactivacion(id);
         especialidad.setActivo(false);
         especialidadRepository.save(especialidad);
+    }
+
+    private void validarDesactivacion(Long id) {
+        if (especialidadRepository.tieneMedicosConEstado(id, Medico.EstadoMedico.ACTIVO)) {
+            throw new ResourceConflictException(
+                    "No se puede desactivar la especialidad porque tiene médicos activos asignados"
+            );
+        }
     }
 }

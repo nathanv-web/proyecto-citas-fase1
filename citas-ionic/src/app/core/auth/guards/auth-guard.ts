@@ -20,21 +20,21 @@ export class AuthGuard implements CanActivate {
   ) {}
 
   canActivate(
-    route: ActivatedRouteSnapshot,
+    _route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
-  ): boolean | UrlTree {
-
-    if (this.authService.isAuthenticated()) {
-      return true;
-    }
-
-    return this.router.createUrlTree(
-      ['/login'],
-      {
-        queryParams: {
-          returnUrl: state.url
+  ): Promise<boolean | UrlTree> {
+    return this.authService
+      .restoreSession()
+      .then((restored) => {
+        if (restored && this.authService.isAuthenticated()) {
+          return true;
         }
-      }
-    );
+        return this.loginUrl(state.url);
+      })
+      .catch(() => this.loginUrl(state.url));
+  }
+
+  private loginUrl(returnUrl: string): UrlTree {
+    return this.router.createUrlTree(['/login'], { queryParams: { returnUrl } });
   }
 }

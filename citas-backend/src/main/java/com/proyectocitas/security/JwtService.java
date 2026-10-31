@@ -21,21 +21,15 @@ public class JwtService {
     private long expiration;
 
     public String generateToken(UserDetails userDetails) {
+        com.proyectocitas.model.Usuario usuario =
+                (com.proyectocitas.model.Usuario) userDetails;
         return Jwts.builder()
                 .subject(userDetails.getUsername())
-                .claim("versionSesion", ((com.proyectocitas.model.Usuario) userDetails).getVersionSesion())
+                .claim("idUsuario", usuario.getIdUsuario())
+                .claim("versionSesion", usuario.getVersionSesion())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSigningKey()).compact();
-    }
-
-    public String generateToken(String email) {
-        return Jwts.builder()
-                .subject(email)
-                .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + expiration))
-                .signWith(getSigningKey())
-                .compact();
     }
 
     public String extractUsername(String token) {
@@ -48,7 +42,14 @@ public class JwtService {
         return username.equals(userDetails.getUsername())
                 && !isTokenExpired(token)
                 && userDetails.isEnabled() && userDetails.isAccountNonLocked()
-                && versionValida(token, userDetails);
+                && versionValida(token, userDetails)
+                && usuarioValido(token, userDetails);
+    }
+
+    private boolean usuarioValido(String token, UserDetails userDetails) {
+        Number idToken = extractClaim(token, claims -> (Number) claims.get("idUsuario"));
+        Long idActual = ((com.proyectocitas.model.Usuario) userDetails).getIdUsuario();
+        return idToken != null && idActual != null && idToken.longValue() == idActual;
     }
 
     private boolean versionValida(String token, UserDetails userDetails) {

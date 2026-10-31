@@ -2,20 +2,49 @@
   <header class="page-header">
     <div>
       <span class="eyebrow">CitaNova · Atención médica</span>
-      <h1>{{ canViewAgenda ? 'Mi agenda' : 'Registrar diagnóstico' }}</h1>
-      <p>Gestiona las consultas y registra la información de la atención.</p>
+      <h1>{{ diagnosisMode ? 'Registrar diagnóstico' : 'Mi agenda' }}</h1>
+      <p>
+        {{
+          diagnosisMode
+            ? 'Selecciona una cita pendiente y registra su diagnóstico y receta.'
+            : 'Consulta tus citas por fecha y periodo.'
+        }}
+      </p>
     </div>
+    @if (diagnosisMode && canViewAgenda) {
+      <a
+        class="btn btn-secondary"
+        routerLink="/doctor/appointments"
+        [queryParams]="{ fecha: fecha }"
+        >Ver citas</a
+      >
+    } @else if (!diagnosisMode && canRegisterDiagnosis) {
+      <a class="btn btn-primary" routerLink="/doctor/diagnosis" [queryParams]="{ fecha: fecha }"
+        >Registrar diagnóstico</a
+      >
+    }
   </header>
 
   @if (canViewAgenda || canRegisterDiagnosis) {
     <section class="form-card form-grid" aria-label="Periodo de mi agenda">
       <div class="field">
         <label for="agenda-date">Fecha</label
-        ><input id="agenda-date" type="date" [(ngModel)]="fecha" />
+        ><input
+          id="agenda-date"
+          type="date"
+          [(ngModel)]="fecha"
+          (change)="loadAgenda()"
+          [disabled]="loading() || saving()"
+        />
       </div>
       <div class="field">
         <label for="agenda-period">Vista</label
-        ><select id="agenda-period" [(ngModel)]="periodo">
+        ><select
+          id="agenda-period"
+          [(ngModel)]="periodo"
+          (change)="loadAgenda()"
+          [disabled]="loading() || saving()"
+        >
           <option value="dia">Día</option>
           <option value="semana">Semana</option>
         </select>
@@ -32,47 +61,54 @@
     @if (loading()) {
       <p class="loading" role="status">Cargando citas...</p>
     }
-    <section class="record-grid" aria-label="Citas del día">
-      @for (appointment of appointments(); track appointment.idCita) {
-        <article class="record-card">
-          <div class="record-header">
-            <span class="eyebrow">Cita #{{ appointment.idCita }}</span>
-            <span
-              class="status"
-              [class.pending]="appointment.estado === 'PENDIENTE'"
-              [class.inactive]="appointment.estado === 'CANCELADA'"
-              >{{ appointment.estado }}</span
-            >
-          </div>
-          <h2>{{ appointment.paciente }}</h2>
-          <dl class="record-details">
-            <dt>Fecha</dt>
-            <dd>{{ appointment.fecha }}</dd>
-            <dt>Horario</dt>
-            <dd>{{ appointment.horaInicio }} - {{ appointment.horaFin }}</dd>
-            <dt>Motivo</dt>
-            <dd>{{ appointment.motivo }}</dd>
-          </dl>
-          @if (canRegisterDiagnosis && appointment.estado === 'PENDIENTE') {
-            <button
-              class="btn btn-secondary"
-              type="button"
-              (click)="selectAppointment(appointment.idCita)"
-              [disabled]="saving()"
-            >
-              Seleccionar para diagnóstico
-            </button>
+    @if (agendaError()) {
+      <p class="alert error" role="alert">{{ agendaError() }}</p>
+    }
+    @if (!diagnosisMode) {
+      <section
+        class="record-grid"
+        [attr.aria-label]="periodo === 'dia' ? 'Citas del día' : 'Citas de la semana'"
+      >
+        @for (appointment of appointments(); track appointment.idCita) {
+          <article class="record-card">
+            <div class="record-header">
+              <span class="eyebrow">Cita #{{ appointment.idCita }}</span>
+              <span
+                class="status"
+                [class.pending]="appointment.estado === 'PENDIENTE'"
+                [class.inactive]="appointment.estado === 'CANCELADA'"
+                >{{ appointment.estado }}</span
+              >
+            </div>
+            <h2>{{ appointment.paciente }}</h2>
+            <dl class="record-details">
+              <dt>Fecha</dt>
+              <dd>{{ appointment.fecha }}</dd>
+              <dt>Horario</dt>
+              <dd>{{ appointment.horaInicio }} - {{ appointment.horaFin }}</dd>
+              <dt>Motivo</dt>
+              <dd>{{ appointment.motivo }}</dd>
+            </dl>
+            @if (canRegisterDiagnosis && appointment.estado === 'PENDIENTE') {
+              <a
+                class="btn btn-secondary"
+                routerLink="/doctor/diagnosis"
+                [queryParams]="{ cita: appointment.idCita, fecha: appointment.fecha }"
+              >
+                Seleccionar para diagnóstico
+              </a>
+            }
+          </article>
+        } @empty {
+          @if (!loading() && !agendaError()) {
+            <p class="empty-state" role="status">No hay citas en el periodo seleccionado.</p>
           }
-        </article>
-      } @empty {
-        @if (!loading()) {
-          <p class="empty-state" role="status">No hay citas en el periodo seleccionado.</p>
         }
-      }
-    </section>
+      </section>
+    }
   }
 
-  @if (canRegisterDiagnosis) {
+  @if (diagnosisMode && canRegisterDiagnosis) {
     <section class="form-card list-section" aria-labelledby="diagnostico">
       <h2 id="diagnostico">Registrar diagnóstico</h2>
       <div class="field">
@@ -91,7 +127,7 @@
             </option>
           }
         </select>
-        @if (!loading() && !pendingAppointments().length) {
+        @if (!loading() && !agendaError() && !pendingAppointments().length) {
           <small>No hay citas pendientes en el periodo seleccionado.</small>
         }
       </div>
@@ -103,6 +139,8 @@
             [(ngModel)]="diagnosticoReceta"
             placeholder="Detalle del diagnóstico y tratamiento"
             rows="5"
+            minlength="5"
+            maxlength="5000"
           ></textarea>
         </div>
         <div class="field">
@@ -112,15 +150,24 @@
             [(ngModel)]="observaciones"
             placeholder="Indicaciones adicionales de la consulta"
             rows="5"
+            maxlength="2000"
           ></textarea>
         </div>
       </div>
+      <p class="helper-text">
+        Diagnóstico y receta: entre 5 y 5000 caracteres. Observaciones: hasta 2000.
+      </p>
+      @if (diagnosisError()) {
+        <p class="alert error" role="alert">{{ diagnosisError() }}</p>
+      }
       <div class="form-actions">
         <button
           class="btn btn-primary"
           type="button"
           (click)="saveDiagnosis()"
-          [disabled]="!appointmentId || !diagnosticoReceta.trim() || loading() || saving()"
+          [disabled]="
+            !appointmentId || diagnosticoReceta.trim().length < 5 || loading() || saving()
+          "
         >
           Guardar diagnóstico
         </button>

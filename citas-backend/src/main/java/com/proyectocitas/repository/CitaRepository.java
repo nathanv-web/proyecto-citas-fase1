@@ -3,6 +3,8 @@ package com.proyectocitas.repository;
 import com.proyectocitas.model.Cita;
 import com.proyectocitas.model.EstadoCita.NombreEstado;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.Query;
@@ -36,6 +38,22 @@ public interface CitaRepository
     boolean existsByHorario_IdHorario(Long idHorario);
 
     boolean existsByHorario_IdHorarioAndEstado_NombreNot(Long idHorario, NombreEstado estado);
+
+    @Query("""
+           SELECT c.idCita FROM Cita c JOIN c.horario h
+           WHERE c.estado.nombre = :estado
+           AND c.recordatorioEnviado = false
+           AND (h.fecha > :desdeFecha OR (h.fecha = :desdeFecha AND h.horaInicio > :desdeHora))
+           AND (h.fecha < :hastaFecha OR (h.fecha = :hastaFecha AND h.horaInicio <= :hastaHora))
+           ORDER BY h.fecha, h.horaInicio, c.idCita
+           """)
+    List<Long> buscarCitasParaRecordatorio(
+            @Param("estado") NombreEstado estado,
+            @Param("desdeFecha") LocalDate desdeFecha,
+            @Param("desdeHora") LocalTime desdeHora,
+            @Param("hastaFecha") LocalDate hastaFecha,
+            @Param("hastaHora") LocalTime hastaHora,
+            Pageable limite);
     
     //Buscar agenda del médico autenticado
     

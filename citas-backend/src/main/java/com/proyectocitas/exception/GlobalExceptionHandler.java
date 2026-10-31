@@ -30,6 +30,16 @@ public class GlobalExceptionHandler {
     private static final Logger logger = 
             LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
+    @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
+    public ResponseEntity<Map<String, Object>> manejarArchivoGrande(
+            org.springframework.web.multipart.MaxUploadSizeExceededException ex,
+            HttpServletRequest request) {
+        return ResponseEntity.status(413).body(Map.of(
+                "status", 413,
+                "message", "La foto no debe superar 1 MiB",
+                "path", request.getRequestURI()));
+    }
+
     @ExceptionHandler({org.springframework.dao.OptimisticLockingFailureException.class,
             jakarta.persistence.OptimisticLockException.class})
     public ResponseEntity<Map<String, Object>> manejarConflictoConcurrente(

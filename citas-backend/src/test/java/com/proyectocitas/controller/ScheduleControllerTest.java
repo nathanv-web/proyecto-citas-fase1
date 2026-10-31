@@ -22,6 +22,7 @@ import org.springframework.http.HttpStatus;
 import java.security.Principal;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -70,17 +71,8 @@ class ScheduleControllerTest {
         when(medicoRepository.findByUsuario_Correo("doctor@clinica.com"))
                 .thenReturn(Optional.of(medico));
 
-        when(scheduleService.validarNuevoHorario(
-                1L,
-                request.getFecha(),
-                request.getHoraInicio(),
-                request.getHoraFin()))
-                .thenReturn(true);
-
-        when(horarioMapper.toEntity(request))
-                .thenReturn(horario);
-
-        when(horarioRepository.save(horario))
+        when(scheduleService.crearHorarioAtomico(
+                1L, request.getFecha(), request.getHoraInicio(), request.getHoraFin()))
                 .thenReturn(horario);
 
         when(horarioMapper.toDTO(horario))
@@ -113,6 +105,10 @@ class ScheduleControllerTest {
 
         when(medicoRepository.findByUsuario_Correo("doctor@clinica.com"))
                 .thenReturn(Optional.of(medico));
+
+        when(scheduleService.crearHorarioAtomico(
+                1L, request.getFecha(), request.getHoraInicio(), request.getHoraFin()))
+                .thenThrow(new ScheduleConflictException("No se puede crear en el pasado"));
 
         assertThrows(
                 ScheduleConflictException.class,
@@ -149,8 +145,9 @@ class ScheduleControllerTest {
         when(medicoRepository.findByUsuario_Correo("doctor@clinica.com"))
                 .thenReturn(Optional.of(medico));
 
-        when(horarioRepository.findById(10L))
-                .thenReturn(Optional.of(horario));
+        when(scheduleService.actualizarHorarioAtomico(
+                10L, 1L, request.getFecha(), request.getHoraInicio(), request.getHoraFin()))
+                .thenThrow(new ScheduleConflictException("No se puede actualizar en el pasado"));
 
         assertThrows(
                 ScheduleConflictException.class,
@@ -163,5 +160,37 @@ class ScheduleControllerTest {
 
         verify(horarioRepository, never())
                 .save(any());
+    }
+
+    @Test
+    void misHorariosSoloListaHorariosFuturosDelMedicoAutenticado() {
+        Principal principal = () -> "doctor@clinica.com";
+        Medico medico = new Medico();
+        medico.setIdMedico(1L);
+
+        HorarioDisponible pasado = new HorarioDisponible();
+        pasado.setIdHorario(2L);
+        pasado.setMedico(medico);
+        LocalDate hoyEnGuatemala = LocalDate.now(ZoneId.of("America/Guatemala"));
+        pasado.setFecha(hoyEnGuatemala.minusDays(1));
+        pasado.setHoraInicio(LocalTime.of(9, 0));
+
+        HorarioDisponible futuro = new HorarioDisponible();
+        futuro.setIdHorario(3L);
+        futuro.setMedico(medico);
+        futuro.setFecha(hoyEnGuatemala.plusDays(1));
+        futuro.setHoraInicio(LocalTime.of(9, 0));
+
+        HorarioDisponibleResponseDTO futuroDto = new HorarioDisponibleResponseDTO();
+        when(medicoRepository.findByUsuario_Correo("doctor@clinica.com"))
+                .thenReturn(Optional.of(medico));
+        when(horarioRepository.findByMedico_IdMedico(1L))
+                .thenReturn(java.util.List.of(pasado, futuro));
+        when(horarioMapper.toDTO(futuro)).thenReturn(futuroDto);
+
+        var response = controller.obtenerMisHorarios(principal);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(java.util.List.of(futuroDto), response.getBody());
     }
 }

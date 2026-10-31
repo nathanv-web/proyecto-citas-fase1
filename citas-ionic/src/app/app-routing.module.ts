@@ -45,14 +45,17 @@ const routes: Routes = [
   },
   {
     path: 'confirm-appointment',
+    canActivate: [AuthGuard],
     loadChildren: () => import('./features/appointments/pages/confirm-appointment/confirm-appointment.module').then( m => m.ConfirmAppointmentPageModule)
   },
   {
     path: 'my-appointments',
+    canActivate: [AuthGuard],
     loadChildren: () => import('./features/appointments/pages/my-appointments/my-appointments.module').then( m => m.MyAppointmentsPageModule)
   },
   {
     path: 'appointment-detail',
+    canActivate: [AuthGuard],
     loadChildren: () => import('./features/appointments/pages/appointment-detail/appointment-detail.module').then( m => m.AppointmentDetailPageModule)
   },
 

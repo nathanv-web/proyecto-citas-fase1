@@ -20,13 +20,71 @@ import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.any;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.never;
 
 class UsuarioServiceImplTest {
+
+    @Test
+    void actualizarNoPermiteDesactivarUsuarioConSoloPermisoDeEdicion() {
+        UsuarioRepository usuarioRepository = mock(UsuarioRepository.class);
+        var passwordEncoder = mock(PasswordEncoder.class);
+        var rolRepository = mock(RolRepository.class);
+        var service = new UsuarioServiceImpl(usuarioRepository, passwordEncoder, rolRepository);
+        Usuario objetivo = new Usuario();
+        objetivo.setIdUsuario(7L);
+        objetivo.setActivo(true);
+        UsuarioUpdateRequestDTO request = new UsuarioUpdateRequestDTO();
+        request.setActivo(false);
+        when(usuarioRepository.findById(7L)).thenReturn(Optional.of(objetivo));
+
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken("editor", null,
+                        List.of(new org.springframework.security.core.authority.SimpleGrantedAuthority(
+                                "ACTUALIZAR_USUARIOS"))));
+        try {
+            assertThrows(org.springframework.security.access.AccessDeniedException.class,
+                    () -> service.actualizar(7L, request));
+            assertTrue(objetivo.isEnabled());
+            verify(usuarioRepository, never()).save(any());
+        } finally {
+            SecurityContextHolder.clearContext();
+        }
+    }
+
+    @Test
+    void actualizarNoDesactivaAlUltimoAdministradorAunqueTengaAmbosPermisos() {
+        UsuarioRepository usuarioRepository = mock(UsuarioRepository.class);
+        var passwordEncoder = mock(PasswordEncoder.class);
+        var rolRepository = mock(RolRepository.class);
+        var service = new UsuarioServiceImpl(usuarioRepository, passwordEncoder, rolRepository);
+        Rol admin = new Rol();
+        admin.setNombre("ROLE_ADMIN");
+        Usuario objetivo = new Usuario();
+        objetivo.setIdUsuario(7L);
+        objetivo.setActivo(true);
+        objetivo.getRoles().add(admin);
+        UsuarioUpdateRequestDTO request = new UsuarioUpdateRequestDTO();
+        request.setActivo(false);
+        when(usuarioRepository.findById(7L)).thenReturn(Optional.of(objetivo));
+        when(usuarioRepository.countByActivoTrueAndRoles_Nombre("ROLE_ADMIN")).thenReturn(1L);
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken("admin", null, List.of(
+                        new org.springframework.security.core.authority.SimpleGrantedAuthority("ACTUALIZAR_USUARIOS"),
+                        new org.springframework.security.core.authority.SimpleGrantedAuthority("DESACTIVAR_USUARIOS"))));
+        try {
+            assertThrows(ResourceConflictException.class, () -> service.actualizar(7L, request));
+            assertTrue(objetivo.isEnabled());
+            verify(usuarioRepository, never()).save(any());
+        } finally {
+            SecurityContextHolder.clearContext();
+        }
+    }
 
     @Test
     void debeLanzarDuplicateResourceCuandoCorreoYaExisteAlActualizar() {

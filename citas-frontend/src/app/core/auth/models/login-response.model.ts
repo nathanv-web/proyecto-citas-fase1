@@ -5,7 +5,6 @@ export interface LoginUsuario {
   apellido: string;
   correo: string;
   telefono?: string | null;
-  edad?: number | null;
   roles: string[];
   permisos: string[];
 }

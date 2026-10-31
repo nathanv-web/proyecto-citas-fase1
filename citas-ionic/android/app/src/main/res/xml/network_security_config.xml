@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- El backend de desarrollo se consume por HTTP desde la red local. -->
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

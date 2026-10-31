@@ -18,6 +18,7 @@ import com.proyectocitas.model.Usuario;
 import com.proyectocitas.repository.EspecialidadRepository;
 import com.proyectocitas.repository.MedicoRepository;
 import com.proyectocitas.repository.UsuarioRepository;
+import com.proyectocitas.service.MedicoService;
 import com.proyectocitas.dto.request.MedicoUpdateRequestDTO;
 
 import jakarta.validation.Valid;
@@ -27,6 +28,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import org.springframework.dao.DataIntegrityViolationException;
 
 @RestController
 @RequestMapping("/api/v1/medicos")
@@ -36,13 +38,15 @@ public class MedicoController {
     private final UsuarioRepository usuarioRepository;
     private final EspecialidadRepository especialidadRepository;
     private final MedicoMapper medicoMapper;
+    private final MedicoService medicoService;
 
 
     public MedicoController(
             MedicoRepository medicoRepository,
             UsuarioRepository usuarioRepository,
             EspecialidadRepository especialidadRepository,
-            MedicoMapper medicoMapper) {
+            MedicoMapper medicoMapper,
+            MedicoService medicoService) {
 
         this.medicoRepository =
                 medicoRepository;
@@ -55,6 +59,8 @@ public class MedicoController {
 
         this.medicoMapper =
                 medicoMapper;
+
+        this.medicoService = medicoService;
     }
 
 
@@ -234,8 +240,20 @@ private static String normalizar(String texto) {
         );
 
 
-        Medico guardado =
-                medicoRepository.save(medico);
+        Medico guardado;
+        try {
+            guardado = medicoService.crearConRolDoctor(medico);
+        } catch (DataIntegrityViolationException ex) {
+            if (medicoRepository.findByColegiadoIgnoreCase(colegiado).isPresent()) {
+                throw new DuplicateResourceException(
+                        "Ya existe un médico con ese número de colegiado");
+            }
+            if (medicoRepository.findByUsuario_IdUsuario(request.getIdUsuario()).isPresent()) {
+                throw new DuplicateResourceException(
+                        "El usuario ya tiene un perfil de médico");
+            }
+            throw ex;
+        }
 
 
         return ResponseEntity

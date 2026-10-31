@@ -18,6 +18,7 @@ import { finalize } from 'rxjs';
   styleUrl: './user-form.css',
 })
 export class UserForm implements OnInit {
+  readonly namePattern = /^\p{Lu}\p{Ll}+$/u;
   private readonly changeDetector = inject(ChangeDetectorRef);
 
   private readonly userService = inject(UserService);
@@ -94,6 +95,12 @@ export class UserForm implements OnInit {
       !this.form.telefono.trim()
     ) {
       this.error = 'Completa los campos obligatorios.';
+      return;
+    }
+
+    if (![this.form.nombre, this.form.apellido].every((value) => this.namePattern.test(value))) {
+      this.error =
+        'Nombre y apellido deben iniciar con mayúscula y continuar con minúsculas, sin espacios.';
       return;
     }
 

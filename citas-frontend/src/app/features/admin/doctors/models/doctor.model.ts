@@ -18,3 +18,11 @@ export interface DoctorRequest {
   aniosExperiencia: number;
   biografia: string;
 }
+
+/** Datos que un administrador puede modificar en un perfil médico existente. */
+export interface DoctorUpdateRequest {
+  idEspecialidad: number;
+  colegiado: string;
+  aniosExperiencia: number;
+  biografia: string;
+}

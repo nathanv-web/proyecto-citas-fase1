@@ -14,6 +14,19 @@ import { AppointmentResponse } from '../../models/appointment-response';
 export class MyAppointmentsPage {
 
   citas: AppointmentResponse[] = [];
+  vistaActual: 'pendientes' | 'historial' = 'pendientes';
+
+  get citasPendientes(): AppointmentResponse[] {
+    return this.citas.filter((cita) => cita.estado === 'PENDIENTE');
+  }
+
+  get citasHistorial(): AppointmentResponse[] {
+    return this.citas.filter((cita) => cita.estado !== 'PENDIENTE');
+  }
+
+  get citasMostradas(): AppointmentResponse[] {
+    return this.vistaActual === 'pendientes' ? this.citasPendientes : this.citasHistorial;
+  }
 
   loading = false;
   errorMessage = '';

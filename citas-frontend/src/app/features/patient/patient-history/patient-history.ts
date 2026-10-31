@@ -1,16 +1,41 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  ElementRef,
+  inject,
+  OnInit,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { finalize } from 'rxjs';
+import { finalize, Subscription } from 'rxjs';
 import { AppointmentService, Cita, Horario } from '../appointment.service';
 import { AuthService } from '../../../core/auth/services/auth.service';
 import { NotificationService } from '../../../core/notifications/notification.service';
 import { ConfirmationService } from '../../../core/notifications/confirmation.service';
+import { apiErrorMessage } from '../../../core/notifications/api-error';
 
 @Component({
   selector: 'app-patient-history',
   standalone: true,
   imports: [FormsModule],
   templateUrl: './patient-history.html',
+  styles: [
+    `
+      .reschedule-dialog {
+        width: min(48rem, calc(100vw - 2rem));
+        max-height: calc(100dvh - 2rem);
+        overflow-y: auto;
+        margin: auto;
+        padding: 1.5rem;
+        color: var(--app-text);
+      }
+      .reschedule-dialog::backdrop {
+        background: #12273788;
+      }
+    `,
+  ],
 })
 export class PatientHistory implements OnInit {
   private readonly service = inject(AppointmentService);
@@ -23,6 +48,11 @@ export class PatientHistory implements OnInit {
   readonly loading = signal(false);
   readonly busy = signal(false);
   readonly schedules = signal<Horario[]>([]);
+  readonly loadingSchedules = signal(false);
+  readonly schedulesError = signal('');
+  readonly schedulesSearched = signal(false);
+  readonly rescheduleDialog = viewChild<ElementRef<HTMLDialogElement>>('rescheduleDialog');
+  private scheduleRequest?: Subscription;
   readonly selectedDate = signal(new Date().toLocaleDateString('en-CA'));
   readonly period = signal('todos');
   readonly visibleAppointments = computed(() => {
@@ -40,6 +70,13 @@ export class PatientHistory implements OnInit {
   fecha = '';
   idHorarioNuevo = 0;
   motivoCancelacion = '';
+
+  constructor() {
+    effect(() => {
+      const dialog = this.rescheduleDialog()?.nativeElement;
+      if (dialog && !dialog.open) dialog.showModal();
+    });
+  }
 
   ngOnInit(): void {
     this.load();
@@ -71,36 +108,60 @@ export class PatientHistory implements OnInit {
       });
   }
   openReschedule(cita: Cita): void {
-    if (!this.canRescheduleAppointment) return;
+    if (!this.canRescheduleAppointment || this.busy() || cita.estado !== 'PENDIENTE') return;
     this.selected = cita;
     this.idMedico = cita.idMedico;
-    this.fecha = '';
-    this.idHorarioNuevo = 0;
-    this.schedules.set([]);
+    this.fecha = cita.fecha;
+    this.searchSchedules();
+  }
+  closeReschedule(event?: Event): void {
+    event?.preventDefault();
+    if (this.busy()) return;
+    this.rescheduleDialog()?.nativeElement.close();
+    this.selected = undefined;
+    this.clearSchedules();
   }
   clearSchedules(): void {
+    this.scheduleRequest?.unsubscribe();
+    this.loadingSchedules.set(false);
     this.idHorarioNuevo = 0;
     this.schedules.set([]);
+    this.schedulesError.set('');
+    this.schedulesSearched.set(false);
   }
   searchSchedules(): void {
+    if (this.busy()) return;
     this.clearSchedules();
-    if (!this.idMedico || !this.fecha) return;
+    if (!this.selected || !this.idMedico || !this.fecha) return;
     const medicoConsultado = this.idMedico;
     const fechaConsultada = this.fecha;
-    this.service.getAvailableSchedules(medicoConsultado, fechaConsultada).subscribe({
-      next: (data) => {
-        if (this.idMedico === medicoConsultado && this.fecha === fechaConsultada)
+    this.loadingSchedules.set(true);
+    this.scheduleRequest = this.service
+      .getAvailableSchedules(medicoConsultado, fechaConsultada)
+      .pipe(finalize(() => this.loadingSchedules.set(false)))
+      .subscribe({
+        next: (data) => {
+          if (this.idMedico !== medicoConsultado || this.fecha !== fechaConsultada) return;
           this.schedules.set(data);
-      },
-      error: () => {},
-    });
+          this.schedulesSearched.set(true);
+        },
+        error: (error) => this.schedulesError.set(apiErrorMessage(error)),
+      });
   }
   async reschedule(): Promise<void> {
-    if (!this.selected || !this.idHorarioNuevo || this.busy() || !this.canRescheduleAppointment)
+    if (
+      !this.selected ||
+      !this.idHorarioNuevo ||
+      this.busy() ||
+      this.loadingSchedules() ||
+      !this.canRescheduleAppointment ||
+      !this.schedules().some((schedule) => schedule.idHorario === this.idHorarioNuevo)
+    )
       return;
     if (!(await this.confirmation.confirm('¿Guardar el nuevo horario de esta cita?'))) return;
     const idCita = this.selected.idCita;
     const idHorario = this.idHorarioNuevo;
+    this.schedulesError.set('');
     this.busy.set(true);
     // La API valida la disponibilidad de forma atómica al guardar, incluso si otro paciente se adelanta.
     this.service
@@ -109,11 +170,17 @@ export class PatientHistory implements OnInit {
       .subscribe({
         next: () => {
           this.notifications.success('Cita reprogramada correctamente');
+          this.clearSchedules();
           this.selected = undefined;
           this.load();
         },
         error: (error) => {
-          if (error.status === 409) this.searchSchedules();
+          this.schedulesError.set(apiErrorMessage(error));
+          if (error.status === 409) {
+            this.idHorarioNuevo = 0;
+            this.schedules.set([]);
+            this.schedulesSearched.set(false);
+          }
         },
       });
   }

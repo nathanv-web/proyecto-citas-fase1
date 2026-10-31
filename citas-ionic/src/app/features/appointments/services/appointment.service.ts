@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { API_BASE_URL } from '../../../core/config/api.config';
 
 import { AppointmentCreateRequest } from '../models/appointment-create-request';
 import { AppointmentResponse } from '../models/appointment-response';
@@ -11,7 +12,7 @@ import { AppointmentResponse } from '../models/appointment-response';
 export class AppointmentService {
 
   private readonly apiUrl =
-  'http://localhost:8081/api/v1/appointments';
+  `${API_BASE_URL}/appointments`;
 
   constructor(
     private http: HttpClient

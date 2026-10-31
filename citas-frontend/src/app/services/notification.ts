@@ -1,23 +1,30 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { API_BASE_URL } from '../core/config/api.config';
+
+export interface NotificationItem {
+  idNotificacion: number;
+  titulo: string;
+  mensaje: string;
+  tipo: string;
+  leida: boolean;
+  fechaCreacion: string;
+}
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class NotificationService {
-
-  private apiUrl = 'http://localhost:8080/api/v1/notifications';
+  private apiUrl = `${API_BASE_URL}/notifications`;
 
   constructor(private http: HttpClient) {}
 
-
-  getNotifications(): Observable<any> {
-    return this.http.get(`${this.apiUrl}`);
+  getNotifications(): Observable<NotificationItem[]> {
+    return this.http.get<NotificationItem[]>(this.apiUrl);
   }
 
- 
-  markAsRead(id: number): Observable<any> {
-    return this.http.patch(`${this.apiUrl}/${id}/read`, {});
+  markAsRead(id: number): Observable<NotificationItem> {
+    return this.http.patch<NotificationItem>(`${this.apiUrl}/${id}/read`, {});
   }
 }

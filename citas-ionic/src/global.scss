@@ -35,3 +35,12 @@
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import "@ionic/angular/css/palettes/dark.system.css";
+
+/* Mantiene el encabezado encima del contenido en el módulo Ionic lazy. */
+ion-header {
+  display: block;
+  position: relative;
+  order: -1;
+  width: 100%;
+  z-index: 10;
+}

@@ -27,8 +27,11 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.security.Principal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.List;
+import java.util.Comparator;
 
 
 @RestController
@@ -85,71 +88,11 @@ public class ScheduleController {
                         );
 
 
-        // ---------------------------------------------
-        // VALIDAR FECHA Y HORA
-        // ---------------------------------------------
-
-        LocalDate hoy = LocalDate.now();
-        LocalTime ahora = LocalTime.now();
-
-
-        // No crear horarios en fechas pasadas
-        if (request.getFecha().isBefore(hoy)) {
-
-            throw new ScheduleConflictException(
-                    "No se puede crear un horario en una fecha pasada"
-            );
-        }
-
-
-        // Si es hoy, no permitir horas que ya pasaron
-        if (request.getFecha().isEqual(hoy)
-                && request.getHoraInicio().isBefore(ahora)) {
-
-            throw new ScheduleConflictException(
-                    "No se puede crear un horario en una hora que ya pasó"
-            );
-        }
-
-
-        // ---------------------------------------------
-        // VALIDAR HORARIO
-        // ---------------------------------------------
-
-        boolean valido =
-                scheduleService
-                        .validarNuevoHorario(
-                                medico.getIdMedico(),
-                                request.getFecha(),
-                                request.getHoraInicio(),
-                                request.getHoraFin()
-                        );
-
-
-        if (!valido) {
-
-            throw new ScheduleConflictException(
-                    "El horario se cruza con otro horario existente"
-            );
-        }
-
-
-        // ---------------------------------------------
-        // CREAR ENTIDAD
-        // ---------------------------------------------
-
-        HorarioDisponible horario =
-                horarioMapper.toEntity(request);
-
-        horario.setMedico(medico);
-
-
-        // ---------------------------------------------
-        // GUARDAR
-        // ---------------------------------------------
-
-        HorarioDisponible guardado =
-                horarioRepository.save(horario);
+        HorarioDisponible guardado = scheduleService.crearHorarioAtomico(
+                medico.getIdMedico(),
+                request.getFecha(),
+                request.getHoraInicio(),
+                request.getHoraFin());
 
 
         return ResponseEntity
@@ -173,11 +116,8 @@ public class ScheduleController {
                     @RequestParam LocalDate fecha) {
 
         List<HorarioDisponibleResponseDTO> horarios =
-                horarioRepository
-                        .findByMedico_IdMedicoAndFecha(
-                                idMedico,
-                                fecha
-                        )
+                scheduleService
+                        .consultarHorariosDisponibles(idMedico, fecha)
                         .stream()
                         .map(horarioMapper::toDTO)
                         .toList();
@@ -186,6 +126,23 @@ public class ScheduleController {
         return ResponseEntity.ok(
                 horarios
         );
+    }
+
+    @GetMapping("/my-schedules")
+    public ResponseEntity<List<HorarioDisponibleResponseDTO>> obtenerMisHorarios(Principal principal) {
+        Medico medico = medicoRepository.findByUsuario_Correo(principal.getName())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "El usuario autenticado no tiene perfil de médico"));
+
+        LocalDateTime ahora = LocalDateTime.now(ZoneId.of("America/Guatemala"));
+        return ResponseEntity.ok(horarioRepository.findByMedico_IdMedico(medico.getIdMedico())
+                .stream()
+                .filter(horario -> horario.getFecha() != null && horario.getHoraInicio() != null
+                        && LocalDateTime.of(horario.getFecha(), horario.getHoraInicio()).isAfter(ahora))
+                .sorted(Comparator.comparing(HorarioDisponible::getFecha)
+                        .thenComparing(HorarioDisponible::getHoraInicio))
+                .map(horarioMapper::toDTO)
+                .toList());
     }
 
 
@@ -219,143 +176,12 @@ public class ScheduleController {
                         );
 
 
-        // ---------------------------------------------
-        // BUSCAR HORARIO
-        // ---------------------------------------------
-
-        HorarioDisponible horario =
-                horarioRepository
-                        .findById(id)
-                        .orElseThrow(() ->
-                                new ResourceNotFoundException(
-                                        "El horario indicado no existe"
-                                )
-                        );
-
-
-        // ---------------------------------------------
-        // VERIFICAR PROPIETARIO
-        // ---------------------------------------------
-
-        if (!horario
-                .getMedico()
-                .getIdMedico()
-                .equals(
-                        medico.getIdMedico()
-                )) {
-
-            throw new ResponseStatusException(
-                    HttpStatus.FORBIDDEN,
-                    "No puedes modificar un horario de otro médico"
-            );
-        }
-
-
-        // ---------------------------------------------
-        // VALIDAR FECHA DEL HORARIO ORIGINAL
-        // ---------------------------------------------
-
-        LocalDate hoy = LocalDate.now();
-        LocalTime ahora = LocalTime.now();
-
-
-        // El horario original ya quedó en el pasado
-        if (horario.getFecha().isBefore(hoy)) {
-
-            throw new ScheduleConflictException(
-                    "No se puede modificar un horario de una fecha pasada"
-            );
-        }
-
-
-        // Si el horario es de hoy pero la hora ya pasó
-        if (horario.getFecha().isEqual(hoy)
-                && horario.getHoraInicio().isBefore(ahora)) {
-
-            throw new ScheduleConflictException(
-                    "No se puede modificar un horario cuya hora ya pasó"
-            );
-        }
-
-
-        // ---------------------------------------------
-        // VALIDAR NUEVA FECHA
-        // ---------------------------------------------
-
-        if (request.getFecha().isBefore(hoy)) {
-
-            throw new ScheduleConflictException(
-                    "No se puede cambiar el horario a una fecha pasada"
-            );
-        }
-
-
-        if (request.getFecha().isEqual(hoy)
-                && request.getHoraInicio().isBefore(ahora)) {
-
-            throw new ScheduleConflictException(
-                    "No se puede cambiar el horario a una hora que ya pasó"
-            );
-        }
-
-
-        // ---------------------------------------------
-        // NO MODIFICAR SI YA TIENE CITA
-        // ---------------------------------------------
-
-        if (citaRepository
-                .existsByHorario_IdHorario(id)) {
-
-            throw new ScheduleConflictException(
-                    "No se puede modificar un horario que ya tiene una cita asociada"
-            );
-        }
-
-
-        // ---------------------------------------------
-        // VALIDAR TRASLAPE
-        // ---------------------------------------------
-
-        boolean valido =
-                scheduleService
-                        .validarHorarioActualizado(
-                                id,
-                                medico.getIdMedico(),
-                                request.getFecha(),
-                                request.getHoraInicio(),
-                                request.getHoraFin()
-                        );
-
-
-        if (!valido) {
-
-            throw new ScheduleConflictException(
-                    "El horario se cruza con otro horario existente"
-            );
-        }
-
-
-        // ---------------------------------------------
-        // ACTUALIZAR DATOS
-        // ---------------------------------------------
-
-        horario.setFecha(
-                request.getFecha()
-        );
-
-        horario.setHoraInicio(
-                request.getHoraInicio()
-        );
-
-        horario.setHoraFin(
-                request.getHoraFin()
-        );
-
-
-        HorarioDisponible actualizado =
-                horarioRepository.save(
-                        horario
-                );
+        HorarioDisponible actualizado = scheduleService.actualizarHorarioAtomico(
+                id,
+                medico.getIdMedico(),
+                request.getFecha(),
+                request.getHoraInicio(),
+                request.getHoraFin());
 
 
         return ResponseEntity.ok(

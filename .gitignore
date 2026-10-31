@@ -8,3 +8,6 @@
 *.zip
 *.log
 error-spring.txt
+
+# Evidencia temporal del navegador
+.playwright-mcp/

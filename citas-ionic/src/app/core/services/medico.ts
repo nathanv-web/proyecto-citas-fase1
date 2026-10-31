@@ -5,6 +5,7 @@ import {
 } from '@angular/common/http';
 
 import { Observable } from 'rxjs';
+import { API_BASE_URL } from '../config/api.config';
 
 import { Medico as MedicoModel } from '../models/medico';
 
@@ -14,7 +15,7 @@ import { Medico as MedicoModel } from '../models/medico';
 export class MedicoService {
 
   private readonly apiUrl =
-    'http://localhost:8081/api/v1/medicos';
+    `${API_BASE_URL}/medicos`;
 
   constructor(
     private http: HttpClient

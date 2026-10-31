@@ -41,6 +41,9 @@ public class Cita {
     private LocalDateTime fechaCreacion;
     @Column(columnDefinition = "TEXT")
     private String observaciones;
+
+    @Column(name = "recordatorio_enviado", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean recordatorioEnviado;
     
     //CONSTRUCTOR
 
@@ -129,5 +132,13 @@ public class Cita {
 
     public void setObservaciones(String observaciones) {
         this.observaciones = observaciones;
+    }
+
+    public boolean isRecordatorioEnviado() {
+        return recordatorioEnviado;
+    }
+
+    public void setRecordatorioEnviado(boolean recordatorioEnviado) {
+        this.recordatorioEnviado = recordatorioEnviado;
     }
 }

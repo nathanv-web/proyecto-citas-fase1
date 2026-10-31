@@ -35,12 +35,39 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
+  overflow: hidden;
   background: var(--app-primary-light);
   color: var(--app-primary-hover);
 }
 .profile-avatar svg {
   width: 26px;
   height: 26px;
+}
+.profile-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.profile-photo-editor {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+.profile-photo-editor input {
+  max-width: 100%;
+  min-width: 0;
+}
+.profile-photo-editor small {
+  color: var(--app-text-muted);
+}
+.profile-photo-preview {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.photo-error {
+  color: var(--app-danger);
 }
 .profile-copy {
   display: flex;

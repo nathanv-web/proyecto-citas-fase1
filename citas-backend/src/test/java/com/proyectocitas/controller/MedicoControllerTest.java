@@ -4,13 +4,16 @@ import com.proyectocitas.dto.request.MedicoCreateRequestDTO;
 import com.proyectocitas.exception.DuplicateResourceException;
 import com.proyectocitas.exception.ResourceNotFoundException;
 import com.proyectocitas.mapper.MedicoMapper;
+import com.proyectocitas.model.Especialidad;
 import com.proyectocitas.model.Medico;
 import com.proyectocitas.model.Usuario;
 import com.proyectocitas.repository.EspecialidadRepository;
 import com.proyectocitas.repository.MedicoRepository;
 import com.proyectocitas.repository.UsuarioRepository;
+import com.proyectocitas.service.MedicoService;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.util.Optional;
 
@@ -41,13 +44,16 @@ class MedicoControllerTest {
         MedicoMapper medicoMapper =
                 mock(MedicoMapper.class);
 
+        MedicoService medicoService = mock(MedicoService.class);
+
 
         MedicoController controller =
                 new MedicoController(
                         medicoRepository,
                         usuarioRepository,
                         especialidadRepository,
-                        medicoMapper
+                        medicoMapper,
+                        medicoService
                 );
 
 
@@ -95,13 +101,16 @@ class MedicoControllerTest {
         MedicoMapper medicoMapper =
                 mock(MedicoMapper.class);
 
+        MedicoService medicoService = mock(MedicoService.class);
+
 
         MedicoController controller =
                 new MedicoController(
                         medicoRepository,
                         usuarioRepository,
                         especialidadRepository,
-                        medicoMapper
+                        medicoMapper,
+                        medicoService
                 );
 
 
@@ -172,13 +181,16 @@ class MedicoControllerTest {
         MedicoMapper medicoMapper =
                 mock(MedicoMapper.class);
 
+        MedicoService medicoService = mock(MedicoService.class);
+
 
         MedicoController controller =
                 new MedicoController(
                         medicoRepository,
                         usuarioRepository,
                         especialidadRepository,
-                        medicoMapper
+                        medicoMapper,
+                        medicoService
                 );
 
 
@@ -243,5 +255,37 @@ class MedicoControllerTest {
                 ResourceNotFoundException.class,
                 () -> controller.crearMedico(request)
         );
+    }
+
+    @Test
+    void convierteColisionDeColegiadoAlGuardarEnConflictoEnLugarDeError500() {
+        MedicoRepository medicoRepository = mock(MedicoRepository.class);
+        UsuarioRepository usuarioRepository = mock(UsuarioRepository.class);
+        EspecialidadRepository especialidadRepository = mock(EspecialidadRepository.class);
+        MedicoMapper medicoMapper = mock(MedicoMapper.class);
+        MedicoService medicoService = mock(MedicoService.class);
+        MedicoController controller = new MedicoController(
+                medicoRepository, usuarioRepository, especialidadRepository,
+                medicoMapper, medicoService);
+
+        MedicoCreateRequestDTO request = new MedicoCreateRequestDTO();
+        request.setIdUsuario(5L);
+        request.setIdEspecialidad(2L);
+        request.setColegiado("COL-0001");
+        request.setAniosExperiencia(5);
+
+        Usuario usuario = new Usuario();
+        usuario.setIdUsuario(5L);
+        Especialidad especialidad = new Especialidad();
+        when(medicoRepository.findByUsuario_IdUsuario(5L)).thenReturn(Optional.empty());
+        when(medicoRepository.findByColegiadoIgnoreCase("COL-0001"))
+                .thenReturn(Optional.empty(), Optional.of(new Medico()));
+        when(usuarioRepository.findById(5L)).thenReturn(Optional.of(usuario));
+        when(especialidadRepository.findById(2L)).thenReturn(Optional.of(especialidad));
+        when(medicoMapper.toEntity(request)).thenReturn(new Medico());
+        when(medicoService.crearConRolDoctor(org.mockito.ArgumentMatchers.any(Medico.class)))
+                .thenThrow(new DataIntegrityViolationException("duplicate colegiado"));
+
+        assertThrows(DuplicateResourceException.class, () -> controller.crearMedico(request));
     }
 }

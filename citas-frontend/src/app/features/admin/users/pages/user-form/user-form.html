@@ -61,13 +61,16 @@
             name="nombre"
             [(ngModel)]="form.nombre"
             #nombre="ngModel"
+            [pattern]="namePattern"
             required
             minlength="2"
             maxlength="100"
           />
 
           @if (nombre.invalid && nombre.touched) {
-            <small class="validation"> El nombre debe tener entre 2 y 100 caracteres. </small>
+            <small class="validation">
+              Usa de 2 a 100 letras, solo la inicial mayúscula y sin espacios.
+            </small>
           }
         </div>
 
@@ -81,13 +84,16 @@
             name="apellido"
             [(ngModel)]="form.apellido"
             #apellido="ngModel"
+            [pattern]="namePattern"
             required
             minlength="2"
             maxlength="100"
           />
 
           @if (apellido.invalid && apellido.touched) {
-            <small class="validation"> El apellido debe tener entre 2 y 100 caracteres. </small>
+            <small class="validation">
+              Usa de 2 a 100 letras, solo la inicial mayúscula y sin espacios.
+            </small>
           }
         </div>
 

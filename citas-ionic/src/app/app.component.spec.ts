@@ -18,4 +18,14 @@ describe('AppComponent', () => {
     expect(app).toBeTruthy();
   });
 
+  it('shows offline and restored connection states from browser events', () => {
+    const app = new AppComponent();
+
+    app.onOffline();
+    expect(app.connectionStatus).toBe('offline');
+
+    app.onOnline();
+    expect(app.connectionStatus).toBe('restored');
+  });
+
 });

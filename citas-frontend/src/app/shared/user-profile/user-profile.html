@@ -6,17 +6,21 @@
   (click)="toggleProfile()"
 >
   <span class="profile-avatar" aria-hidden="true">
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="1.8"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-    >
-      <circle cx="12" cy="8" r="3.5" />
-      <path d="M5 20v-1a7 7 0 0 1 14 0v1" />
-    </svg>
+    @if (photoUrl()) {
+      <img [src]="photoUrl()" alt="" />
+    } @else {
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.8"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <circle cx="12" cy="8" r="3.5" />
+        <path d="M5 20v-1a7 7 0 0 1 14 0v1" />
+      </svg>
+    }
   </span>
   <span class="profile-copy">
     <small>Mi perfil</small>
@@ -62,6 +66,43 @@
       </button>
     </header>
 
+    <div class="profile-photo-editor">
+      @if (photoUrl()) {
+        <img class="profile-photo-preview" [src]="photoUrl()" alt="Tu foto de perfil" />
+      }
+      <label for="profile-photo">Foto de perfil</label>
+      <input
+        id="profile-photo"
+        type="file"
+        accept="image/jpeg,image/png"
+        (change)="selectPhoto($event)"
+        [disabled]="photoSaving() || photoLoading()"
+        aria-describedby="profile-photo-help"
+      />
+      <small id="profile-photo-help"
+        >JPG o PNG, hasta 1 MiB y 4096 píxeles por lado. Se guarda al seleccionar.</small
+      >
+      @if (photoSaving() || photoLoading()) {
+        <small role="status">{{ photoSaving() ? 'Guardando foto...' : 'Cargando foto...' }}</small>
+      }
+      @if (photoUrl()) {
+        <button
+          type="button"
+          class="btn"
+          (click)="removePhoto()"
+          [disabled]="photoSaving() || photoLoading()"
+        >
+          Quitar foto
+        </button>
+      }
+      @if (photoError()) {
+        <p class="photo-error" role="alert">{{ photoError() }}</p>
+      }
+      @if (photoMessage()) {
+        <p role="status">{{ photoMessage() }}</p>
+      }
+    </div>
+
     <dl class="profile-details">
       <div>
         <dt>Nombre completo</dt>
@@ -70,10 +111,6 @@
       <div>
         <dt>Correo electrónico</dt>
         <dd>{{ usuario?.correo || 'No registrado' }}</dd>
-      </div>
-      <div>
-        <dt>Edad</dt>
-        <dd>{{ usuario?.edad != null ? usuario!.edad + ' años' : 'No registrada' }}</dd>
       </div>
       <div>
         <dt>Teléfono</dt>

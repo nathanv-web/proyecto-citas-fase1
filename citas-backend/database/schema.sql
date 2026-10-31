@@ -45,7 +45,20 @@ CREATE TABLE IF NOT EXISTS usuarios (
 
 
 -- =====================================================
--- 2.1. TOKENS DE IDENTIDAD (SOLO HASH)
+-- 2.1. FOTOS DE PERFIL
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS fotos_perfil (
+    id_usuario BIGINT NOT NULL PRIMARY KEY,
+    tipo_contenido VARCHAR(32) NOT NULL,
+    contenido LONGBLOB NOT NULL,
+    actualizada_en DATETIME(6) NOT NULL,
+    CONSTRAINT fk_foto_perfil_usuario FOREIGN KEY (id_usuario)
+        REFERENCES usuarios(id_usuario)
+);
+
+-- =====================================================
+-- 2.2. TOKENS DE IDENTIDAD (SOLO HASH)
 -- =====================================================
 
 CREATE TABLE IF NOT EXISTS password_reset_tokens (
@@ -86,6 +99,23 @@ CREATE TABLE IF NOT EXISTS roles (
 
     nombre VARCHAR(255) NOT NULL UNIQUE,
     descripcion VARCHAR(255)
+);
+
+
+-- =====================================================
+-- 3.1. PERMISOS ASIGNADOS A LOS ROLES
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS rol_permiso (
+    id_rol BIGINT NOT NULL,
+    permiso VARCHAR(100) NOT NULL,
+
+    PRIMARY KEY (id_rol, permiso),
+
+    CONSTRAINT fk_rol_permiso_rol
+        FOREIGN KEY (id_rol)
+        REFERENCES roles(id_rol)
+        ON DELETE CASCADE
 );
 
 
@@ -274,6 +304,8 @@ CREATE TABLE IF NOT EXISTS citas_medicas (
 
     observaciones TEXT,
 
+    recordatorio_enviado BOOLEAN NOT NULL DEFAULT FALSE,
+
     CONSTRAINT fk_cita_horario
         FOREIGN KEY (id_horario)
         REFERENCES horarios_disponibles(id_horario),
@@ -285,4 +317,26 @@ CREATE TABLE IF NOT EXISTS citas_medicas (
     CONSTRAINT fk_cita_estado
         FOREIGN KEY (id_estado)
         REFERENCES estados_cita(id_estado)
+);
+
+
+-- =====================================================
+-- 12. NOTIFICACIONES
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS notificaciones (
+    id_notificacion BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id_destinatario BIGINT NOT NULL,
+    titulo VARCHAR(150) NOT NULL,
+    mensaje VARCHAR(500) NOT NULL,
+    tipo VARCHAR(30) NOT NULL,
+    leida BOOLEAN NOT NULL DEFAULT FALSE,
+    fecha_creacion DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+
+    CONSTRAINT fk_notificacion_destinatario
+        FOREIGN KEY (id_destinatario)
+        REFERENCES usuarios(id_usuario),
+
+    INDEX idx_notif_destinatario_fecha (id_destinatario, fecha_creacion),
+    INDEX idx_notif_destinatario_leida (id_destinatario, leida)
 );

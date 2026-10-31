@@ -72,7 +72,7 @@ public class CitaReservadaListener {
     // ENVIAR CORREO DESPUES DEL COMMIT
     // ==============================================
 
-    @Async("identityMailExecutor")
+    @Async("notificationMailExecutor")
     @TransactionalEventListener(
             phase = TransactionPhase.AFTER_COMMIT
     )

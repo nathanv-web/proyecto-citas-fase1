@@ -91,7 +91,13 @@ export const routes: Routes = [
   {
     path: 'doctor/appointments',
     canActivate: [authGuard, panelGuard],
-    data: { panel: 'doctor', functions: ['appointments', 'diagnosis'] },
+    data: { panel: 'doctor', functions: ['appointments'] },
+    component: DoctorAppointments,
+  },
+  {
+    path: 'doctor/diagnosis',
+    canActivate: [authGuard, panelGuard],
+    data: { panel: 'doctor', functions: ['diagnosis'], diagnosisMode: true },
     component: DoctorAppointments,
   },
 

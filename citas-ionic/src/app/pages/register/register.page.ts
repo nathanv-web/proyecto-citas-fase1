@@ -14,7 +14,6 @@ import { RegisterRequest } from '../../core/auth/models/register-request';
   standalone: false,
 })
 export class RegisterPage {
-
   registerForm: FormGroup;
   loading = false;
   errorMessage = '';
@@ -24,32 +23,37 @@ export class RegisterPage {
     private fb: FormBuilder,
     private router: Router,
     private auth: Auth,
-    private alertController: AlertController
+    private alertController: AlertController,
   ) {
     this.registerForm = this.fb.group({
-      nombre: ['', [
-        Validators.required,
-        Validators.minLength(2),
-        Validators.maxLength(100)
-      ]],
-      apellido: ['', [
-        Validators.required,
-        Validators.minLength(2),
-        Validators.maxLength(100)
-      ]],
-      correo: ['', [
-        Validators.required,
-        Validators.email
-      ]],
-      telefono: ['', [
-        Validators.required,
-        Validators.maxLength(20)
-      ]],
-      contrasena: ['', [
-        Validators.required,
-        Validators.minLength(8),
-        Validators.maxLength(12)
-      ]]
+      nombre: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(2),
+          Validators.maxLength(100),
+          Validators.pattern(/^\p{Lu}\p{Ll}+$/u),
+        ],
+      ],
+      apellido: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(2),
+          Validators.maxLength(100),
+          Validators.pattern(/^\p{Lu}\p{Ll}+$/u),
+        ],
+      ],
+      correo: ['', [Validators.required, Validators.email]],
+      telefono: ['', [Validators.required, Validators.maxLength(20)]],
+      contrasena: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(8),
+          Validators.maxLength(12),
+        ],
+      ],
     });
   }
 
@@ -74,24 +78,22 @@ export class RegisterPage {
 
         const alert = await this.alertController.create({
           header: 'Cuenta creada',
-          message: 'Tu cuenta fue creada correctamente. Ya puedes iniciar sesión.',
-          buttons: ['Continuar']
+          message:
+            'Tu cuenta fue creada correctamente. Ya puedes iniciar sesión.',
+          buttons: ['Continuar'],
         });
 
         await alert.present();
         await alert.onDidDismiss();
 
         this.router.navigateByUrl('/login', {
-          replaceUrl: true
+          replaceUrl: true,
         });
       },
 
       error: (error: HttpErrorResponse) => {
         this.loading = false;
-
-
-
-      }
+      },
     });
   }
 

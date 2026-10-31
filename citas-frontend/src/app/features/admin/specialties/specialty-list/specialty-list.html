@@ -2,9 +2,20 @@
   <header class="page-header">
     <div>
       <span class="eyebrow">CitaNova · Especialidades médicas</span>
-      <h1>Especialidades</h1>
-      <p>Administra las especialidades médicas.</p>
+      <h1>{{ isCreate ? 'Crear especialidad' : 'Especialidades' }}</h1>
+      <p>
+        {{
+          isCreate
+            ? 'Registra una nueva especialidad médica.'
+            : 'Consulta las especialidades médicas.'
+        }}
+      </p>
     </div>
+    @if (isCreate && canOpenList) {
+      <a routerLink="/admin/specialties" class="btn btn-secondary">Ver especialidades</a>
+    } @else if (!isCreate && canOpenCreate) {
+      <a routerLink="/admin/specialties/new" class="btn btn-primary">Nueva especialidad</a>
+    }
   </header>
 
   @if (error) {
@@ -66,9 +77,9 @@
 
       @if (loading) {
         <div class="message" role="status">Cargando especialidades...</div>
-      } @else if (specialties.length === 0) {
+      } @else if (!error && specialties.length === 0) {
         <div class="message" role="status">No hay especialidades registradas.</div>
-      } @else {
+      } @else if (specialties.length > 0) {
         <div
           class="table-container"
           tabindex="0"
@@ -110,6 +121,17 @@
                     >
                   </td>
                   <td>
+                    @if (canEditSpecialty) {
+                      <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-action="edit-specialty"
+                        [disabled]="updating"
+                        (click)="startEditSpecialty(specialty)"
+                      >
+                        Editar
+                      </button>
+                    }
                     @if (specialty.activo !== false && canDeactivateSpecialty) {
                       <button
                         type="button"
@@ -132,6 +154,30 @@
                     }
                   </td>
                 </tr>
+                @if (editingSpecialtyId === specialty.idEspecialidad) {
+                  <tr class="edit-row">
+                    <td colspan="5">
+                      <form class="form-card edit-form" [formGroup]="specialtyEditForm" (ngSubmit)="updateSpecialty()">
+                        <h3>Editar especialidad</h3>
+                        <div class="field">
+                          <label [for]="'edit-specialty-name-' + specialty.idEspecialidad">Nombre *</label>
+                          <input [id]="'edit-specialty-name-' + specialty.idEspecialidad" type="text" formControlName="nombre" maxlength="100" />
+                          @if (specialtyEditForm.controls.nombre.invalid && specialtyEditForm.controls.nombre.touched) {
+                            <small class="validation">El nombre es obligatorio.</small>
+                          }
+                        </div>
+                        <div class="field">
+                          <label [for]="'edit-specialty-description-' + specialty.idEspecialidad">Descripción</label>
+                          <textarea [id]="'edit-specialty-description-' + specialty.idEspecialidad" formControlName="descripcion" rows="3" maxlength="255"></textarea>
+                        </div>
+                        <div class="form-actions">
+                          <button type="submit" class="btn btn-primary" [disabled]="specialtyEditForm.invalid || updating">{{ updating ? 'Guardando...' : 'Guardar cambios' }}</button>
+                          <button type="button" class="btn btn-secondary" [disabled]="updating" (click)="cancelEditSpecialty()">Cancelar</button>
+                        </div>
+                      </form>
+                    </td>
+                  </tr>
+                }
               }
             </tbody>
           </table>

@@ -33,7 +33,12 @@
     <p role="status">Cargando citas...</p>
   }
   @if (selected) {
-    <section class="form-card" aria-labelledby="reschedule-title">
+    <dialog
+      #rescheduleDialog
+      class="form-card reschedule-dialog"
+      aria-labelledby="reschedule-title"
+      (cancel)="closeReschedule($event)"
+    >
       <h2 id="reschedule-title">Reprogramar cita #{{ selected.idCita }}</h2>
       <div class="form-grid">
         <p>Médico: {{ selected.medico }}. La reprogramación conserva el mismo médico.</p>
@@ -43,20 +48,25 @@
             id="new-date"
             type="date"
             [(ngModel)]="fecha"
-            (ngModelChange)="clearSchedules()"
+            (ngModelChange)="searchSchedules()"
+            [disabled]="busy()"
           />
         </div>
         <button
           class="btn"
           type="button"
           (click)="searchSchedules()"
-          [disabled]="!idMedico || !fecha || busy()"
+          [disabled]="!idMedico || !fecha || busy() || loadingSchedules()"
         >
           Consultar disponibilidad
         </button>
         <div class="field">
           <label for="new-schedule">Nuevo horario</label
-          ><select id="new-schedule" [(ngModel)]="idHorarioNuevo">
+          ><select
+            id="new-schedule"
+            [(ngModel)]="idHorarioNuevo"
+            [disabled]="busy() || loadingSchedules()"
+          >
             <option [ngValue]="0">Selecciona un horario disponible</option>
             @for (schedule of schedules(); track schedule.idHorario) {
               <option [ngValue]="schedule.idHorario">
@@ -66,21 +76,25 @@
           </select>
         </div>
       </div>
-      @if (fecha && !schedules().length) {
-        <p role="status">Consulta la disponibilidad o selecciona otra fecha.</p>
+      @if (loadingSchedules()) {
+        <p role="status">Consultando horarios disponibles...</p>
+      } @else if (schedulesError()) {
+        <p class="alert error" role="alert">{{ schedulesError() }}</p>
+      } @else if (schedulesSearched() && !schedules().length) {
+        <p role="status">No hay horarios disponibles para esta fecha. Selecciona otra fecha.</p>
       }
       <button
         class="btn btn-primary"
         type="button"
         (click)="reschedule()"
-        [disabled]="busy() || !idHorarioNuevo"
+        [disabled]="busy() || loadingSchedules() || !idHorarioNuevo"
       >
         Guardar nuevo horario
       </button>
-      <button class="btn" type="button" (click)="selected = undefined" [disabled]="busy()">
+      <button class="btn" type="button" (click)="closeReschedule()" [disabled]="busy()">
         Volver
       </button>
-    </section>
+    </dialog>
   }
   <section class="record-grid" aria-label="Historial de citas">
     @for (appointment of visibleAppointments(); track appointment.idCita) {

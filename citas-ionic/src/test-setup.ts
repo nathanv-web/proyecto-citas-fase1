@@ -1,3 +1,8 @@
+import { registerAppIcons } from './app/core/config/icons.config';
+
+// Tests render icons without fetching the static SVG directory from a web server.
+registerAppIcons();
+
 // Polyfills for running unit tests under jsdom (the default Vitest environment).
 // Ionic components such as ion-menu and ion-split-pane query `window.matchMedia`,
 // which jsdom does not implement.

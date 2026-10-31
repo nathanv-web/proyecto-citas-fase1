@@ -1,6 +1,8 @@
 package com.proyectocitas.repository;
 
 import com.proyectocitas.model.Medico;
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -17,6 +19,11 @@ public interface MedicoRepository extends JpaRepository<Medico, Long> {
     Optional<Medico> findByColegiadoIgnoreCase(String colegiado);
 
     Optional<Medico> findByUsuario_Correo(String correo);
+
+    // Serializa la creación y edición de horarios del mismo médico.
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT m FROM Medico m WHERE m.idMedico = :id")
+    Optional<Medico> buscarMedicoConBloqueo(@Param("id") Long id);
 
     // Buscar médicos por nombre, apellido, correo,
     // especialidad y estado.

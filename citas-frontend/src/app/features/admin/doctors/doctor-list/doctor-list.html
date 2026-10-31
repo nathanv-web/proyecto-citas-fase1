@@ -2,102 +2,65 @@
   <header class="page-header">
     <div>
       <span class="eyebrow">CitaNova · Perfiles médicos</span>
-      <h1>Médicos</h1>
-      <p>Administra los perfiles médicos del sistema.</p>
+      <h1>{{ isCreate ? 'Crear médico' : 'Médicos' }}</h1>
+      <p>
+        {{ isCreate ? 'Registra un perfil médico.' : 'Consulta los perfiles médicos del sistema.' }}
+      </p>
     </div>
+    @if (isCreate && canOpenList) {
+      <a routerLink="/admin/doctors" class="btn btn-secondary">Ver médicos</a>
+    } @else if (!isCreate && canOpenCreate) {
+      <a routerLink="/admin/doctors/new" class="btn btn-primary">Nuevo médico</a>
+    }
   </header>
 
   @if (error) {
-    <div class="alert error" role="alert">
-      {{ error }}
-    </div>
+    <div class="alert error" role="alert">{{ error }}</div>
   }
-
   @if (success) {
-    <div class="alert success" role="status">
-      {{ success }}
-    </div>
+    <div class="alert success" role="status">{{ success }}</div>
   }
 
   @if (canCreateDoctor) {
-    <form class="form-card" #doctorForm="ngForm" (ngSubmit)="createDoctor()">
+    <form class="form-card" [formGroup]="doctorForm" (ngSubmit)="createDoctor()">
       <h2>Nuevo médico</h2>
-
       <div class="form-grid">
         <div class="field">
-          <label for="usuario"> Usuario * </label>
-
-          <select id="usuario" name="usuario" [(ngModel)]="form.idUsuario" required>
+          <label for="usuario">Usuario *</label>
+          <select id="usuario" formControlName="idUsuario">
             <option [ngValue]="0">Selecciona un usuario</option>
-
             @for (user of users; track user.idUsuario) {
-              <option [ngValue]="user.idUsuario">
-                {{ user.nombre }}
-                {{ user.apellido }}
-                - {{ user.correo }}
-              </option>
+              <option [ngValue]="user.idUsuario">{{ user.nombre }} {{ user.apellido }} - {{ user.correo }}</option>
             }
           </select>
         </div>
-
         <div class="field">
-          <label for="especialidad"> Especialidad * </label>
-
-          <select id="especialidad" name="especialidad" [(ngModel)]="form.idEspecialidad" required>
+          <label for="especialidad">Especialidad *</label>
+          <select id="especialidad" formControlName="idEspecialidad">
             <option [ngValue]="0">Selecciona una especialidad</option>
-
             @for (specialty of specialties; track specialty.idEspecialidad) {
-              <option [ngValue]="specialty.idEspecialidad">
-                {{ specialty.nombre }}
-              </option>
+              @if (specialty.activo !== false) {
+                <option [ngValue]="specialty.idEspecialidad">{{ specialty.nombre }}</option>
+              }
             }
           </select>
         </div>
-
         <div class="field">
-          <label for="colegiado"> Número de colegiado * </label>
-
-          <input
-            id="colegiado"
-            type="text"
-            name="colegiado"
-            [(ngModel)]="form.colegiado"
-            #colegiado="ngModel"
-            required
-            maxlength="50"
-          />
-
-          @if (colegiado.invalid && colegiado.touched) {
-            <small class="validation"> El número de colegiado es obligatorio. </small>
+          <label for="colegiado">Número de colegiado *</label>
+          <input id="colegiado" type="text" formControlName="colegiado" maxlength="8" placeholder="COL-0000" />
+          @if (doctorForm.controls.colegiado.invalid && doctorForm.controls.colegiado.touched) {
+            <small class="validation">Usa COL- seguido de cuatro dígitos, por ejemplo COL-1234.</small>
           }
         </div>
-
         <div class="field">
-          <label for="experiencia"> Años de experiencia </label>
-
-          <input
-            id="experiencia"
-            type="number"
-            name="experiencia"
-            [(ngModel)]="form.aniosExperiencia"
-            min="0"
-          />
+          <label for="experiencia">Años de experiencia</label>
+          <input id="experiencia" type="number" formControlName="aniosExperiencia" min="0" />
         </div>
-
         <div class="field full">
-          <label for="biografia"> Biografía </label>
-
-          <textarea
-            id="biografia"
-            name="biografia"
-            [(ngModel)]="form.biografia"
-            maxlength="1000"
-            rows="4"
-          >
-          </textarea>
+          <label for="biografia">Biografía</label>
+          <textarea id="biografia" formControlName="biografia" maxlength="1000" rows="4"></textarea>
         </div>
       </div>
-
       <div class="form-actions">
         <button type="submit" class="btn btn-primary" [disabled]="doctorForm.invalid || saving">
           {{ saving ? 'Guardando...' : 'Crear médico' }}
@@ -109,90 +72,81 @@
   @if (canViewDoctors) {
     <section class="list-section">
       <h2>Médicos registrados</h2>
-
       @if (loading) {
         <div class="message" role="status">Cargando médicos...</div>
-      } @else if (doctors.length === 0) {
+      } @else if (!error && doctors.length === 0) {
         <div class="message" role="status">No hay médicos registrados.</div>
-      } @else {
-        <div
-          class="table-container"
-          tabindex="0"
-          role="region"
-          aria-label="Listado: Perfiles médicos"
-        >
+      } @else if (doctors.length > 0) {
+        <div class="table-container" tabindex="0" role="region" aria-label="Listado: Perfiles médicos">
           <table>
             <thead>
               <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>Correo</th>
-                <th>Especialidad</th>
-                <th>Colegiado</th>
-                <th>Experiencia</th>
-                <th>Estado</th>
-                <th>Acciones</th>
+                <th>ID</th><th>Nombre</th><th>Correo</th><th>Especialidad</th>
+                <th>Colegiado</th><th>Experiencia</th><th>Estado</th><th>Acciones</th>
               </tr>
             </thead>
-
             <tbody>
               @for (doctor of doctors; track doctor.idMedico) {
                 <tr>
-                  <td>
-                    {{ doctor.idMedico }}
-                  </td>
-
-                  <td>
-                    {{ doctor.nombre }}
-                  </td>
-
-                  <td>
-                    {{ doctor.correo }}
-                  </td>
-
-                  <td>
-                    {{ doctor.especialidad }}
-                  </td>
-
-                  <td>
-                    {{ doctor.colegiado }}
-                  </td>
-
+                  <td>{{ doctor.idMedico }}</td>
+                  <td>{{ doctor.nombre }}</td>
+                  <td>{{ doctor.correo }}</td>
+                  <td>{{ doctor.especialidad }}</td>
+                  <td>{{ doctor.colegiado }}</td>
                   <td>{{ doctor.aniosExperiencia }} años</td>
-
                   <td>
-                    <span
-                      class="status"
-                      [class.active]="doctor.estado === 'ACTIVO'"
-                      [class.inactive]="doctor.estado === 'INACTIVO'"
-                    >
+                    <span class="status" [class.active]="doctor.estado === 'ACTIVO'" [class.inactive]="doctor.estado === 'INACTIVO'">
                       {{ doctor.estado }}
                     </span>
                   </td>
-
-                  <td>
+                  <td class="actions">
+                    @if (canEditDoctor) {
+                      <button type="button" class="btn btn-secondary" data-action="edit-doctor" [disabled]="updating" (click)="startEditDoctor(doctor)">Editar</button>
+                    }
                     @if (doctor.estado === 'ACTIVO' && canDeactivateDoctor) {
-                      <button
-                        type="button"
-                        class="btn btn-danger"
-                        [disabled]="changingState"
-                        (click)="changeDoctorState(doctor)"
-                      >
-                        Desactivar
-                      </button>
+                      <button type="button" class="btn btn-danger" [disabled]="changingState" (click)="changeDoctorState(doctor)">Desactivar</button>
                     }
                     @if (doctor.estado === 'INACTIVO' && canActivateDoctor) {
-                      <button
-                        type="button"
-                        class="btn btn-primary"
-                        [disabled]="changingState"
-                        (click)="changeDoctorState(doctor)"
-                      >
-                        Activar
-                      </button>
+                      <button type="button" class="btn btn-primary" [disabled]="changingState" (click)="changeDoctorState(doctor)">Activar</button>
                     }
                   </td>
                 </tr>
+                @if (editingDoctorId === doctor.idMedico) {
+                  <tr class="edit-row">
+                    <td colspan="8">
+                      <form class="form-card edit-form" [formGroup]="doctorEditForm" (ngSubmit)="updateDoctor()">
+                        <h3>Editar perfil: {{ doctor.nombre }}</h3>
+                        <div class="form-grid">
+                          <div class="field">
+                            <label [for]="'edit-specialty-' + doctor.idMedico">Especialidad *</label>
+                            <select [id]="'edit-specialty-' + doctor.idMedico" formControlName="idEspecialidad">
+                              <option [ngValue]="0">Selecciona una especialidad</option>
+                              @for (specialty of specialties; track specialty.idEspecialidad) {
+                                <option [ngValue]="specialty.idEspecialidad">{{ specialty.nombre }}</option>
+                              }
+                            </select>
+                          </div>
+                          <div class="field">
+                            <label [for]="'edit-license-' + doctor.idMedico">Colegiado *</label>
+                            <input [id]="'edit-license-' + doctor.idMedico" formControlName="colegiado" maxlength="8" />
+                          </div>
+                          <div class="field">
+                            <label [for]="'edit-experience-' + doctor.idMedico">Años de experiencia</label>
+                            <input [id]="'edit-experience-' + doctor.idMedico" type="number" formControlName="aniosExperiencia" min="0" />
+                          </div>
+                          <div class="field full">
+                            <label [for]="'edit-bio-' + doctor.idMedico">Biografía</label>
+                            <textarea [id]="'edit-bio-' + doctor.idMedico" formControlName="biografia" maxlength="1000" rows="3"></textarea>
+                          </div>
+                        </div>
+                        <div class="form-actions">
+                          <button type="submit" class="btn btn-primary" [disabled]="doctorEditForm.invalid || updating">{{ updating ? 'Guardando...' : 'Guardar cambios' }}</button>
+                          <button type="button" class="btn btn-secondary" [disabled]="updating" (click)="cancelEditDoctor()">Cancelar</button>
+                        </div>
+                      </form>
+                    </td>
+                  </tr>
+                }
               }
             </tbody>
           </table>

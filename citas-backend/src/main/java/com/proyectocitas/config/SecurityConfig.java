@@ -3,6 +3,7 @@ package com.proyectocitas.config;
 import com.proyectocitas.model.Permiso;
 import com.proyectocitas.security.JwtAuthenticationFilter;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -21,6 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 
 @Configuration
@@ -44,83 +46,46 @@ public class SecurityConfig {
 
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.customAccessDeniedHandler = customAccessDeniedHandler;
-         this.customAuthenticationEntryPoint = customAuthenticationEntryPoint;
+        this.customAuthenticationEntryPoint = customAuthenticationEntryPoint;
     }
 
 
     // =================================================
     // CONFIGURACIÓN PRINCIPAL DE SEGURIDAD
     // =================================================
-
     @Bean
     public SecurityFilterChain securityFilterChain(
-            HttpSecurity http)
-            throws Exception {
-
+            HttpSecurity http,
+            @Qualifier("corsConfigurationSource") CorsConfigurationSource corsConfigurationSource
+    ) throws Exception {
         http
-
                 // =================================================
                 // CSRF
                 // =================================================
-                // Se desactiva porque utilizamos JWT
-                // y no sesiones tradicionales.
-
-                .csrf(csrf ->
-                        csrf.disable()
-                )
-
+                // La API utiliza JWT, sin sesiones ni cookies de autenticación.
+                .csrf(csrf -> csrf.disable())
 
                 // =================================================
                 // CORS
                 // =================================================
-                // Permite que posteriormente Angular pueda
-                // consumir la API desde otro origen.
-
-                .cors(cors -> {
-                })
-
+                // Procesa CORS antes de autenticar usando CorsConfig.java.
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
 
                 // =================================================
                 // SESIONES
                 // =================================================
-                // Spring no guarda una sesión del usuario.
-                // Cada petición debe enviar su JWT.
-
                 .sessionManagement(session ->
-                        session.sessionCreationPolicy(
-                                SessionCreationPolicy.STATELESS
-                        )
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
                 // =================================================
-                // MANEJO DE ACCESO DENEGADO
+                // ERRORES DE SEGURIDAD
                 // =================================================
-                // Personaliza la respuesta cuando el usuario
-                // está autenticado pero no posee el permiso requerido.
-
-                .exceptionHandling(exception ->
-                        exception.accessDeniedHandler(
-                                 customAccessDeniedHandler
-                        )
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(customAuthenticationEntryPoint)
+                        .accessDeniedHandler(customAccessDeniedHandler)
                 )
-
-                 // =================================================
-                 // MANEJO DE ERRORES DE SEGURIDAD
-                 // =================================================
-                 // 401: usuario no autenticado.
-                 // 403: usuario autenticado pero sin permiso.
-
-                     .exceptionHandling(exception ->
-                          exception
-
-                                .authenticationEntryPoint(
-                                    customAuthenticationEntryPoint
-                               )
-
-                            .accessDeniedHandler(
-                                        customAccessDeniedHandler
-                               )
-                    )
+              
 
 
                 // =================================================
@@ -134,6 +99,15 @@ public class SecurityConfig {
                                 "hasAuthority('ACCESO_ADMIN') and hasAuthority('VER_USUARIOS') "
                                 + "and hasAuthority('VER_MEDICOS') and hasAuthority('VER_ROLES') "
                                 + "and hasAuthority('VER_CITAS')"))
+
+                        // ======================================
+                        // SWAGGER DOCUMENTACION
+                        // ======================================
+                        .requestMatchers(
+                        "/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**"
+                        ).permitAll()
 
 
                         // =================================================
@@ -449,6 +423,10 @@ public class SecurityConfig {
                         )
 
 
+                        // Consultar los horarios del médico autenticado.
+                        .requestMatchers(HttpMethod.GET, "/api/v1/schedules/my-schedules")
+                        .hasAuthority(Permiso.CREAR_HORARIOS.name())
+
                         // Consultar horarios disponibles.
                         .requestMatchers(
                                 HttpMethod.GET,
@@ -535,8 +513,7 @@ public class SecurityConfig {
                         // =================================================
 
                         .requestMatchers(HttpMethod.GET,"/api/v1/appointments/my-agenda")
-                        .hasAuthority(Permiso.VER_CITAS.name()
-                        )
+                        .hasAnyAuthority(Permiso.VER_CITAS.name(), Permiso.REGISTRAR_DIAGNOSTICO.name())
 
                         // =================================================
                         // LISTADO GENERAL: SOLO ADMINISTRADORES

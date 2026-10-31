@@ -1,6 +1,8 @@
 import { ConfirmationService } from '../../../../core/notifications/confirmation.service';
 import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { apiErrorMessage } from '../../../../core/notifications/api-error';
 
 import { Specialty } from '../models/specialty.model';
 import { SpecialtyService } from '../services/specialty.service';
@@ -12,7 +14,7 @@ import { finalize, Observable } from 'rxjs';
 @Component({
   selector: 'app-specialty-list',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, ReactiveFormsModule, RouterLink],
   templateUrl: './specialty-list.html',
   styleUrl: './specialty-list.css',
 })
@@ -20,17 +22,24 @@ export class SpecialtyList implements OnInit {
   private readonly confirmation = inject(ConfirmationService);
   private readonly changeDetector = inject(ChangeDetectorRef);
   private readonly authService = inject(AuthService);
-  readonly canViewSpecialties = this.authService.hasPermission('VER_ESPECIALIDADES');
-  readonly canCreateSpecialty = this.authService.hasPermission('CREAR_ESPECIALIDADES');
+  private readonly formBuilder = inject(FormBuilder);
+  readonly isCreate = inject(ActivatedRoute).snapshot.data['createSpecialty'] === true;
+  readonly canOpenList = this.authService.hasPermission('VER_ESPECIALIDADES');
+  readonly canOpenCreate = this.authService.hasPermission('CREAR_ESPECIALIDADES');
+  readonly canViewSpecialties = !this.isCreate && this.canOpenList;
+  readonly canCreateSpecialty = this.isCreate && this.canOpenCreate;
   readonly canActivateSpecialty = this.authService.hasPermission('ACTUALIZAR_ESPECIALIDADES');
+  readonly canEditSpecialty = !this.isCreate && this.canActivateSpecialty;
   readonly canDeactivateSpecialty = this.authService.hasPermission('ELIMINAR_ESPECIALIDADES');
 
   private readonly specialtyService = inject(SpecialtyService);
 
   specialties: Specialty[] = [];
+  editingSpecialtyId: number | null = null;
 
   loading = false;
   saving = false;
+  updating = false;
   changingState = false;
 
   error = '';
@@ -40,6 +49,11 @@ export class SpecialtyList implements OnInit {
     nombre: '',
     descripcion: '',
   };
+
+  readonly specialtyEditForm = this.formBuilder.nonNullable.group({
+    nombre: ['', [Validators.required, Validators.maxLength(100)]],
+    descripcion: ['', [Validators.maxLength(255)]],
+  });
 
   ngOnInit(): void {
     this.loadSpecialties();
@@ -63,6 +77,7 @@ export class SpecialtyList implements OnInit {
         },
 
         error: (error) => {
+          this.error = apiErrorMessage(error);
           this.loading = false;
         },
       });
@@ -103,7 +118,9 @@ export class SpecialtyList implements OnInit {
           this.success = `Especialidad ${activate ? 'activada' : 'desactivada'} correctamente.`;
           this.loadSpecialties();
         },
-        error: (error) => {},
+        error: (error) => {
+          this.error = apiErrorMessage(error);
+        },
       });
   }
 
@@ -143,7 +160,61 @@ export class SpecialtyList implements OnInit {
         },
 
         error: (error) => {
+          this.error = apiErrorMessage(error);
           this.saving = false;
+        },
+      });
+  }
+
+  startEditSpecialty(specialty: Specialty): void {
+    if (!this.canEditSpecialty || !specialty.idEspecialidad) {
+      return;
+    }
+    this.error = '';
+    this.success = '';
+    this.editingSpecialtyId = specialty.idEspecialidad;
+    this.specialtyEditForm.reset({
+      nombre: specialty.nombre,
+      descripcion: specialty.descripcion ?? '',
+    });
+  }
+
+  cancelEditSpecialty(): void {
+    this.editingSpecialtyId = null;
+    this.specialtyEditForm.reset({ nombre: '', descripcion: '' });
+  }
+
+  updateSpecialty(): void {
+    const id = this.editingSpecialtyId;
+    if (!this.canEditSpecialty || id === null || this.updating) {
+      return;
+    }
+    if (this.specialtyEditForm.invalid) {
+      this.specialtyEditForm.markAllAsTouched();
+      this.error = 'El nombre de la especialidad es obligatorio.';
+      return;
+    }
+
+    const values = this.specialtyEditForm.getRawValue();
+    this.error = '';
+    this.success = '';
+    this.updating = true;
+    this.specialtyService
+      .update(id, { nombre: values.nombre.trim(), descripcion: values.descripcion.trim() })
+      .pipe(
+        finalize(() => {
+          this.updating = false;
+          this.changeDetector.markForCheck();
+        }),
+      )
+      .subscribe({
+        next: () => {
+          this.success = 'Especialidad actualizada correctamente.';
+          this.cancelEditSpecialty();
+          this.loadSpecialties();
+        },
+        error: (error) => {
+          this.error = apiErrorMessage(error);
         },
       });
   }

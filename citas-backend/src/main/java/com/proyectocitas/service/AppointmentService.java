@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Isolation;
 
 import com.proyectocitas.dto.request.RescheduleRequestDTO;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.DayOfWeek;
 import java.util.Locale;
 import java.util.Objects;
@@ -22,7 +23,9 @@ import java.util.Objects;
 import com.proyectocitas.model.Cita;
 import com.proyectocitas.model.EstadoCita;
 import com.proyectocitas.model.HorarioDisponible;
+import com.proyectocitas.model.Notificacion;
 import com.proyectocitas.model.Usuario;
+import com.proyectocitas.model.Medico;
 
 import com.proyectocitas.repository.CitaRepository;
 import com.proyectocitas.repository.EstadoCitaRepository;
@@ -50,12 +53,7 @@ public class AppointmentService {
     private final ApplicationEventPublisher publicadorEventos;
 
     public AppointmentService(
-            CitaRepository citaRepository,
-            UsuarioRepository usuarioRepository,
-            EstadoCitaRepository estadoCitaRepository,
-            HorarioDisponibleRepository horarioRepository,
-            AppointmentMapper appointmentMapper,
-            ApplicationEventPublisher publicadorEventos) {
+            CitaRepository citaRepository, UsuarioRepository usuarioRepository, EstadoCitaRepository estadoCitaRepository, HorarioDisponibleRepository horarioRepository, AppointmentMapper appointmentMapper, ApplicationEventPublisher publicadorEventos) {
         
         this.citaRepository = citaRepository;
         this.usuarioRepository = usuarioRepository;
@@ -145,6 +143,22 @@ if (tieneCitaActiva) {
         );
         }
 
+        if (horario.getMedico().getEstado() != Medico.EstadoMedico.ACTIVO) {
+            throw new ScheduleConflictException(
+                    "El horario seleccionado pertenece a un médico que no está disponible");
+        }
+
+
+        // Comprobarlo bajo el bloqueo: la disponibilidad vista por el
+        // cliente puede haber vencido antes de confirmar la reserva.
+        if (horario.getFecha() == null
+                || horario.getHoraInicio() == null
+                || !LocalDateTime.of(horario.getFecha(), horario.getHoraInicio())
+                        .isAfter(LocalDateTime.now(ZoneId.of("America/Guatemala")))) {
+            throw new ScheduleConflictException(
+                    "El horario seleccionado ya pasó y no puede reservarse"
+            );
+        }
 
         // 6. Crear la cita
         Cita cita =
@@ -183,6 +197,9 @@ if (tieneCitaActiva) {
                 horario.getHoraInicio()
         )
 );
+
+        publicadorEventos.publishEvent(new CitaPacienteEvent(
+                citaGuardada.getIdCita(), Notificacion.Tipo.CITA_RESERVADA));
 
         // 10. Devolver DTO
         return appointmentMapper.toDTO(citaGuardada);
@@ -310,6 +327,8 @@ Cita cita = citaRepository
         Cita citaActualizada =
                 citaRepository.save(cita);
 
+        publicadorEventos.publishEvent(new CitaPacienteEvent(
+                citaActualizada.getIdCita(), Notificacion.Tipo.DIAGNOSTICO_DISPONIBLE));
 
         return appointmentMapper
                 .toDTO(citaActualizada);
@@ -458,6 +477,9 @@ cita.setMotivoCancelacion(motivoLimpio);
     // 10. Guardar los cambios
     horarioRepository.save(horario);
     Cita guardada = citaRepository.save(cita);
+
+    publicadorEventos.publishEvent(new CitaPacienteEvent(
+            guardada.getIdCita(), Notificacion.Tipo.CITA_CANCELADA));
 
     // 11. Devolver la cita cancelada
     return appointmentMapper.toDTO(guardada);
@@ -620,7 +642,7 @@ public AppointmentResponseDTO reprogramarCita(
             || !LocalDateTime.of(
                     horarioNuevo.getFecha(),
                     horarioNuevo.getHoraInicio()
-            ).isAfter(LocalDateTime.now())) {
+            ).isAfter(LocalDateTime.now(ZoneId.of("America/Guatemala")))) {
 
         throw new ResponseStatusException(
                 HttpStatus.BAD_REQUEST,
@@ -653,12 +675,16 @@ public AppointmentResponseDTO reprogramarCita(
 
     // 15. Cambiar el horario de la cita
     cita.setHorario(horarioNuevo);
+    cita.setRecordatorioEnviado(false);
 
     // 16. Guardar los cambios
     horarioRepository.save(horarioAnterior);
     horarioRepository.save(horarioNuevo);
 
     Cita actualizada = citaRepository.save(cita);
+
+    publicadorEventos.publishEvent(new CitaPacienteEvent(
+            actualizada.getIdCita(), Notificacion.Tipo.CITA_REPROGRAMADA));
 
     return appointmentMapper.toDTO(actualizada);
 }

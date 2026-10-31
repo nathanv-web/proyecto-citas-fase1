@@ -3,9 +3,10 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize } from 'rxjs';
 
 import { DoctorService } from '../doctor.service';
-import { AppointmentService, Medico } from '../../patient/appointment.service';
+import { AppointmentService, Horario, Medico } from '../../patient/appointment.service';
 import { AuthService } from '../../../core/auth/services/auth.service';
 import { NotificationService } from '../../../core/notifications/notification.service';
+import { apiErrorMessage } from '../../../core/notifications/api-error';
 
 /** El horario pertenece al médico autenticado, seleccionado por su perfil profesional. */
 @Component({
@@ -24,6 +25,9 @@ export class DoctorSchedules implements OnInit {
   readonly doctors = signal<Medico[]>([]);
   readonly loadingDoctors = signal(false);
   readonly saving = signal(false);
+  readonly schedules = signal<Horario[]>([]);
+  readonly loadingSchedules = signal(false);
+  readonly schedulesError = signal('');
 
   readonly form = this.fb.nonNullable.group({
     idMedico: [0, [Validators.required, Validators.min(1)]],
@@ -33,6 +37,7 @@ export class DoctorSchedules implements OnInit {
   });
 
   ngOnInit(): void {
+    this.loadSchedules();
     const correo = this.auth.getUsuario()?.correo;
     if (!correo) return;
     this.loadingDoctors.set(true);
@@ -51,6 +56,19 @@ export class DoctorSchedules implements OnInit {
       });
   }
 
+  loadSchedules(): void {
+    if (!this.auth.hasPermission('CREAR_HORARIOS') || this.loadingSchedules()) return;
+    this.schedulesError.set('');
+    this.loadingSchedules.set(true);
+    this.service
+      .getSchedules()
+      .pipe(finalize(() => this.loadingSchedules.set(false)))
+      .subscribe({
+        next: (schedules) => this.schedules.set(schedules),
+        error: (error) => this.schedulesError.set(apiErrorMessage(error)),
+      });
+  }
+
   save(): void {
     this.form.markAllAsTouched();
     if (this.form.invalid || this.saving() || this.loadingDoctors()) return;
@@ -64,6 +82,7 @@ export class DoctorSchedules implements OnInit {
         next: () => {
           this.notifications.success('Horario creado correctamente');
           this.form.reset({ idMedico });
+          this.loadSchedules();
         },
         error: () => {},
       });

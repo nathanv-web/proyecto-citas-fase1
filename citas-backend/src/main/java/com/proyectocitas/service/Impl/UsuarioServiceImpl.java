@@ -21,7 +21,10 @@ import java.util.Set;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UsuarioServiceImpl implements UsuarioService {
@@ -109,6 +112,7 @@ public List<Usuario> buscarConFiltros(
     //Actualizar los datos principales de un usuario existente
 
     @Override
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public Usuario actualizar(Long id,UsuarioUpdateRequestDTO usuario) {
 
     //Buscar el usuario existente en la base de datos
@@ -141,6 +145,11 @@ public List<Usuario> buscarConFiltros(
             }
             //Actualizar estado
                 if (usuario.getActivo() != null) {
+                    if (usuarioDB.isEnabled() && !usuario.getActivo()) {
+                        exigirPermiso("DESACTIVAR_USUARIOS");
+                        desactivar(id);
+                        return usuarioDB;
+                    }
                     usuarioDB.setActivo(usuario.getActivo());
                 }
 
@@ -322,6 +331,7 @@ return usuarioActualizado;
 // Antes de desactivar un administrador se valida que
 // exista por lo menos otro administrador activo.
 @Override
+@Transactional(isolation = Isolation.READ_COMMITTED)
 public void desactivar(Long id) {
 
     Usuario usuario =
@@ -344,6 +354,10 @@ public void desactivar(Long id) {
     // Si el usuario es un administrador activo,
     // no se permite desactivarlo cuando es el último.
     if (usuario.isEnabled() && esAdministrador) {
+
+        // Todos los intentos de desactivar administradores se serializan
+        // sobre la misma fila antes de contar los administradores activos.
+        rolRepository.buscarPorNombreConBloqueo("ROLE_ADMIN");
 
         long administradoresActivos =
                 usuarioRepository
@@ -376,6 +390,17 @@ AuditoriaService.registrar(
         "EXITO",
         "Usuario desactivado correctamente"
 );
+}
+
+private void exigirPermiso(String permiso) {
+    Authentication autenticacion = SecurityContextHolder.getContext().getAuthentication();
+    boolean autorizado = autenticacion != null
+            && autenticacion.getAuthorities().stream()
+                    .anyMatch(authority -> permiso.equals(authority.getAuthority()));
+    if (!autorizado) {
+        throw new AccessDeniedException(
+                "No tienes permiso para desactivar usuarios.");
+    }
 }
 
     //Login usuario pacientes

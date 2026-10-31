@@ -11,9 +11,7 @@
 </ion-header>
 
 <ion-content [fullscreen]="true" class="register-content">
-
   <div class="register-container">
-
     <div class="register-header">
       <div class="medical-icon">
         <ion-icon name="person-add-outline"></ion-icon>
@@ -21,27 +19,23 @@
 
       <h1>Crea tu cuenta</h1>
 
-      <p>
-        Regístrate para acceder al Sistema de Citas Médicas.
-      </p>
+      <p>Regístrate para acceder al Sistema de Citas Médicas.</p>
     </div>
 
     <form
       [formGroup]="registerForm"
       (ngSubmit)="registrar()"
-      class="register-form">
-
+      class="register-form"
+    >
       <div class="form-group">
         <ion-input
           type="text"
           label="Nombre"
           labelPlacement="floating"
           fill="outline"
-          formControlName="nombre">
-          <ion-icon
-            name="person-outline"
-            slot="start">
-          </ion-icon>
+          formControlName="nombre"
+        >
+          <ion-icon name="person-outline" slot="start"> </ion-icon>
         </ion-input>
 
         <div
@@ -49,8 +43,9 @@
           *ngIf="
             registerForm.controls['nombre'].touched &&
             registerForm.controls['nombre'].invalid
-          ">
-          Ingresa un nombre válido de al menos 2 caracteres.
+          "
+        >
+          Usa de 2 a 100 letras, solo la inicial mayúscula y sin espacios.
         </div>
       </div>
 
@@ -60,11 +55,9 @@
           label="Apellido"
           labelPlacement="floating"
           fill="outline"
-          formControlName="apellido">
-          <ion-icon
-            name="person-outline"
-            slot="start">
-          </ion-icon>
+          formControlName="apellido"
+        >
+          <ion-icon name="person-outline" slot="start"> </ion-icon>
         </ion-input>
 
         <div
@@ -72,8 +65,9 @@
           *ngIf="
             registerForm.controls['apellido'].touched &&
             registerForm.controls['apellido'].invalid
-          ">
-          Ingresa un apellido válido de al menos 2 caracteres.
+          "
+        >
+          Usa de 2 a 100 letras, solo la inicial mayúscula y sin espacios.
         </div>
       </div>
 
@@ -83,11 +77,9 @@
           label="Correo electrónico"
           labelPlacement="floating"
           fill="outline"
-          formControlName="correo">
-          <ion-icon
-            name="mail-outline"
-            slot="start">
-          </ion-icon>
+          formControlName="correo"
+        >
+          <ion-icon name="mail-outline" slot="start"> </ion-icon>
         </ion-input>
 
         <div
@@ -95,7 +87,8 @@
           *ngIf="
             registerForm.controls['correo'].touched &&
             registerForm.controls['correo'].invalid
-          ">
+          "
+        >
           Ingresa un correo electrónico válido.
         </div>
       </div>
@@ -106,11 +99,9 @@
           label="Teléfono"
           labelPlacement="floating"
           fill="outline"
-          formControlName="telefono">
-          <ion-icon
-            name="call-outline"
-            slot="start">
-          </ion-icon>
+          formControlName="telefono"
+        >
+          <ion-icon name="call-outline" slot="start"> </ion-icon>
         </ion-input>
 
         <div
@@ -118,7 +109,8 @@
           *ngIf="
             registerForm.controls['telefono'].touched &&
             registerForm.controls['telefono'].invalid
-          ">
+          "
+        >
           El teléfono es obligatorio.
         </div>
       </div>
@@ -129,16 +121,15 @@
           label="Contraseña"
           labelPlacement="floating"
           fill="outline"
-          formControlName="contrasena">
+          formControlName="contrasena"
+        >
+          <ion-icon name="lock-closed-outline" slot="start"> </ion-icon>
           <ion-icon
-            name="lock-closed-outline"
-            slot="start">
-          </ion-icon>
-          <ion-icon 
-            slot="end" 
+            slot="end"
             [name]="verContrasena ? 'eye-off-outline' : 'eye-outline'"
-            (click)="toggleContrasena()" 
-            class="eye-icon">
+            (click)="toggleContrasena()"
+            class="eye-icon"
+          >
           </ion-icon>
         </ion-input>
 
@@ -147,14 +138,13 @@
           *ngIf="
             registerForm.controls['contrasena'].touched &&
             registerForm.controls['contrasena'].invalid
-          ">
+          "
+        >
           La contraseña debe tener entre 8 y 12 caracteres.
         </div>
       </div>
 
-      <div
-        class="api-error"
-        *ngIf="errorMessage">
+      <div class="api-error" *ngIf="errorMessage">
         <ion-icon name="alert-circle-outline"></ion-icon>
         <span>{{ errorMessage }}</span>
       </div>
@@ -163,30 +153,21 @@
         type="submit"
         expand="block"
         class="register-button"
-        [disabled]="loading">
-
-        <ion-spinner
-          *ngIf="loading"
-          name="crescent"
-          slot="start">
+        [disabled]="loading"
+      >
+        <ion-spinner *ngIf="loading" name="crescent" slot="start">
         </ion-spinner>
 
-        <ion-icon
-          *ngIf="!loading"
-          name="person-add-outline"
-          slot="start">
+        <ion-icon *ngIf="!loading" name="person-add-outline" slot="start">
         </ion-icon>
 
         <span>{{ loading ? 'Creando cuenta...' : 'Crear cuenta' }}</span>
       </ion-button>
-
     </form>
 
     <div class="login-link">
       <span>¿Ya tienes una cuenta?</span>
       <a routerLink="/login" class="link-text">Iniciar sesión</a>
     </div>
-
   </div>
-
 </ion-content>

@@ -21,15 +21,27 @@
       </p>
 
       <h1>
-        Historial de citas
+        Mis citas
       </h1>
 
       <p>
-        Consultá tus citas médicas y revisá
-        la información de cada reservación.
+        Consultá tus próximas citas y revisá las consultas anteriores.
       </p>
 
     </div>
+
+    <ion-segment
+      [(ngModel)]="vistaActual"
+      aria-label="Filtrar citas"
+      class="appointments-tabs"
+    >
+      <ion-segment-button value="pendientes">
+        <ion-label>Pendientes</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="historial">
+        <ion-label>Historial</ion-label>
+      </ion-segment-button>
+    </ion-segment>
 
     <!-- CARGANDO -->
     <div
@@ -63,18 +75,17 @@
       *ngIf="
         !loading &&
         !errorMessage &&
-        citas.length === 0
+        citasMostradas.length === 0
       ">
 
       <ion-icon name="calendar-outline"></ion-icon>
 
       <h2>
-        No tenés citas registradas
+        {{ vistaActual === 'pendientes' ? 'No tenés citas pendientes' : 'No tenés citas en tu historial' }}
       </h2>
 
       <p>
-        Cuando reservés una cita médica,
-        aparecerá en esta sección.
+        {{ vistaActual === 'pendientes' ? 'Cuando reservés una cita médica aparecerá en esta sección.' : 'Las citas atendidas o canceladas aparecerán aquí.' }}
       </p>
 
     </div>
@@ -84,11 +95,11 @@
       *ngIf="
         !loading &&
         !errorMessage &&
-        citas.length > 0
+        citasMostradas.length > 0
       ">
 
       <ion-card
-        *ngFor="let cita of citas">
+        *ngFor="let cita of citasMostradas">
 
         <ion-card-content>
 

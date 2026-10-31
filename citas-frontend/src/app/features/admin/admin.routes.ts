@@ -86,16 +86,33 @@ export const ADMIN_ROUTES: Routes = [
   },
 
   {
-    path: 'specialties',
-    canActivate: [authGuard, panelGuard],
-    data: { panel: 'admin', functions: ['specialties', 'newSpecialty'] },
+    path: 'specialties/new',
+    canActivate: [authGuard, permissionGuard],
+    data: { permission: 'CREAR_ESPECIALIDADES', createSpecialty: true },
     component: SpecialtyList,
   },
 
   {
+    path: 'specialties',
+    canActivate: [authGuard, permissionGuard],
+    data: { permission: 'VER_ESPECIALIDADES' },
+    component: SpecialtyList,
+  },
+
+  {
+    path: 'doctors/new',
+    canActivate: [authGuard, permissionGuard],
+    data: {
+      permissions: ['CREAR_MEDICOS', 'VER_USUARIOS', 'VER_ESPECIALIDADES'],
+      createDoctor: true,
+    },
+    component: DoctorList,
+  },
+
+  {
     path: 'doctors',
-    canActivate: [authGuard, panelGuard],
-    data: { panel: 'admin', functions: ['doctors', 'newDoctor'] },
+    canActivate: [authGuard, permissionGuard],
+    data: { permission: 'VER_MEDICOS' },
     component: DoctorList,
   },
 ];

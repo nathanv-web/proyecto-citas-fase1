@@ -13,8 +13,8 @@ public record MedicoUpdateRequestDTO(
 
     @Size(max = 50)
     @Pattern(
-        regexp = "^[A-Za-z0-9-]+$",
-        message = "El colegiado tiene un formato inválido"
+        regexp = "^COL-[0-9]{4}$",
+        message = "El colegiado debe tener el formato COL-0000 (cuatro dígitos)"
     )
     String colegiado,
 

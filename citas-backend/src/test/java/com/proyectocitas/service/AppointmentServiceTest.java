@@ -17,6 +17,9 @@ import com.proyectocitas.dto.request.DiagnosisRequestDTO;
 import com.proyectocitas.exception.ResourceConflictException;
 import com.proyectocitas.model.Medico;
 import java.util.List;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,6 +28,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
+import org.springframework.context.ApplicationEventPublisher;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -54,7 +58,8 @@ class AppointmentServiceTest {
                 usuarioRepository,
                 estadoCitaRepository,
                 horarioRepository,
-                appointmentMapper
+                appointmentMapper,
+                mock(ApplicationEventPublisher.class)
         );
     }
     
@@ -106,9 +111,17 @@ class AppointmentServiceTest {
                 new HorarioDisponible();
 
         horario.setIdHorario(10L);
+        horario.setFecha(LocalDate.now(ZoneId.of("America/Guatemala")).plusDays(1));
+        horario.setHoraInicio(LocalTime.of(9, 0));
         horario.setEstado(
                 HorarioDisponible.EstadoHorario.DISPONIBLE
         );
+
+        Usuario usuarioMedico = new Usuario();
+        usuarioMedico.setIdUsuario(2L);
+        Medico medico = new Medico();
+        medico.setUsuario(usuarioMedico);
+        horario.setMedico(medico);
 
 
         EstadoCita pendiente =
@@ -214,6 +227,15 @@ class AppointmentServiceTest {
 
         verify(citaRepository)
                 .save(cita);
+
+        // La misma solicitud debe rechazarse si el horario ya venció,
+        // incluso si el cliente todavía lo conserva en pantalla.
+        horario.setFecha(LocalDate.now(ZoneId.of("America/Guatemala")).minusDays(1));
+        horario.setEstado(HorarioDisponible.EstadoHorario.DISPONIBLE);
+        assertThrows(ScheduleConflictException.class,
+                () -> service.agendarCita(request, "paciente@correo.com"));
+        verify(horarioRepository, times(1)).save(horario);
+        verify(citaRepository, times(1)).save(cita);
     }
 
 
@@ -403,6 +425,46 @@ void agendarDebeFallarSiHorarioYaTieneCita() {
                     "paciente@correo.com"
             )
     );
+}
+
+@Test
+void noPermiteReservarHorarioDeMedicoInactivo() {
+    AppointmentCreateRequestDTO request = new AppointmentCreateRequestDTO();
+    request.setIdHorario(10L);
+    request.setMotivo("Consulta general");
+
+    Usuario paciente = new Usuario();
+    paciente.setIdUsuario(1L);
+    Usuario usuarioMedico = new Usuario();
+    usuarioMedico.setIdUsuario(2L);
+    Medico medico = new Medico();
+    medico.setUsuario(usuarioMedico);
+    medico.setEstado(Medico.EstadoMedico.INACTIVO);
+    HorarioDisponible horario = new HorarioDisponible();
+    horario.setIdHorario(10L);
+    horario.setFecha(LocalDate.now(ZoneId.of("America/Guatemala")).plusDays(1));
+    horario.setHoraInicio(LocalTime.of(9, 0));
+    horario.setMedico(medico);
+    horario.setEstado(HorarioDisponible.EstadoHorario.DISPONIBLE);
+
+    when(usuarioRepository.findByCorreo("paciente@correo.com"))
+            .thenReturn(Optional.of(paciente));
+    when(horarioRepository.buscarHorarioConBloqueo(10L))
+            .thenReturn(Optional.of(horario));
+    when(citaRepository.existsByHorario_IdHorarioAndEstado_NombreNot(
+            10L, EstadoCita.NombreEstado.CANCELADA)).thenReturn(false);
+    EstadoCita pendiente = new EstadoCita();
+    pendiente.setNombre(EstadoCita.NombreEstado.PENDIENTE);
+    when(estadoCitaRepository.findByNombre(EstadoCita.NombreEstado.PENDIENTE))
+            .thenReturn(Optional.of(pendiente));
+    Cita cita = new Cita();
+    when(appointmentMapper.toEntity(request)).thenReturn(cita);
+    when(citaRepository.save(any(Cita.class))).thenReturn(cita);
+
+    assertThrows(ScheduleConflictException.class,
+            () -> service.agendarCita(request, "paciente@correo.com"));
+    verify(horarioRepository, never()).save(any());
+    verify(citaRepository, never()).save(any());
 }
     // =================================================
 // REGISTRAR DIAGNÓSTICO CORRECTAMENTE
