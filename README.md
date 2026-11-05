@@ -289,7 +289,7 @@ Proyecto colaborativo desarrollado por estudiantes de Ingeniería en Sistemas de
 | <img src="https://github.com/agonzalezr7.png" width="46" alt="Avatar del integrante"> | agonzalezr7 | [@agonzalezr7](https://github.com/agonzalezr7) |
 | <img src="https://github.com/AlejandroGu8.png" width="46" alt="Avatar del integrante"> | Julián Alejandro Roca Guerra | [@AlejandroGu8](https://github.com/AlejandroGu8) |
 
-> **Nota:** el nombre completo del integrante `agonzalezr7` no aparecía en la captura compartida, por lo que se conserva su usuario de GitHub para evitar errores.
+
 
 ---
 
