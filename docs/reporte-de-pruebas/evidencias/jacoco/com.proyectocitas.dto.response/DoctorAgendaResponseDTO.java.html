@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DoctorAgendaResponseDTO.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">citas-backend</a> &gt; <a href="index.source.html" class="el_package">com.proyectocitas.dto.response</a> &gt; <span class="el_source">DoctorAgendaResponseDTO.java</span></div><h1>DoctorAgendaResponseDTO.java</h1><pre class="source lang-java linenums">package com.proyectocitas.dto.response;
+
+import java.time.LocalTime;
+import java.time.LocalDate;
+
+public class DoctorAgendaResponseDTO {
+
+    private Long idCita;
+    private String paciente;
+    private LocalTime horaInicio;
+    private LocalTime horaFin;
+    private LocalDate fecha;
+    private String motivo;
+    private String estado;
+
+<span class="nc" id="L16">    public DoctorAgendaResponseDTO() {</span>
+<span class="nc" id="L17">    }</span>
+
+    public DoctorAgendaResponseDTO(
+            Long idCita,
+            String paciente,
+            LocalTime horaInicio,
+            LocalTime horaFin,
+            String motivo,
+<span class="fc" id="L25">            String estado) {</span>
+
+<span class="fc" id="L27">        this.idCita = idCita;</span>
+<span class="fc" id="L28">        this.paciente = paciente;</span>
+<span class="fc" id="L29">        this.horaInicio = horaInicio;</span>
+<span class="fc" id="L30">        this.horaFin = horaFin;</span>
+<span class="fc" id="L31">        this.motivo = motivo;</span>
+<span class="fc" id="L32">        this.estado = estado;</span>
+<span class="fc" id="L33">    }</span>
+
+    public Long getIdCita() {
+<span class="fc" id="L36">        return idCita;</span>
+    }
+
+    public void setIdCita(Long idCita) {
+<span class="nc" id="L40">        this.idCita = idCita;</span>
+<span class="nc" id="L41">    }</span>
+
+    public String getPaciente() {
+<span class="fc" id="L44">        return paciente;</span>
+    }
+
+    public void setPaciente(String paciente) {
+<span class="nc" id="L48">        this.paciente = paciente;</span>
+<span class="nc" id="L49">    }</span>
+
+    public LocalTime getHoraInicio() {
+<span class="fc" id="L52">        return horaInicio;</span>
+    }
+
+    public void setHoraInicio(LocalTime horaInicio) {
+<span class="nc" id="L56">        this.horaInicio = horaInicio;</span>
+<span class="nc" id="L57">    }</span>
+
+    public LocalTime getHoraFin() {
+<span class="fc" id="L60">        return horaFin;</span>
+    }
+
+    public void setHoraFin(LocalTime horaFin) {
+<span class="nc" id="L64">        this.horaFin = horaFin;</span>
+<span class="nc" id="L65">    }</span>
+    
+    public LocalDate getFecha() {
+<span class="fc" id="L68">    return fecha;</span>
+    }
+
+    public void setFecha(LocalDate fecha) {
+<span class="fc" id="L72">    this.fecha = fecha;</span>
+<span class="fc" id="L73">    }</span>
+
+    public String getMotivo() {
+<span class="fc" id="L76">        return motivo;</span>
+    }
+
+    public void setMotivo(String motivo) {
+<span class="nc" id="L80">        this.motivo = motivo;</span>
+<span class="nc" id="L81">    }</span>
+
+    public String getEstado() {
+<span class="fc" id="L84">        return estado;</span>
+    }
+
+    public void setEstado(String estado) {
+<span class="nc" id="L88">        this.estado = estado;</span>
+<span class="nc" id="L89">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

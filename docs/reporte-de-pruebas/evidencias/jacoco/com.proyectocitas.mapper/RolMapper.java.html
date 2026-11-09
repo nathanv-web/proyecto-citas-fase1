@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RolMapper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">citas-backend</a> &gt; <a href="index.source.html" class="el_package">com.proyectocitas.mapper</a> &gt; <span class="el_source">RolMapper.java</span></div><h1>RolMapper.java</h1><pre class="source lang-java linenums">package com.proyectocitas.mapper;
+
+import com.proyectocitas.dto.response.RolResponseDTO;
+import com.proyectocitas.dto.request.RolCreateRequestDTO;
+import com.proyectocitas.model.Rol;
+
+import org.springframework.stereotype.Component;
+
+
+@Component
+<span class="fc" id="L11">public class RolMapper {</span>
+
+    public Rol toEntity(RolCreateRequestDTO dto){
+<span class="fc" id="L14">        Rol rol = new Rol();</span>
+
+<span class="fc" id="L16">        rol.setNombre(dto.getNombre());</span>
+<span class="fc" id="L17">        rol.setDescripcion(dto.getDescripcion());</span>
+
+<span class="fc" id="L19">        return rol;</span>
+    }
+public RolResponseDTO toDTO(Rol rol) {
+
+<span class="fc" id="L23">    RolResponseDTO dto = new RolResponseDTO();</span>
+
+<span class="fc" id="L25">    dto.setIdRol(rol.getIdRol());</span>
+<span class="fc" id="L26">    dto.setNombre(rol.getNombre());</span>
+<span class="fc" id="L27">    dto.setDescripcion(rol.getDescripcion());</span>
+
+<span class="fc" id="L29">    dto.setPermisos(</span>
+<span class="fc" id="L30">            rol.getPermisos()</span>
+<span class="fc" id="L31">                    .stream()</span>
+<span class="fc" id="L32">                    .map(Enum::name)</span>
+<span class="fc" id="L33">                    .collect(java.util.stream.Collectors.toSet())</span>
+    );
+
+<span class="fc" id="L36">    return dto;</span>
+}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

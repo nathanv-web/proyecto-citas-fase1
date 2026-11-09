@@ -1,0 +1,383 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GlobalExceptionHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">citas-backend</a> &gt; <a href="index.source.html" class="el_package">com.proyectocitas.exception</a> &gt; <span class="el_source">GlobalExceptionHandler.java</span></div><h1>GlobalExceptionHandler.java</h1><pre class="source lang-java linenums">package com.proyectocitas.exception;
+
+import jakarta.servlet.http.HttpServletRequest;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
+import org.springframework.validation.FieldError;
+
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import org.springframework.web.server.ResponseStatusException;
+import org.slf4j.Logger;
+
+import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import tools.jackson.databind.exc.InvalidFormatException;
+
+
+@RestControllerAdvice
+<span class="fc" id="L28">public class GlobalExceptionHandler {</span>
+    
+<span class="fc" id="L30">    private static final Logger logger = </span>
+<span class="fc" id="L31">            LoggerFactory.getLogger(GlobalExceptionHandler.class);</span>
+
+    @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; manejarArchivoGrande(
+            org.springframework.web.multipart.MaxUploadSizeExceededException ex,
+            HttpServletRequest request) {
+<span class="nc" id="L37">        return ResponseEntity.status(413).body(Map.of(</span>
+<span class="nc" id="L38">                &quot;status&quot;, 413,</span>
+                &quot;message&quot;, &quot;La foto no debe superar 1 MiB&quot;,
+<span class="nc" id="L40">                &quot;path&quot;, request.getRequestURI()));</span>
+    }
+
+    @ExceptionHandler({org.springframework.dao.OptimisticLockingFailureException.class,
+            jakarta.persistence.OptimisticLockException.class})
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; manejarConflictoConcurrente(
+            Exception ex, HttpServletRequest request) {
+<span class="fc" id="L47">        Map&lt;String, Object&gt; respuesta = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L48">        respuesta.put(&quot;timestamp&quot;, LocalDateTime.now());</span>
+<span class="fc" id="L49">        respuesta.put(&quot;status&quot;, HttpStatus.CONFLICT.value());</span>
+<span class="fc" id="L50">        respuesta.put(&quot;error&quot;, HttpStatus.CONFLICT.getReasonPhrase());</span>
+<span class="fc" id="L51">        respuesta.put(&quot;message&quot;, &quot;El registro cambió durante la operación. Actualiza los datos e intenta nuevamente.&quot;);</span>
+<span class="fc" id="L52">        respuesta.put(&quot;path&quot;, request.getRequestURI());</span>
+<span class="fc" id="L53">        return ResponseEntity.status(HttpStatus.CONFLICT).body(respuesta);</span>
+    }
+
+    // =================================================
+    // PARÁMETROS OBLIGATORIOS FALTANTES
+    // =================================================
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt;
+            manejarParametroFaltante(
+                    MissingServletRequestParameterException ex,
+                    HttpServletRequest request) {
+
+<span class="nc" id="L66">        Map&lt;String, Object&gt; respuesta =</span>
+                new LinkedHashMap&lt;&gt;();
+
+<span class="nc" id="L69">        respuesta.put(&quot;timestamp&quot;, LocalDateTime.now());</span>
+<span class="nc" id="L70">        respuesta.put(&quot;status&quot;, HttpStatus.BAD_REQUEST.value());</span>
+<span class="nc" id="L71">        respuesta.put(&quot;error&quot;, HttpStatus.BAD_REQUEST.getReasonPhrase());</span>
+<span class="nc" id="L72">        respuesta.put(&quot;message&quot;, &quot;Falta el parámetro obligatorio: &quot; + ex.getParameterName());</span>
+<span class="nc" id="L73">        respuesta.put(&quot;path&quot;, request.getRequestURI());</span>
+
+<span class="nc" id="L75">        return ResponseEntity</span>
+<span class="nc" id="L76">                .badRequest()</span>
+<span class="nc" id="L77">                .body(respuesta);</span>
+    }
+
+    // =================================================
+    // RECURSO DUPLICADO
+    // =================================================
+
+    @ExceptionHandler(DuplicateResourceException.class)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt;
+            manejarDuplicateResourceException(
+                    DuplicateResourceException ex,
+                    HttpServletRequest request) {
+
+<span class="nc" id="L90">        Map&lt;String, Object&gt; respuesta =</span>
+                new LinkedHashMap&lt;&gt;();
+
+<span class="nc" id="L93">        respuesta.put(&quot;timestamp&quot;, LocalDateTime.now());</span>
+<span class="nc" id="L94">        respuesta.put(&quot;status&quot;, HttpStatus.CONFLICT.value());</span>
+<span class="nc" id="L95">        respuesta.put(&quot;error&quot;, HttpStatus.CONFLICT.getReasonPhrase());</span>
+<span class="nc" id="L96">        respuesta.put(&quot;message&quot;, ex.getMessage());</span>
+<span class="nc" id="L97">        respuesta.put(&quot;path&quot;, request.getRequestURI());</span>
+
+<span class="nc" id="L99">        return ResponseEntity</span>
+<span class="nc" id="L100">                .status(HttpStatus.CONFLICT)</span>
+<span class="nc" id="L101">                .body(respuesta);</span>
+    }
+
+
+    // =================================================
+    // RESPONSE STATUS EXCEPTION
+    // =================================================
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt;
+            manejarResponseStatusException(
+                    ResponseStatusException ex,
+                    HttpServletRequest request) {
+
+<span class="fc" id="L115">        int codigo = ex.getStatusCode().value();</span>
+
+<span class="fc" id="L117">        HttpStatus status =</span>
+<span class="fc" id="L118">                HttpStatus.resolve(codigo);</span>
+
+<span class="fc" id="L120">        Map&lt;String, Object&gt; respuesta =</span>
+                new LinkedHashMap&lt;&gt;();
+
+<span class="fc" id="L123">        respuesta.put(&quot;timestamp&quot;, LocalDateTime.now());</span>
+<span class="fc" id="L124">        respuesta.put(&quot;status&quot;, codigo);</span>
+<span class="fc" id="L125">        respuesta.put(</span>
+                &quot;error&quot;,
+<span class="pc bpc" id="L127" title="1 of 2 branches missed.">                status != null</span>
+<span class="fc" id="L128">                        ? status.getReasonPhrase()</span>
+<span class="nc" id="L129">                        : &quot;Error&quot;</span>
+        );
+<span class="fc" id="L131">        respuesta.put(</span>
+                &quot;message&quot;,
+<span class="pc bpc" id="L133" title="1 of 2 branches missed.">                ex.getReason() != null</span>
+<span class="fc" id="L134">                        ? ex.getReason()</span>
+<span class="nc" id="L135">                        : &quot;Error en la solicitud&quot;</span>
+        );
+<span class="fc" id="L137">        respuesta.put(&quot;path&quot;, request.getRequestURI());</span>
+
+<span class="fc" id="L139">        return ResponseEntity</span>
+<span class="fc" id="L140">                .status(ex.getStatusCode())</span>
+<span class="fc" id="L141">                .body(respuesta);</span>
+    }
+
+
+    // =================================================
+    // ERRORES DE VALIDACIÓN @Valid
+    // =================================================
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt;
+            manejarValidaciones(
+                    MethodArgumentNotValidException ex,
+                    HttpServletRequest request) {
+
+<span class="fc" id="L155">        Map&lt;String, String&gt; errores =</span>
+                new LinkedHashMap&lt;&gt;();
+
+        for (FieldError error
+<span class="fc bfc" id="L159" title="All 2 branches covered.">                : ex.getBindingResult().getFieldErrors()) {</span>
+
+<span class="fc" id="L161">            errores.put(</span>
+<span class="fc" id="L162">                    error.getField(),</span>
+<span class="fc" id="L163">                    error.getDefaultMessage()</span>
+            );
+<span class="fc" id="L165">        }</span>
+
+<span class="fc" id="L167">        Map&lt;String, Object&gt; respuesta =</span>
+                new LinkedHashMap&lt;&gt;();
+
+<span class="fc" id="L170">        respuesta.put(&quot;timestamp&quot;, LocalDateTime.now());</span>
+<span class="fc" id="L171">        respuesta.put(&quot;status&quot;, HttpStatus.BAD_REQUEST.value());</span>
+<span class="fc" id="L172">        respuesta.put(&quot;error&quot;, HttpStatus.BAD_REQUEST.getReasonPhrase());</span>
+<span class="fc" id="L173">        respuesta.put(&quot;message&quot;, &quot;Error de validación&quot;);</span>
+<span class="fc" id="L174">        respuesta.put(&quot;errors&quot;, errores);</span>
+<span class="fc" id="L175">        respuesta.put(&quot;path&quot;, request.getRequestURI());</span>
+
+<span class="fc" id="L177">        return ResponseEntity</span>
+<span class="fc" id="L178">                .badRequest()</span>
+<span class="fc" id="L179">                .body(respuesta);</span>
+    }
+            
+         // =================================================
+         // CONFLICTO DE HORARIO
+         // =================================================
+
+@ExceptionHandler(ScheduleConflictException.class)
+public ResponseEntity&lt;Map&lt;String, Object&gt;&gt;
+        manejarConflictoHorario(
+                ScheduleConflictException ex,
+                HttpServletRequest request) {
+
+<span class="fc" id="L192">    Map&lt;String, Object&gt; respuesta =</span>
+            new LinkedHashMap&lt;&gt;();
+
+<span class="fc" id="L195">    respuesta.put(&quot;timestamp&quot;, LocalDateTime.now());</span>
+<span class="fc" id="L196">    respuesta.put(&quot;status&quot;, HttpStatus.CONFLICT.value());</span>
+<span class="fc" id="L197">    respuesta.put(&quot;error&quot;, HttpStatus.CONFLICT.getReasonPhrase());</span>
+<span class="fc" id="L198">    respuesta.put(&quot;message&quot;, ex.getMessage());</span>
+<span class="fc" id="L199">    respuesta.put(&quot;path&quot;, request.getRequestURI());</span>
+
+<span class="fc" id="L201">    return ResponseEntity</span>
+<span class="fc" id="L202">            .status(HttpStatus.CONFLICT)</span>
+<span class="fc" id="L203">            .body(respuesta);</span>
+}
+
+
+    // =================================================
+    // RECURSO NO ENCONTRADO
+    // =================================================
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt;
+            manejarResourceNotFoundException(
+                    ResourceNotFoundException ex,
+                    HttpServletRequest request) {
+
+<span class="nc" id="L217">        Map&lt;String, Object&gt; respuesta =</span>
+                new LinkedHashMap&lt;&gt;();
+
+<span class="nc" id="L220">        respuesta.put(&quot;timestamp&quot;, LocalDateTime.now());</span>
+<span class="nc" id="L221">        respuesta.put(&quot;status&quot;, HttpStatus.NOT_FOUND.value());</span>
+<span class="nc" id="L222">        respuesta.put(&quot;error&quot;, HttpStatus.NOT_FOUND.getReasonPhrase());</span>
+<span class="nc" id="L223">        respuesta.put(&quot;message&quot;, ex.getMessage());</span>
+<span class="nc" id="L224">        respuesta.put(&quot;path&quot;, request.getRequestURI());</span>
+
+<span class="nc" id="L226">        return ResponseEntity</span>
+<span class="nc" id="L227">                .status(HttpStatus.NOT_FOUND)</span>
+<span class="nc" id="L228">                .body(respuesta);</span>
+    }
+            
+            // =================================================
+           // ARGUMENTOS INVÁLIDOS
+           // =================================================
+
+@ExceptionHandler(IllegalArgumentException.class)
+public ResponseEntity&lt;Map&lt;String, Object&gt;&gt;
+        manejarArgumentoInvalido(
+                IllegalArgumentException ex,
+                HttpServletRequest request) {
+
+<span class="fc" id="L241">    Map&lt;String, Object&gt; respuesta =</span>
+            new LinkedHashMap&lt;&gt;();
+
+<span class="fc" id="L244">    respuesta.put(&quot;timestamp&quot;, LocalDateTime.now());</span>
+<span class="fc" id="L245">    respuesta.put(&quot;status&quot;, HttpStatus.BAD_REQUEST.value());</span>
+<span class="fc" id="L246">    respuesta.put(&quot;error&quot;, HttpStatus.BAD_REQUEST.getReasonPhrase());</span>
+<span class="fc" id="L247">    respuesta.put(&quot;message&quot;, ex.getMessage());</span>
+<span class="fc" id="L248">    respuesta.put(&quot;path&quot;, request.getRequestURI());</span>
+
+<span class="fc" id="L250">    return ResponseEntity</span>
+<span class="fc" id="L251">            .status(HttpStatus.BAD_REQUEST)</span>
+<span class="fc" id="L252">            .body(respuesta);</span>
+}
+        
+        // =================================================
+// CONFLICTO DE RECURSO
+// =================================================
+
+@ExceptionHandler(ResourceConflictException.class)
+public ResponseEntity&lt;Map&lt;String, Object&gt;&gt;
+        manejarConflictoRecurso(
+                ResourceConflictException ex,
+                HttpServletRequest request) {
+
+<span class="fc" id="L265">    Map&lt;String, Object&gt; respuesta =</span>
+            new LinkedHashMap&lt;&gt;();
+
+<span class="fc" id="L268">    respuesta.put(&quot;timestamp&quot;, LocalDateTime.now());</span>
+<span class="fc" id="L269">    respuesta.put(&quot;status&quot;, HttpStatus.CONFLICT.value());</span>
+<span class="fc" id="L270">    respuesta.put(&quot;error&quot;, HttpStatus.CONFLICT.getReasonPhrase());</span>
+<span class="fc" id="L271">    respuesta.put(&quot;message&quot;, ex.getMessage());</span>
+<span class="fc" id="L272">    respuesta.put(&quot;path&quot;, request.getRequestURI());</span>
+
+<span class="fc" id="L274">    return ResponseEntity</span>
+<span class="fc" id="L275">            .status(HttpStatus.CONFLICT)</span>
+<span class="fc" id="L276">            .body(respuesta);</span>
+}
+        
+        
+// =================================================
+// JSON MAL FORMADO / TIPO DE DATO INCORRECTO
+// =================================================
+
+@ExceptionHandler(HttpMessageNotReadableException.class)
+public ResponseEntity&lt;Map&lt;String, Object&gt;&gt;
+        manejarJsonInvalido(
+                HttpMessageNotReadableException ex,
+                HttpServletRequest request) {
+
+<span class="fc" id="L290">    Map&lt;String, Object&gt; respuesta =</span>
+            new LinkedHashMap&lt;&gt;();
+
+<span class="fc" id="L293">    String mensaje =</span>
+            &quot;El formato de la solicitud JSON es inválido&quot;;
+
+
+    // Verificar si el problema fue un tipo de dato incorrecto
+<span class="fc bfc" id="L298" title="All 2 branches covered.">    if (ex.getCause() instanceof InvalidFormatException invalidFormatException) {</span>
+
+<span class="fc" id="L300">        String campo = &quot;desconocido&quot;;</span>
+
+<span class="pc bpc" id="L302" title="1 of 2 branches missed.">        if (!invalidFormatException.getPath().isEmpty()) {</span>
+
+<span class="fc" id="L304">            campo = invalidFormatException</span>
+<span class="fc" id="L305">                    .getPath()</span>
+<span class="fc" id="L306">                    .getFirst()</span>
+<span class="fc" id="L307">                    .getPropertyName();</span>
+        }
+
+<span class="fc" id="L310">        mensaje =</span>
+                &quot;El campo '&quot; + campo
+                + &quot;' tiene un tipo de dato inválido&quot;;
+    }
+
+
+<span class="fc" id="L316">    respuesta.put(&quot;timestamp&quot;, LocalDateTime.now());</span>
+<span class="fc" id="L317">    respuesta.put(&quot;status&quot;, HttpStatus.BAD_REQUEST.value());</span>
+<span class="fc" id="L318">    respuesta.put(&quot;error&quot;, HttpStatus.BAD_REQUEST.getReasonPhrase());</span>
+<span class="fc" id="L319">    respuesta.put(&quot;message&quot;, mensaje);</span>
+<span class="fc" id="L320">    respuesta.put(&quot;path&quot;, request.getRequestURI());</span>
+
+
+<span class="fc" id="L323">    return ResponseEntity</span>
+<span class="fc" id="L324">            .status(HttpStatus.BAD_REQUEST)</span>
+<span class="fc" id="L325">            .body(respuesta);</span>
+}
+        
+        // =================================================
+// CREDENCIALES INCORRECTAS
+// =================================================
+
+@ExceptionHandler(BadCredentialsException.class)
+public ResponseEntity&lt;Map&lt;String, Object&gt;&gt;
+        manejarCredencialesInvalidas(
+                BadCredentialsException ex,
+                HttpServletRequest request) {
+
+<span class="fc" id="L338">    Map&lt;String, Object&gt; respuesta =</span>
+            new LinkedHashMap&lt;&gt;();
+
+<span class="fc" id="L341">    respuesta.put(&quot;timestamp&quot;, LocalDateTime.now());</span>
+<span class="fc" id="L342">    respuesta.put(&quot;status&quot;, HttpStatus.UNAUTHORIZED.value());</span>
+<span class="fc" id="L343">    respuesta.put(&quot;error&quot;, HttpStatus.UNAUTHORIZED.getReasonPhrase());</span>
+<span class="fc" id="L344">    respuesta.put(&quot;message&quot;, &quot;Credenciales inválidas&quot;);</span>
+<span class="fc" id="L345">    respuesta.put(&quot;path&quot;, request.getRequestURI());</span>
+
+<span class="fc" id="L347">    return ResponseEntity</span>
+<span class="fc" id="L348">            .status(HttpStatus.UNAUTHORIZED)</span>
+<span class="fc" id="L349">            .body(respuesta);</span>
+}
+
+    // =================================================
+    // ERRORES NO CONTROLADOS
+    // =================================================
+
+@ExceptionHandler(Exception.class)
+public ResponseEntity&lt;Map&lt;String, Object&gt;&gt;
+        manejarErrorGeneral(
+                Exception ex,
+                HttpServletRequest request) {
+
+<span class="nc" id="L362">    logger.error(</span>
+            &quot;Error no controlado en {}&quot;,
+<span class="nc" id="L364">            request.getRequestURI(),</span>
+            ex
+    );
+
+<span class="nc" id="L368">    Map&lt;String, Object&gt; respuesta =</span>
+            new LinkedHashMap&lt;&gt;();
+
+<span class="nc" id="L371">    respuesta.put(&quot;timestamp&quot;, LocalDateTime.now());</span>
+<span class="nc" id="L372">    respuesta.put(&quot;status&quot;, HttpStatus.INTERNAL_SERVER_ERROR.value());</span>
+<span class="nc" id="L373">    respuesta.put(&quot;error&quot;, HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());</span>
+<span class="nc" id="L374">    respuesta.put(&quot;message&quot;, &quot;Ocurrió un error interno en el servidor&quot;);</span>
+<span class="nc" id="L375">    respuesta.put(&quot;path&quot;, request.getRequestURI());</span>
+
+<span class="nc" id="L377">    return ResponseEntity</span>
+<span class="nc" id="L378">            .status(HttpStatus.INTERNAL_SERVER_ERROR)</span>
+<span class="nc" id="L379">            .body(respuesta);</span>
+}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

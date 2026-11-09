@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CitaReservadaListener.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">citas-backend</a> &gt; <a href="index.source.html" class="el_package">com.proyectocitas.service</a> &gt; <span class="el_source">CitaReservadaListener.java</span></div><h1>CitaReservadaListener.java</h1><pre class="source lang-java linenums">package com.proyectocitas.service;
+
+import com.proyectocitas.model.Notificacion;
+import com.proyectocitas.repository.NotificacionRepository;
+import com.proyectocitas.repository.UsuarioRepository;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
+
+@Component
+public class CitaReservadaListener {
+
+<span class="fc" id="L18">    private static final Logger logger =</span>
+<span class="fc" id="L19">            LoggerFactory.getLogger(CitaReservadaListener.class);</span>
+
+    private final NotificacionRepository notificacionRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final MailService mailService;
+
+    public CitaReservadaListener(
+            NotificacionRepository notificacionRepository,
+            UsuarioRepository usuarioRepository,
+<span class="fc" id="L28">            MailService mailService) {</span>
+
+<span class="fc" id="L30">        this.notificacionRepository = notificacionRepository;</span>
+<span class="fc" id="L31">        this.usuarioRepository = usuarioRepository;</span>
+<span class="fc" id="L32">        this.mailService = mailService;</span>
+<span class="fc" id="L33">    }</span>
+
+    // ==============================================
+    // GUARDAR AVISO AL MEDICO
+    // ANTES DE CONFIRMAR LA TRANSACCION
+    // ==============================================
+
+    @TransactionalEventListener(
+            phase = TransactionPhase.BEFORE_COMMIT
+    )
+    public void guardarNotificacion(CitaReservadaEvent evento) {
+
+<span class="fc" id="L45">        Notificacion notificacion = new Notificacion();</span>
+
+<span class="fc" id="L47">        notificacion.setDestinatario(</span>
+<span class="fc" id="L48">                usuarioRepository.getReferenceById(</span>
+<span class="fc" id="L49">                        evento.idUsuarioMedico()</span>
+                )
+        );
+
+<span class="fc" id="L53">        notificacion.setTitulo(&quot;Nueva cita reservada&quot;);</span>
+
+<span class="fc" id="L55">        notificacion.setMensaje(</span>
+                &quot;Tienes una nueva cita para el &quot;
+<span class="fc" id="L57">                + evento.fecha()</span>
+                + &quot; a las &quot;
+<span class="fc" id="L59">                + evento.horaInicio()</span>
+        );
+
+<span class="fc" id="L62">        notificacion.setTipo(</span>
+                Notificacion.Tipo.CITA_RESERVADA
+        );
+
+<span class="fc" id="L66">        notificacion.setLeida(false);</span>
+
+<span class="fc" id="L68">        notificacionRepository.save(notificacion);</span>
+<span class="fc" id="L69">    }</span>
+
+    // ==============================================
+    // ENVIAR CORREO DESPUES DEL COMMIT
+    // ==============================================
+
+    @Async(&quot;notificationMailExecutor&quot;)
+    @TransactionalEventListener(
+            phase = TransactionPhase.AFTER_COMMIT
+    )
+    public void enviarConfirmacion(CitaReservadaEvent evento) {
+
+        try {
+
+<span class="fc" id="L83">            String asunto = &quot;CitaNova - Reserva de cita registrada&quot;;</span>
+
+<span class="fc" id="L85">            String mensaje =</span>
+                    &quot;Tu cita ha sido registrada correctamente.\n\n&quot;
+<span class="fc" id="L87">                    + &quot;Numero de cita: &quot; + evento.idCita()</span>
+<span class="fc" id="L88">                    + &quot;\nFecha: &quot; + evento.fecha()</span>
+<span class="fc" id="L89">                    + &quot;\nHora: &quot; + evento.horaInicio()</span>
+                    + &quot;\n\nPuedes consultar los detalles en CitaNova.&quot;
+                    + &quot;\n\nGracias por utilizar nuestro sistema.&quot;;
+
+<span class="fc" id="L93">            mailService.send(</span>
+<span class="fc" id="L94">                    evento.correoPaciente(),</span>
+                    asunto,
+                    mensaje
+            );
+
+<span class="fc" id="L99">        } catch (Exception ex) {</span>
+
+            // No mostrar direcciones de correo ni datos sensibles
+<span class="fc" id="L102">            logger.warn(</span>
+                    &quot;No se pudo enviar una confirmacion de cita&quot;
+            );
+<span class="fc" id="L105">        }</span>
+<span class="fc" id="L106">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

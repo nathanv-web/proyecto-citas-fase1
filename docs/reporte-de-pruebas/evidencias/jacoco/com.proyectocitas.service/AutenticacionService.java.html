@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AutenticacionService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">citas-backend</a> &gt; <a href="index.source.html" class="el_package">com.proyectocitas.service</a> &gt; <span class="el_source">AutenticacionService.java</span></div><h1>AutenticacionService.java</h1><pre class="source lang-java linenums">package com.proyectocitas.service;
+
+import com.proyectocitas.model.Usuario;
+import com.proyectocitas.repository.UsuarioRepository;
+import com.proyectocitas.dto.request.PasswordChangeRequestDTO;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
+import java.time.LocalDateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
+
+@Service
+public class AutenticacionService {
+<span class="fc" id="L19">    private static final Logger logger = LoggerFactory.getLogger(AutenticacionService.class);</span>
+    private final UsuarioRepository repository;
+    private final PasswordEncoder encoder;
+    private final String hashSimulado;
+    private final EntityManager entityManager;
+
+<span class="fc" id="L25">    public AutenticacionService(UsuarioRepository repository, PasswordEncoder encoder, EntityManager entityManager) {</span>
+<span class="fc" id="L26">        this.repository = repository;</span>
+<span class="fc" id="L27">        this.encoder = encoder;</span>
+<span class="fc" id="L28">        this.entityManager = entityManager;</span>
+<span class="fc" id="L29">        this.hashSimulado = encoder.encode(java.util.UUID.randomUUID().toString());</span>
+<span class="fc" id="L30">    }</span>
+
+    // Conservar el contador incluso cuando se rechazan las credenciales.
+    @Transactional(noRollbackFor = ResponseStatusException.class)
+    public Usuario autenticar(String correo, String password) {
+<span class="fc bfc" id="L35" title="All 2 branches covered.">        Usuario usuario = correo == null ? null : repository.findByCorreo(correo).orElse(null);</span>
+        // refresh adquiere el bloqueo y reemplaza cualquier copia anterior de JWT/OSIV.
+<span class="fc bfc" id="L37" title="All 2 branches covered.">        if (usuario != null) entityManager.refresh(usuario, LockModeType.PESSIMISTIC_WRITE);</span>
+<span class="fc bfc" id="L38" title="All 2 branches covered.">        boolean coincide = encoder.matches(password == null ? &quot;&quot; : password,</span>
+<span class="fc bfc" id="L39" title="All 2 branches covered.">                usuario == null ? hashSimulado : usuario.getPassword());</span>
+<span class="fc bfc" id="L40" title="All 6 branches covered.">        if (usuario == null || !usuario.isEnabled() || !usuario.isAccountNonLocked()) {</span>
+<span class="fc" id="L41">            logger.warn(&quot;Autenticación rechazada&quot;);</span>
+<span class="fc" id="L42">            throw credencialesInvalidas();</span>
+        }
+<span class="fc bfc" id="L44" title="All 2 branches covered.">        if (!coincide) {</span>
+<span class="fc" id="L45">            registrarFallo(usuario);</span>
+<span class="fc" id="L46">            throw credencialesInvalidas();</span>
+        }
+<span class="fc" id="L48">        usuario.setIntentosFallidos(0);</span>
+<span class="fc" id="L49">        usuario.setBloqueadoHasta(null);</span>
+<span class="fc" id="L50">        repository.save(usuario);</span>
+<span class="fc" id="L51">        logger.info(&quot;Autenticación correcta para usuario {}&quot;, usuario.getIdUsuario());</span>
+<span class="fc" id="L52">        return usuario;</span>
+    }
+
+    @Transactional(noRollbackFor = ResponseStatusException.class)
+    public void cambiarPassword(String correo, PasswordChangeRequestDTO request) {
+<span class="fc" id="L57">        Usuario usuario = repository.findByCorreo(correo).orElseThrow(this::credencialesInvalidas);</span>
+<span class="fc" id="L58">        entityManager.refresh(usuario, LockModeType.PESSIMISTIC_WRITE);</span>
+<span class="fc bfc" id="L59" title="All 4 branches covered.">        if (!usuario.isEnabled() || !usuario.isAccountNonLocked()) throw credencialesInvalidas();</span>
+<span class="fc bfc" id="L60" title="All 2 branches covered.">        if (!encoder.matches(request.getActual(), usuario.getPassword())) {</span>
+<span class="fc" id="L61">            registrarFallo(usuario);</span>
+<span class="fc" id="L62">            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, &quot;La contraseña actual es incorrecta&quot;);</span>
+        }
+<span class="fc bfc" id="L64" title="All 2 branches covered.">        if (encoder.matches(request.getNueva(), usuario.getPassword())) {</span>
+<span class="fc" id="L65">            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, &quot;La nueva contraseña debe ser diferente de la actual&quot;);</span>
+        }
+<span class="fc bfc" id="L67" title="All 2 branches covered.">        if (request.getNueva().getBytes(java.nio.charset.StandardCharsets.UTF_8).length &gt; 72) {</span>
+<span class="fc" id="L68">            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, &quot;La contraseña supera el límite de 72 bytes UTF-8&quot;);</span>
+        }
+<span class="fc" id="L70">        usuario.setContraseña(encoder.encode(request.getNueva()));</span>
+<span class="fc" id="L71">        usuario.setDebeCambiarPassword(false);</span>
+<span class="fc" id="L72">        usuario.setIntentosFallidos(0);</span>
+<span class="fc" id="L73">        usuario.setBloqueadoHasta(null);</span>
+<span class="fc" id="L74">        usuario.setVersionSesion(usuario.getVersionSesion() + 1);</span>
+<span class="fc" id="L75">        repository.save(usuario);</span>
+<span class="fc" id="L76">        logger.info(&quot;Contraseña actualizada y sesiones invalidadas para usuario {}&quot;, usuario.getIdUsuario());</span>
+<span class="fc" id="L77">    }</span>
+
+    private void registrarFallo(Usuario usuario) {
+<span class="fc" id="L80">        int intentos = usuario.getIntentosFallidos() + 1;</span>
+<span class="fc" id="L81">        usuario.setIntentosFallidos(intentos);</span>
+<span class="fc bfc" id="L82" title="All 2 branches covered.">        if (intentos &gt;= 5) {</span>
+<span class="fc" id="L83">            long minutos = Math.min(60, 1L &lt;&lt; Math.min(6, (intentos - 5) / 5));</span>
+<span class="fc" id="L84">            usuario.setBloqueadoHasta(LocalDateTime.now().plusMinutes(minutos));</span>
+        }
+<span class="fc" id="L86">        repository.save(usuario);</span>
+<span class="fc" id="L87">        logger.warn(&quot;Verificación de credenciales rechazada para usuario {}&quot;, usuario.getIdUsuario());</span>
+<span class="fc" id="L88">    }</span>
+
+    private ResponseStatusException credencialesInvalidas() {
+<span class="fc" id="L91">        return new ResponseStatusException(HttpStatus.UNAUTHORIZED, &quot;Credenciales inválidas o acceso temporalmente no disponible&quot;);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

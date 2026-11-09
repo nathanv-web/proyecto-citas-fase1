@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CitaPacienteListener.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">citas-backend</a> &gt; <a href="index.source.html" class="el_package">com.proyectocitas.service</a> &gt; <span class="el_source">CitaPacienteListener.java</span></div><h1>CitaPacienteListener.java</h1><pre class="source lang-java linenums">package com.proyectocitas.service;
+
+import com.proyectocitas.model.Cita;
+import com.proyectocitas.model.Notificacion;
+import com.proyectocitas.repository.CitaRepository;
+import com.proyectocitas.repository.NotificacionRepository;
+import java.time.format.DateTimeFormatter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
+
+@Component
+public class CitaPacienteListener {
+<span class="fc" id="L18">    private static final Logger logger = LoggerFactory.getLogger(CitaPacienteListener.class);</span>
+<span class="fc" id="L19">    private static final DateTimeFormatter FECHA = DateTimeFormatter.ofPattern(&quot;dd/MM/yyyy&quot;);</span>
+<span class="fc" id="L20">    private static final DateTimeFormatter HORA = DateTimeFormatter.ofPattern(&quot;HH:mm&quot;);</span>
+
+    private final CitaRepository citas;
+    private final NotificacionRepository notificaciones;
+    private final ApplicationEventPublisher eventos;
+    private final MailService correo;
+
+    public CitaPacienteListener(CitaRepository citas, NotificacionRepository notificaciones,
+<span class="fc" id="L28">            ApplicationEventPublisher eventos, MailService correo) {</span>
+<span class="fc" id="L29">        this.citas = citas;</span>
+<span class="fc" id="L30">        this.notificaciones = notificaciones;</span>
+<span class="fc" id="L31">        this.eventos = eventos;</span>
+<span class="fc" id="L32">        this.correo = correo;</span>
+<span class="fc" id="L33">    }</span>
+
+    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
+    public void guardarAviso(CitaPacienteEvent evento) {
+<span class="fc" id="L37">        Cita cita = citas.findById(evento.idCita()).orElseThrow();</span>
+<span class="fc" id="L38">        String detalle = &quot;cita #&quot; + cita.getIdCita() + &quot; del &quot;</span>
+<span class="fc" id="L39">                + cita.getHorario().getFecha().format(FECHA) + &quot; a las &quot;</span>
+<span class="fc" id="L40">                + cita.getHorario().getHoraInicio().format(HORA);</span>
+        String titulo;
+        String mensaje;
+<span class="pc bpc" id="L43" title="5 of 6 branches missed.">        switch (evento.tipo()) {</span>
+            case CITA_RESERVADA -&gt; {
+<span class="fc" id="L45">                titulo = &quot;Cita confirmada&quot;;</span>
+<span class="fc" id="L46">                mensaje = &quot;Tu &quot; + detalle + &quot; ha sido reservada correctamente.&quot;;</span>
+<span class="fc" id="L47">            }</span>
+            case CITA_REPROGRAMADA -&gt; {
+<span class="nc" id="L49">                titulo = &quot;Cita reprogramada&quot;;</span>
+<span class="nc" id="L50">                mensaje = &quot;Tu cita fue reprogramada. El nuevo horario corresponde a la &quot; + detalle + &quot;.&quot;;</span>
+<span class="nc" id="L51">            }</span>
+            case CITA_CANCELADA -&gt; {
+<span class="nc" id="L53">                titulo = &quot;Cita cancelada&quot;;</span>
+<span class="nc" id="L54">                mensaje = &quot;Tu &quot; + detalle + &quot; ha sido cancelada.&quot;;</span>
+<span class="nc" id="L55">            }</span>
+            case DIAGNOSTICO_DISPONIBLE -&gt; {
+<span class="nc" id="L57">                titulo = &quot;Diagnóstico disponible&quot;;</span>
+<span class="nc" id="L58">                mensaje = &quot;El diagnóstico de tu &quot; + detalle</span>
+                        + &quot; ya está disponible. Inicia sesión y consulta tu historial.&quot;;
+<span class="nc" id="L60">            }</span>
+            case RECORDATORIO_CITA -&gt; {
+<span class="nc" id="L62">                titulo = &quot;Recordatorio de cita&quot;;</span>
+<span class="nc" id="L63">                mensaje = &quot;Recuerda tu &quot; + detalle + &quot;. Tu atención será en las próximas 24 horas.&quot;;</span>
+<span class="nc" id="L64">            }</span>
+<span class="nc" id="L65">            default -&gt; throw new IllegalArgumentException(&quot;Tipo de aviso de cita no admitido&quot;);</span>
+        }
+
+<span class="fc" id="L68">        Notificacion aviso = new Notificacion();</span>
+<span class="fc" id="L69">        aviso.setDestinatario(cita.getPaciente());</span>
+<span class="fc" id="L70">        aviso.setTitulo(titulo);</span>
+<span class="fc" id="L71">        aviso.setMensaje(mensaje);</span>
+<span class="fc" id="L72">        aviso.setTipo(evento.tipo());</span>
+<span class="fc" id="L73">        notificaciones.save(aviso);</span>
+
+        // La reserva ya envía una confirmación desde CitaReservadaListener.
+<span class="pc bpc" id="L76" title="1 of 2 branches missed.">        if (evento.tipo() != Notificacion.Tipo.CITA_RESERVADA) {</span>
+<span class="nc" id="L77">            eventos.publishEvent(new CorreoPacienteEvent(cita.getPaciente().getCorreo(), titulo, mensaje));</span>
+        }
+<span class="fc" id="L79">    }</span>
+
+    @Async(&quot;notificationMailExecutor&quot;)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void enviarCorreo(CorreoPacienteEvent evento) {
+        try {
+<span class="nc" id="L85">            correo.send(evento.destinatario(), &quot;CitaNova - &quot; + evento.titulo(), evento.mensaje());</span>
+<span class="nc" id="L86">        } catch (Exception ex) {</span>
+<span class="nc" id="L87">            logger.warn(&quot;No se pudo enviar por correo un aviso de cita al paciente&quot;);</span>
+<span class="nc" id="L88">        }</span>
+<span class="nc" id="L89">    }</span>
+
+<span class="nc" id="L91">    public record CorreoPacienteEvent(String destinatario, String titulo, String mensaje) {</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

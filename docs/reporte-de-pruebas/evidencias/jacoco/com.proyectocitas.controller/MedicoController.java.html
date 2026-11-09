@@ -1,0 +1,358 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MedicoController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">citas-backend</a> &gt; <a href="index.source.html" class="el_package">com.proyectocitas.controller</a> &gt; <span class="el_source">MedicoController.java</span></div><h1>MedicoController.java</h1><pre class="source lang-java linenums">package com.proyectocitas.controller;
+
+import java.util.Locale;
+import org.springframework.web.server.ResponseStatusException;
+
+import com.proyectocitas.dto.response.MedicoResponseDTO;
+import com.proyectocitas.dto.request.MedicoCreateRequestDTO;
+
+import com.proyectocitas.exception.DuplicateResourceException;
+import com.proyectocitas.exception.ResourceNotFoundException;
+
+import com.proyectocitas.mapper.MedicoMapper;
+
+import com.proyectocitas.model.Especialidad;
+import com.proyectocitas.model.Medico;
+import com.proyectocitas.model.Usuario;
+
+import com.proyectocitas.repository.EspecialidadRepository;
+import com.proyectocitas.repository.MedicoRepository;
+import com.proyectocitas.repository.UsuarioRepository;
+import com.proyectocitas.service.MedicoService;
+import com.proyectocitas.dto.request.MedicoUpdateRequestDTO;
+
+import jakarta.validation.Valid;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import org.springframework.dao.DataIntegrityViolationException;
+
+@RestController
+@RequestMapping(&quot;/api/v1/medicos&quot;)
+public class MedicoController {
+
+    private final MedicoRepository medicoRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final EspecialidadRepository especialidadRepository;
+    private final MedicoMapper medicoMapper;
+    private final MedicoService medicoService;
+
+
+    public MedicoController(
+            MedicoRepository medicoRepository,
+            UsuarioRepository usuarioRepository,
+            EspecialidadRepository especialidadRepository,
+            MedicoMapper medicoMapper,
+<span class="fc" id="L49">            MedicoService medicoService) {</span>
+
+<span class="fc" id="L51">        this.medicoRepository =</span>
+                medicoRepository;
+
+<span class="fc" id="L54">        this.usuarioRepository =</span>
+                usuarioRepository;
+
+<span class="fc" id="L57">        this.especialidadRepository =</span>
+                especialidadRepository;
+
+<span class="fc" id="L60">        this.medicoMapper =</span>
+                medicoMapper;
+
+<span class="fc" id="L63">        this.medicoService = medicoService;</span>
+<span class="fc" id="L64">    }</span>
+
+
+    // =================================================
+// LISTAR Y BUSCAR MÉDICOS
+// =================================================
+
+@GetMapping
+public List&lt;MedicoResponseDTO&gt; obtenerMedicos(
+        @RequestParam(name = &quot;search&quot;, required = false)
+        String search,
+
+        @RequestParam(name = &quot;especialidad&quot;, required = false)
+        String especialidad,
+
+        @RequestParam(name = &quot;estado&quot;, required = false)
+        String estado) {
+
+    // Normalizar los datos de búsqueda
+<span class="nc" id="L83">    String textoBusqueda = normalizar(search);</span>
+<span class="nc" id="L84">    String filtroEspecialidad = normalizar(especialidad);</span>
+
+    // Validar el estado del médico
+<span class="nc" id="L87">    Medico.EstadoMedico filtroEstado = null;</span>
+
+<span class="nc bnc" id="L89" title="All 4 branches missed.">    if (estado != null &amp;&amp; !estado.isBlank()) {</span>
+        try {
+<span class="nc" id="L91">            filtroEstado = Medico.EstadoMedico.valueOf(</span>
+<span class="nc" id="L92">                    estado.trim().toUpperCase(Locale.ROOT)</span>
+            );
+
+<span class="nc" id="L95">        } catch (IllegalArgumentException ex) {</span>
+<span class="nc" id="L96">            throw new ResponseStatusException(</span>
+                    HttpStatus.BAD_REQUEST,
+                    &quot;El estado debe ser ACTIVO o INACTIVO&quot;
+            );
+<span class="nc" id="L100">        }</span>
+    }
+
+    // Consultar médicos aplicando los filtros
+<span class="nc" id="L104">    return medicoRepository.buscarConFiltros(</span>
+                    textoBusqueda,
+                    filtroEspecialidad,
+                    filtroEstado
+            )
+<span class="nc" id="L109">            .stream()</span>
+<span class="nc" id="L110">            .map(medicoMapper::toDTO)</span>
+<span class="nc" id="L111">            .toList();</span>
+}
+
+// Normalizar textos para las búsquedas
+private static String normalizar(String texto) {
+<span class="nc bnc" id="L116" title="All 2 branches missed.">    return texto == null</span>
+<span class="nc" id="L117">            ? &quot;&quot;</span>
+<span class="nc" id="L118">            : texto.trim().toLowerCase(Locale.ROOT);</span>
+}
+
+
+    // =================================================
+    // BUSCAR MÉDICO POR ID
+    // =================================================
+
+    @GetMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;MedicoResponseDTO&gt;
+            obtenerMedicoPorId(
+                    @PathVariable Long id) {
+
+<span class="nc" id="L131">        Medico medico =</span>
+                medicoRepository
+<span class="nc" id="L133">                        .findById(id)</span>
+<span class="nc" id="L134">                        .orElseThrow(() -&gt;</span>
+<span class="nc" id="L135">                                new ResourceNotFoundException(</span>
+                                        &quot;El médico indicado no existe&quot;
+                                )
+                        );
+
+<span class="nc" id="L140">        return ResponseEntity.ok(</span>
+<span class="nc" id="L141">                medicoMapper.toDTO(medico)</span>
+        );
+    }
+
+
+    // =================================================
+    // CREAR MÉDICO
+    // =================================================
+
+    @PostMapping
+    public ResponseEntity&lt;MedicoResponseDTO&gt;
+            crearMedico(
+                    @Valid
+                    @RequestBody
+                    MedicoCreateRequestDTO request) {
+
+
+        // ---------------------------------------------
+        // VALIDAR USUARIO DUPLICADO
+        // ---------------------------------------------
+
+<span class="fc" id="L162">        if (medicoRepository</span>
+<span class="fc" id="L163">                .findByUsuario_IdUsuario(</span>
+<span class="fc" id="L164">                        request.getIdUsuario()</span>
+                )
+<span class="fc bfc" id="L166" title="All 2 branches covered.">                .isPresent()) {</span>
+
+<span class="fc" id="L168">            throw new DuplicateResourceException(</span>
+                    &quot;El usuario ya tiene un perfil de médico&quot;
+            );
+        }
+
+
+        // ---------------------------------------------
+        // VALIDAR COLEGIADO DUPLICADO
+        // ---------------------------------------------
+
+<span class="fc" id="L178">        String colegiado =</span>
+                request
+<span class="fc" id="L180">                        .getColegiado()</span>
+<span class="fc" id="L181">                        .trim();</span>
+
+<span class="fc" id="L183">        if (medicoRepository</span>
+<span class="fc" id="L184">                .findByColegiadoIgnoreCase(</span>
+                        colegiado
+                )
+<span class="pc bpc" id="L187" title="1 of 2 branches missed.">                .isPresent()) {</span>
+
+<span class="nc" id="L189">            throw new DuplicateResourceException(</span>
+                    &quot;Ya existe un médico con ese número de colegiado&quot;
+            );
+        }
+
+
+        // ---------------------------------------------
+        // BUSCAR USUARIO
+        // ---------------------------------------------
+
+<span class="fc" id="L199">        Usuario usuario =</span>
+                usuarioRepository
+<span class="fc" id="L201">                        .findById(</span>
+<span class="fc" id="L202">                                request.getIdUsuario()</span>
+                        )
+<span class="fc" id="L204">                        .orElseThrow(() -&gt;</span>
+<span class="fc" id="L205">                                new ResourceNotFoundException(</span>
+                                        &quot;El usuario indicado no existe&quot;
+                                )
+                        );
+
+
+        // ---------------------------------------------
+        // BUSCAR ESPECIALIDAD
+        // ---------------------------------------------
+
+<span class="fc" id="L215">        Especialidad especialidad =</span>
+                especialidadRepository
+<span class="fc" id="L217">                        .findById(</span>
+<span class="fc" id="L218">                                request.getIdEspecialidad()</span>
+                        )
+<span class="fc" id="L220">                        .orElseThrow(() -&gt;</span>
+<span class="fc" id="L221">                                new ResourceNotFoundException(</span>
+                                        &quot;La especialidad indicada no existe&quot;
+                                )
+                        );
+
+
+        // ---------------------------------------------
+        // DTO -&gt; ENTIDAD
+        // ---------------------------------------------
+
+<span class="fc" id="L231">        Medico medico =</span>
+<span class="fc" id="L232">                medicoMapper.toEntity(request);</span>
+
+<span class="fc" id="L234">        medico.setColegiado(colegiado);</span>
+<span class="fc" id="L235">        medico.setUsuario(usuario);</span>
+<span class="fc" id="L236">        medico.setEspecialidad(especialidad);</span>
+
+<span class="fc" id="L238">        medico.setEstado(</span>
+                Medico.EstadoMedico.ACTIVO
+        );
+
+
+        Medico guardado;
+        try {
+<span class="nc" id="L245">            guardado = medicoService.crearConRolDoctor(medico);</span>
+<span class="fc" id="L246">        } catch (DataIntegrityViolationException ex) {</span>
+<span class="pc bpc" id="L247" title="1 of 2 branches missed.">            if (medicoRepository.findByColegiadoIgnoreCase(colegiado).isPresent()) {</span>
+<span class="fc" id="L248">                throw new DuplicateResourceException(</span>
+                        &quot;Ya existe un médico con ese número de colegiado&quot;);
+            }
+<span class="nc bnc" id="L251" title="All 2 branches missed.">            if (medicoRepository.findByUsuario_IdUsuario(request.getIdUsuario()).isPresent()) {</span>
+<span class="nc" id="L252">                throw new DuplicateResourceException(</span>
+                        &quot;El usuario ya tiene un perfil de médico&quot;);
+            }
+<span class="nc" id="L255">            throw ex;</span>
+<span class="nc" id="L256">        }</span>
+
+
+<span class="nc" id="L259">        return ResponseEntity</span>
+<span class="nc" id="L260">                .status(HttpStatus.CREATED)</span>
+<span class="nc" id="L261">                .body(</span>
+<span class="nc" id="L262">                        medicoMapper.toDTO(</span>
+                                guardado
+                        )
+                );
+    }
+
+            //====================================
+            // ACTUALIZAR MEDICO
+            //====================================
+
+
+@PutMapping(&quot;/{id}&quot;)
+public ResponseEntity&lt;MedicoResponseDTO&gt; actualizarMedico(
+        @PathVariable Long id,
+        @Valid @RequestBody MedicoUpdateRequestDTO request) {
+
+<span class="nc" id="L278">    Medico medico = medicoRepository.findById(id)</span>
+<span class="nc" id="L279">            .orElseThrow(() -&gt; new ResourceNotFoundException(</span>
+                    &quot;El médico indicado no existe&quot;));
+
+<span class="nc bnc" id="L282" title="All 2 branches missed.">    if (request.idUsuario() != null) {</span>
+<span class="nc" id="L283">        medicoRepository.findByUsuario_IdUsuario(request.idUsuario())</span>
+<span class="nc" id="L284">                .ifPresent(existente -&gt; {</span>
+<span class="nc bnc" id="L285" title="All 2 branches missed.">                    if (!id.equals(existente.getIdMedico())) {</span>
+<span class="nc" id="L286">                        throw new DuplicateResourceException(</span>
+                                &quot;El usuario ya tiene un perfil de médico&quot;);
+                    }
+<span class="nc" id="L289">                });</span>
+
+<span class="nc" id="L291">        Usuario usuario = usuarioRepository.findById(request.idUsuario())</span>
+<span class="nc" id="L292">                .orElseThrow(() -&gt; new ResourceNotFoundException(</span>
+                        &quot;El usuario indicado no existe&quot;));
+
+<span class="nc" id="L295">        medico.setUsuario(usuario);</span>
+    }
+
+<span class="nc bnc" id="L298" title="All 2 branches missed.">    if (request.idEspecialidad() != null) {</span>
+<span class="nc" id="L299">        Especialidad especialidad = especialidadRepository</span>
+<span class="nc" id="L300">                .findById(request.idEspecialidad())</span>
+<span class="nc" id="L301">                .orElseThrow(() -&gt; new ResourceNotFoundException(</span>
+                        &quot;La especialidad indicada no existe&quot;));
+
+<span class="nc" id="L304">        medico.setEspecialidad(especialidad);</span>
+    }
+
+<span class="nc bnc" id="L307" title="All 2 branches missed.">    if (request.colegiado() != null)</span>
+<span class="nc" id="L308">        medico.setColegiado(request.colegiado());</span>
+
+<span class="nc bnc" id="L310" title="All 2 branches missed.">    if (request.aniosExperiencia() != null)</span>
+<span class="nc" id="L311">        medico.setAniosExperiencia(request.aniosExperiencia());</span>
+
+<span class="nc bnc" id="L313" title="All 2 branches missed.">    if (request.biografia() != null)</span>
+<span class="nc" id="L314">        medico.setBiografia(request.biografia());</span>
+<span class="nc bnc" id="L315" title="All 2 branches missed.">    if (request.estado() != null) {</span>
+<span class="nc" id="L316">        medico.setEstado(request.estado());</span>
+    }
+
+<span class="nc" id="L319">    return ResponseEntity.ok(</span>
+<span class="nc" id="L320">            medicoMapper.toDTO(medicoRepository.save(medico)));</span>
+}
+
+    // =================================================
+    // DESACTIVAR MÉDICO
+    // =================================================
+
+    @DeleteMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;Void&gt;
+            eliminarMedico(
+                    @PathVariable Long id) {
+
+<span class="nc" id="L332">        Medico medico =</span>
+                medicoRepository
+<span class="nc" id="L334">                        .findById(id)</span>
+<span class="nc" id="L335">                        .orElseThrow(() -&gt;</span>
+<span class="nc" id="L336">                                new ResourceNotFoundException(</span>
+                                        &quot;El médico indicado no existe&quot;
+                                )
+                        );
+
+
+        /*
+         * No eliminamos físicamente al médico porque
+         * puede tener horarios y citas asociadas.
+         */
+<span class="nc" id="L346">        medico.setEstado(</span>
+                Medico.EstadoMedico.INACTIVO
+        );
+
+<span class="nc" id="L350">        medicoRepository.save(medico);</span>
+
+
+<span class="nc" id="L353">        return ResponseEntity</span>
+<span class="nc" id="L354">                .noContent()</span>
+<span class="nc" id="L355">                .build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

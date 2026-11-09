@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EspecialidadServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">citas-backend</a> &gt; <a href="index.source.html" class="el_package">com.proyectocitas.service.Impl</a> &gt; <span class="el_source">EspecialidadServiceImpl.java</span></div><h1>EspecialidadServiceImpl.java</h1><pre class="source lang-java linenums">package com.proyectocitas.service.Impl;
+
+import com.proyectocitas.exception.DuplicateResourceException;
+import com.proyectocitas.exception.ResourceNotFoundException;
+import com.proyectocitas.exception.ResourceConflictException;
+
+import com.proyectocitas.model.Especialidad;
+import com.proyectocitas.model.Medico;
+
+import com.proyectocitas.repository.EspecialidadRepository;
+
+import com.proyectocitas.service.EspecialidadService;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class EspecialidadServiceImpl
+        implements EspecialidadService {
+
+    private final EspecialidadRepository especialidadRepository;
+
+
+    // =================================================
+    // CONSTRUCTOR
+    // =================================================
+
+    public EspecialidadServiceImpl(
+            EspecialidadRepository especialidadRepository
+<span class="fc" id="L33">    ) {</span>
+
+<span class="fc" id="L35">        this.especialidadRepository =</span>
+                especialidadRepository;
+<span class="fc" id="L37">    }</span>
+
+
+    // =================================================
+    // LISTAR TODAS
+    // =================================================
+
+    @Override
+    public List&lt;Especialidad&gt; obtenerTodos() {
+
+<span class="fc" id="L47">        return especialidadRepository.findAll();</span>
+    }
+
+
+    // =================================================
+    // BUSCAR POR ID
+    // =================================================
+
+    @Override
+    public Optional&lt;Especialidad&gt; obtenerPorId(Long id) {
+
+<span class="fc" id="L58">        return especialidadRepository.findById(id);</span>
+    }
+
+
+    // =================================================
+    // BUSCAR POR NOMBRE
+    // =================================================
+
+    @Override
+    public Optional&lt;Especialidad&gt; obtenerPorNombre(
+            String nombre
+    ) {
+
+<span class="pc bpc" id="L71" title="1 of 2 branches missed.">        if (</span>
+                nombre == null ||
+<span class="pc bpc" id="L73" title="1 of 2 branches missed.">                nombre.isBlank()</span>
+        ) {
+
+<span class="nc" id="L76">            throw new IllegalArgumentException(</span>
+                    &quot;El nombre de la especialidad es obligatorio&quot;
+            );
+        }
+
+<span class="fc" id="L81">        return especialidadRepository</span>
+<span class="fc" id="L82">                .findFirstByNombreIgnoreCase(</span>
+<span class="fc" id="L83">                        nombre.trim()</span>
+                );
+    }
+
+
+    // =================================================
+    // CREAR ESPECIALIDAD
+    // =================================================
+
+    @Override
+    public Especialidad guardar(
+            Especialidad especialidad
+    ) {
+
+        // Validar objeto
+<span class="pc bpc" id="L98" title="1 of 2 branches missed.">        if (especialidad == null) {</span>
+
+<span class="nc" id="L100">            throw new IllegalArgumentException(</span>
+                    &quot;Los datos de la especialidad son obligatorios&quot;
+            );
+        }
+
+
+        // Validar nombre
+<span class="fc" id="L107">        if (</span>
+<span class="fc bfc" id="L108" title="All 2 branches covered.">                especialidad.getNombre() == null ||</span>
+<span class="pc bpc" id="L109" title="1 of 2 branches missed.">                especialidad.getNombre().isBlank()</span>
+        ) {
+
+<span class="fc" id="L112">            throw new IllegalArgumentException(</span>
+                    &quot;El nombre de la especialidad es obligatorio&quot;
+            );
+        }
+
+
+        // Limpiar nombre
+<span class="fc" id="L119">        String nombre =</span>
+                especialidad
+<span class="fc" id="L121">                        .getNombre()</span>
+<span class="fc" id="L122">                        .trim();</span>
+
+
+        // Verificar duplicado
+<span class="fc" id="L126">        if (</span>
+                especialidadRepository
+<span class="fc bfc" id="L128" title="All 2 branches covered.">                        .existsByNombreIgnoreCase(nombre)</span>
+        ) {
+
+<span class="fc" id="L131">            throw new DuplicateResourceException(</span>
+                    &quot;Ya existe una especialidad con el nombre: &quot;
+                            + nombre
+            );
+        }
+
+
+<span class="fc" id="L138">        especialidad.setNombre(nombre);</span>
+
+
+        // Limpiar descripción si existe
+<span class="fc" id="L142">        if (</span>
+<span class="pc bpc" id="L143" title="1 of 2 branches missed.">                especialidad.getDescripcion() != null</span>
+        ) {
+
+<span class="fc" id="L146">            especialidad.setDescripcion(</span>
+                    especialidad
+<span class="fc" id="L148">                            .getDescripcion()</span>
+<span class="fc" id="L149">                            .trim()</span>
+            );
+        }
+
+
+<span class="fc" id="L154">        return especialidadRepository</span>
+<span class="fc" id="L155">                .save(especialidad);</span>
+    }
+
+
+    // =================================================
+    // ACTUALIZAR ESPECIALIDAD
+    // =================================================
+
+    @Override
+    @Transactional
+    public Especialidad actualizar(
+            Especialidad especialidad,
+            Long id
+    ) {
+
+        // Validar ID
+<span class="pc bpc" id="L171" title="1 of 2 branches missed.">        if (id == null) {</span>
+
+<span class="nc" id="L173">            throw new IllegalArgumentException(</span>
+                    &quot;El ID de la especialidad es obligatorio&quot;
+            );
+        }
+
+
+        // Validar body
+<span class="pc bpc" id="L180" title="1 of 2 branches missed.">        if (especialidad == null) {</span>
+
+<span class="nc" id="L182">            throw new IllegalArgumentException(</span>
+                    &quot;Los datos de la especialidad son obligatorios&quot;
+            );
+        }
+
+
+        // Buscar especialidad actual
+<span class="fc" id="L189">        Especialidad especialidadDB =</span>
+                especialidadRepository
+<span class="fc" id="L191">                        .findById(id)</span>
+<span class="fc" id="L192">                        .orElseThrow(() -&gt;</span>
+<span class="fc" id="L193">                                new ResourceNotFoundException(</span>
+                                        &quot;No existe la especialidad con ID: &quot;
+                                                + id
+                                )
+                        );
+
+
+        // =================================================
+        // ACTUALIZAR NOMBRE
+        // =================================================
+
+<span class="fc" id="L204">        if (</span>
+<span class="fc bfc" id="L205" title="All 2 branches covered.">                especialidad.getNombre() != null &amp;&amp;</span>
+<span class="pc bpc" id="L206" title="1 of 2 branches missed.">                !especialidad.getNombre().isBlank()</span>
+        ) {
+
+<span class="fc" id="L209">            String nombre =</span>
+                    especialidad
+<span class="fc" id="L211">                            .getNombre()</span>
+<span class="fc" id="L212">                            .trim();</span>
+
+
+            // Comprobar que otra especialidad
+            // no tenga el mismo nombre.
+<span class="fc" id="L217">            if (</span>
+                    especialidadRepository
+<span class="fc bfc" id="L219" title="All 2 branches covered.">                            .existsByNombreIgnoreCaseAndIdEspecialidadNot(</span>
+                                    nombre,
+                                    id
+                            )
+            ) {
+
+<span class="fc" id="L225">                throw new DuplicateResourceException(</span>
+                        &quot;Ya existe una especialidad con el nombre: &quot;
+                                + nombre
+                );
+            }
+
+
+<span class="fc" id="L232">            especialidadDB.setNombre(nombre);</span>
+        }
+
+
+        // =================================================
+        // ACTUALIZAR DESCRIPCIÓN
+        // =================================================
+
+<span class="fc" id="L240">        if (</span>
+<span class="fc bfc" id="L241" title="All 2 branches covered.">                especialidad.getDescripcion() != null</span>
+        ) {
+
+<span class="fc" id="L244">            especialidadDB.setDescripcion(</span>
+                    especialidad
+<span class="fc" id="L246">                            .getDescripcion()</span>
+<span class="fc" id="L247">                            .trim()</span>
+            );
+        }
+
+
+        // =================================================
+        // ACTUALIZAR ESTADO
+        // =================================================
+
+<span class="fc" id="L256">        if (</span>
+<span class="pc bpc" id="L257" title="1 of 2 branches missed.">                especialidad.getActivo() != null</span>
+        ) {
+
+<span class="pc bpc" id="L260" title="1 of 2 branches missed.">            if (Boolean.FALSE.equals(especialidad.getActivo())) {</span>
+<span class="nc" id="L261">                validarDesactivacion(id);</span>
+            }
+
+<span class="fc" id="L264">            especialidadDB.setActivo(</span>
+<span class="fc" id="L265">                    especialidad.getActivo()</span>
+            );
+        }
+
+
+<span class="fc" id="L270">        return especialidadRepository</span>
+<span class="fc" id="L271">                .save(especialidadDB);</span>
+    }
+
+
+    // =================================================
+    // DESACTIVAR ESPECIALIDAD SIN BORRAR SUS RELACIONES
+    // =================================================
+
+    @Override
+    @Transactional
+    public void eliminar(Long id) {
+
+<span class="pc bpc" id="L283" title="1 of 2 branches missed.">        if (id == null) {</span>
+
+<span class="nc" id="L285">            throw new IllegalArgumentException(</span>
+                    &quot;El ID de la especialidad es obligatorio&quot;
+            );
+        }
+
+
+<span class="fc" id="L291">        Especialidad especialidad =</span>
+                especialidadRepository
+<span class="fc" id="L293">                        .findById(id)</span>
+<span class="fc" id="L294">                        .orElseThrow(() -&gt;</span>
+<span class="fc" id="L295">                                new ResourceNotFoundException(</span>
+                                        &quot;No existe la especialidad con ID: &quot;
+                                                + id
+                                )
+                        );
+
+
+<span class="fc" id="L302">        validarDesactivacion(id);</span>
+<span class="fc" id="L303">        especialidad.setActivo(false);</span>
+<span class="fc" id="L304">        especialidadRepository.save(especialidad);</span>
+<span class="fc" id="L305">    }</span>
+
+    private void validarDesactivacion(Long id) {
+<span class="pc bpc" id="L308" title="1 of 2 branches missed.">        if (especialidadRepository.tieneMedicosConEstado(id, Medico.EstadoMedico.ACTIVO)) {</span>
+<span class="nc" id="L309">            throw new ResourceConflictException(</span>
+                    &quot;No se puede desactivar la especialidad porque tiene médicos activos asignados&quot;
+            );
+        }
+<span class="fc" id="L313">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

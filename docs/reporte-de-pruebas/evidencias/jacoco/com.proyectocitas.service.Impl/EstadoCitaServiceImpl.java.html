@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EstadoCitaServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">citas-backend</a> &gt; <a href="index.source.html" class="el_package">com.proyectocitas.service.Impl</a> &gt; <span class="el_source">EstadoCitaServiceImpl.java</span></div><h1>EstadoCitaServiceImpl.java</h1><pre class="source lang-java linenums">package com.proyectocitas.service.Impl;
+
+import com.proyectocitas.exception.ResourceNotFoundException;
+import com.proyectocitas.model.EstadoCita;
+import com.proyectocitas.model.EstadoCita.NombreEstado;
+import com.proyectocitas.repository.EstadoCitaRepository;
+import com.proyectocitas.service.EstadoCitaService;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class EstadoCitaServiceImpl implements EstadoCitaService {
+
+    private final EstadoCitaRepository estadoCitaRepository;
+
+    //Constructor para inyectar el repositorio
+
+    public EstadoCitaServiceImpl(
+<span class="fc" id="L21">            EstadoCitaRepository estadoCitaRepository) {</span>
+
+<span class="fc" id="L23">        this.estadoCitaRepository = estadoCitaRepository;</span>
+<span class="fc" id="L24">    }</span>
+
+    //Obtener todos los estados de cita
+
+    @Override
+    public List&lt;EstadoCita&gt; obtenerTodos() {
+<span class="nc" id="L30">        return estadoCitaRepository.findAll();</span>
+    }
+
+    //Buscar un estado por su ID
+
+    @Override
+    public Optional&lt;EstadoCita&gt; obtenerPorId(Long id) {
+<span class="nc" id="L37">        return estadoCitaRepository.findById(id);</span>
+    }
+
+    //Buscar un estado por su nombre
+
+    @Override
+    public Optional&lt;EstadoCita&gt; obtenerPorNombre(
+            NombreEstado nombre) {
+
+<span class="nc" id="L46">        return estadoCitaRepository.findByNombre(nombre);</span>
+    }
+
+    //Guardar un nuevo estado de cita
+
+    @Override
+    public EstadoCita guardar(EstadoCita estadoCita) {
+<span class="nc" id="L53">        return estadoCitaRepository.save(estadoCita);</span>
+    }
+
+    //Actualizar solamente los campos que tengan información
+
+    @Override
+    public EstadoCita actualizar(
+            EstadoCita estadoCita,
+            Long id) {
+
+        //Buscar el estado existente
+<span class="nc" id="L64">        EstadoCita estadoDB = estadoCitaRepository.findById(id)</span>
+<span class="nc" id="L65">                .orElseThrow(()-&gt;</span>
+<span class="nc" id="L66">                new ResourceNotFoundException(&quot;El estado indicado no existe&quot;)</span>
+                );
+
+        //Actualizar nombre si viene con valor
+<span class="nc bnc" id="L70" title="All 2 branches missed.">        if (estadoCita.getNombre() != null) {</span>
+<span class="nc" id="L71">            estadoDB.setNombre(estadoCita.getNombre());</span>
+        }
+
+        //Actualizar descripción si viene con valor
+<span class="nc bnc" id="L75" title="All 4 branches missed.">        if (estadoCita.getDescripcion() != null &amp;&amp; !estadoCita.getDescripcion().isEmpty()) {</span>
+
+<span class="nc" id="L77">            estadoDB.setDescripcion(</span>
+<span class="nc" id="L78">                    estadoCita.getDescripcion()</span>
+            );
+        }
+
+        //Guardar los cambios realizados
+<span class="nc" id="L83">        return estadoCitaRepository.save(estadoDB);</span>
+    }
+
+    //Eliminar un estado de cita por su ID
+
+    @Override
+    public void eliminar(Long id) {
+<span class="nc" id="L90">        estadoCitaRepository.deleteById(id);</span>
+<span class="nc" id="L91">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HorarioDisponibleResponseDTO.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">citas-backend</a> &gt; <a href="index.source.html" class="el_package">com.proyectocitas.dto.response</a> &gt; <span class="el_source">HorarioDisponibleResponseDTO.java</span></div><h1>HorarioDisponibleResponseDTO.java</h1><pre class="source lang-java linenums">package com.proyectocitas.dto.response;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+
+public class HorarioDisponibleResponseDTO {
+
+    //ID del horario disponible
+    private Long idHorario;
+
+    //ID del medico al que pertenece el horario
+    private Long idMedico;
+
+    //Nombre completo del medico
+    private String medico;
+
+    //Fecha disponible para la cita
+    private LocalDate fecha;
+
+    //Hora de inicio del horario
+    private LocalTime horaInicio;
+
+    //Hora de finalización del horario
+    private LocalTime horaFin;
+
+    //Estado actual del horario
+    private String estado;
+
+
+    //Constructor
+
+<span class="fc" id="L32">    public HorarioDisponibleResponseDTO() {</span>
+<span class="fc" id="L33">    }</span>
+
+
+    //Getters y Setters
+
+    public Long getIdHorario() {
+<span class="fc" id="L39">        return idHorario;</span>
+    }
+
+    public void setIdHorario(Long idHorario) {
+<span class="fc" id="L43">        this.idHorario = idHorario;</span>
+<span class="fc" id="L44">    }</span>
+
+    public Long getIdMedico() {
+<span class="fc" id="L47">        return idMedico;</span>
+    }
+
+    public void setIdMedico(Long idMedico) {
+<span class="fc" id="L51">        this.idMedico = idMedico;</span>
+<span class="fc" id="L52">    }</span>
+
+    public String getMedico() {
+<span class="fc" id="L55">        return medico;</span>
+    }
+
+    public void setMedico(String medico) {
+<span class="fc" id="L59">        this.medico = medico;</span>
+<span class="fc" id="L60">    }</span>
+
+    public LocalDate getFecha() {
+<span class="nc" id="L63">        return fecha;</span>
+    }
+
+    public void setFecha(LocalDate fecha) {
+<span class="fc" id="L67">        this.fecha = fecha;</span>
+<span class="fc" id="L68">    }</span>
+
+    public LocalTime getHoraInicio() {
+<span class="nc" id="L71">        return horaInicio;</span>
+    }
+
+    public void setHoraInicio(LocalTime horaInicio) {
+<span class="fc" id="L75">        this.horaInicio = horaInicio;</span>
+<span class="fc" id="L76">    }</span>
+
+    public LocalTime getHoraFin() {
+<span class="nc" id="L79">        return horaFin;</span>
+    }
+
+    public void setHoraFin(LocalTime horaFin) {
+<span class="fc" id="L83">        this.horaFin = horaFin;</span>
+<span class="fc" id="L84">    }</span>
+
+    public String getEstado() {
+<span class="fc" id="L87">        return estado;</span>
+    }
+
+    public void setEstado(String estado) {
+<span class="fc" id="L91">        this.estado = estado;</span>
+<span class="fc" id="L92">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>IdentityProperties.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">citas-backend</a> &gt; <a href="index.source.html" class="el_package">com.proyectocitas.config</a> &gt; <span class="el_source">IdentityProperties.java</span></div><h1>IdentityProperties.java</h1><pre class="source lang-java linenums">package com.proyectocitas.config;
+
+import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import java.net.URI;
+import java.time.Duration;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.validation.annotation.Validated;
+
+@Validated
+@ConfigurationProperties(prefix = &quot;app.identity&quot;)
+<span class="fc" id="L13">public class IdentityProperties {</span>
+<span class="fc" id="L14">    private Duration resetTokenTtl = Duration.ofMinutes(30);</span>
+<span class="fc" id="L15">    private Duration verificationTokenTtl = Duration.ofHours(24);</span>
+<span class="fc" id="L16">    private Duration requestWindow = Duration.ofMinutes(15);</span>
+<span class="fc" id="L17">    private URI frontendBaseUrl = URI.create(&quot;http://localhost:4200&quot;);</span>
+<span class="fc" id="L18">    @NotBlank private String mailFrom = &quot;no-reply@citanova.local&quot;;</span>
+<span class="fc" id="L19">    @Min(1) private int emailRequestLimit = 3;</span>
+<span class="fc" id="L20">    @Min(1) private int ipRequestLimit = 20;</span>
+<span class="fc" id="L21">    @Min(2) private int maxRateLimitEntries = 10000;</span>
+
+    @AssertTrue(message = &quot;Las duraciones de identidad deben ser positivas y no superar siete días&quot;)
+    public boolean isDurationsValid() {
+<span class="pc bpc" id="L25" title="2 of 6 branches missed.">        return valid(resetTokenTtl) &amp;&amp; valid(verificationTokenTtl) &amp;&amp; valid(requestWindow);</span>
+    }
+
+    @AssertTrue(message = &quot;La URL del frontend debe ser HTTP/HTTPS absoluta, sin credenciales, query ni fragmento&quot;)
+    public boolean isFrontendUrlValid() {
+<span class="pc bpc" id="L30" title="2 of 4 branches missed.">        return frontendBaseUrl != null &amp;&amp; frontendBaseUrl.getHost() != null</span>
+<span class="pc bpc" id="L31" title="1 of 4 branches missed.">                &amp;&amp; (&quot;http&quot;.equals(frontendBaseUrl.getScheme()) || &quot;https&quot;.equals(frontendBaseUrl.getScheme()))</span>
+<span class="pc bpc" id="L32" title="1 of 4 branches missed.">                &amp;&amp; frontendBaseUrl.getUserInfo() == null &amp;&amp; frontendBaseUrl.getQuery() == null</span>
+<span class="pc bpc" id="L33" title="1 of 2 branches missed.">                &amp;&amp; frontendBaseUrl.getFragment() == null;</span>
+    }
+
+    private boolean valid(Duration value) {
+<span class="pc bpc" id="L37" title="2 of 6 branches missed.">        return value != null &amp;&amp; !value.isNegative() &amp;&amp; !value.isZero()</span>
+<span class="pc bpc" id="L38" title="1 of 2 branches missed.">                &amp;&amp; value.compareTo(Duration.ofDays(7)) &lt;= 0;</span>
+    }
+
+<span class="fc" id="L41">    public Duration getResetTokenTtl() { return resetTokenTtl; }</span>
+<span class="fc" id="L42">    public void setResetTokenTtl(Duration value) { resetTokenTtl = value; }</span>
+<span class="fc" id="L43">    public Duration getVerificationTokenTtl() { return verificationTokenTtl; }</span>
+<span class="nc" id="L44">    public void setVerificationTokenTtl(Duration value) { verificationTokenTtl = value; }</span>
+<span class="fc" id="L45">    public Duration getRequestWindow() { return requestWindow; }</span>
+<span class="nc" id="L46">    public void setRequestWindow(Duration value) { requestWindow = value; }</span>
+<span class="fc" id="L47">    public URI getFrontendBaseUrl() { return frontendBaseUrl; }</span>
+<span class="fc" id="L48">    public void setFrontendBaseUrl(URI value) { frontendBaseUrl = value; }</span>
+<span class="fc" id="L49">    public String getMailFrom() { return mailFrom; }</span>
+<span class="nc" id="L50">    public void setMailFrom(String value) { mailFrom = value; }</span>
+<span class="fc" id="L51">    public int getEmailRequestLimit() { return emailRequestLimit; }</span>
+<span class="fc" id="L52">    public void setEmailRequestLimit(int value) { emailRequestLimit = value; }</span>
+<span class="fc" id="L53">    public int getIpRequestLimit() { return ipRequestLimit; }</span>
+<span class="fc" id="L54">    public void setIpRequestLimit(int value) { ipRequestLimit = value; }</span>
+<span class="fc" id="L55">    public int getMaxRateLimitEntries() { return maxRateLimitEntries; }</span>
+<span class="fc" id="L56">    public void setMaxRateLimitEntries(int value) { maxRateLimitEntries = value; }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

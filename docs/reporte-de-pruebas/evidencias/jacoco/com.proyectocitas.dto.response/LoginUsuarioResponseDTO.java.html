@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LoginUsuarioResponseDTO.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">citas-backend</a> &gt; <a href="index.source.html" class="el_package">com.proyectocitas.dto.response</a> &gt; <span class="el_source">LoginUsuarioResponseDTO.java</span></div><h1>LoginUsuarioResponseDTO.java</h1><pre class="source lang-java linenums">package com.proyectocitas.dto.response;
+
+import java.util.Set;
+
+
+public class LoginUsuarioResponseDTO {
+
+    private Long idUsuario;
+    private String nombre;
+    private String apellido;
+    private String correo;
+    private String telefono;
+    private boolean correoVerificado;
+
+    private Set&lt;String&gt; roles;
+    private Set&lt;String&gt; permisos;
+
+
+    // =================================================
+    // CONSTRUCTOR
+    // =================================================
+
+    public LoginUsuarioResponseDTO(
+            Long idUsuario,
+            String nombre,
+            String apellido,
+            String correo,
+            Set&lt;String&gt; roles,
+<span class="fc" id="L29">            Set&lt;String&gt; permisos) {</span>
+
+<span class="fc" id="L31">        this.idUsuario = idUsuario;</span>
+<span class="fc" id="L32">        this.nombre = nombre;</span>
+<span class="fc" id="L33">        this.apellido = apellido;</span>
+<span class="fc" id="L34">        this.correo = correo;</span>
+<span class="fc" id="L35">        this.roles = roles;</span>
+<span class="fc" id="L36">        this.permisos = permisos;</span>
+<span class="fc" id="L37">    }</span>
+
+
+    // =================================================
+    // GETTERS
+    // =================================================
+
+    public Long getIdUsuario() {
+<span class="fc" id="L45">        return idUsuario;</span>
+    }
+
+    public String getNombre() {
+<span class="fc" id="L49">        return nombre;</span>
+    }
+
+    public String getApellido() {
+<span class="fc" id="L53">        return apellido;</span>
+    }
+
+    public String getCorreo() {
+<span class="fc" id="L57">        return correo;</span>
+    }
+
+<span class="fc" id="L60">    public String getTelefono() { return telefono; }</span>
+<span class="fc" id="L61">    public void setTelefono(String telefono) { this.telefono = telefono; }</span>
+
+<span class="fc" id="L63">    public boolean isCorreoVerificado() { return correoVerificado; }</span>
+<span class="fc" id="L64">    public void setCorreoVerificado(boolean value) { correoVerificado = value; }</span>
+
+    public Set&lt;String&gt; getRoles() {
+<span class="fc" id="L67">        return roles;</span>
+    }
+
+    public Set&lt;String&gt; getPermisos() {
+<span class="fc" id="L71">        return permisos;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

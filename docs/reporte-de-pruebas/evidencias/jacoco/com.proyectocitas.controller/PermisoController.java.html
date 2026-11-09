@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PermisoController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">citas-backend</a> &gt; <a href="index.source.html" class="el_package">com.proyectocitas.controller</a> &gt; <span class="el_source">PermisoController.java</span></div><h1>PermisoController.java</h1><pre class="source lang-java linenums">package com.proyectocitas.controller;
+
+import com.proyectocitas.model.Permiso;
+import com.proyectocitas.dto.PermisoMetadataDTO;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Arrays;
+import java.util.List;
+
+@RestController
+@RequestMapping(&quot;/api/v1/permissions&quot;)
+<span class="fc" id="L16">public class PermisoController {</span>
+
+
+    // =================================================
+    // LISTAR PERMISOS DISPONIBLES
+    // =================================================
+
+    @GetMapping
+    public ResponseEntity&lt;List&lt;String&gt;&gt; listarPermisos() {
+
+        List&lt;String&gt; permisos =
+<span class="fc" id="L27">                Arrays.stream(Permiso.values())</span>
+<span class="fc" id="L28">                        .map(Enum::name)</span>
+<span class="fc" id="L29">                        .toList();</span>
+
+<span class="fc" id="L31">        return ResponseEntity.ok(permisos);</span>
+    }
+
+    // =================================================
+// LISTAR METADATA DE PERMISOS
+// =================================================
+// Devuelve el nombre real del permiso y una categoría
+// únicamente para facilitar su organización visual.
+//
+// El nombre persistido del enum NO se modifica.
+@GetMapping(&quot;/metadata&quot;)
+public ResponseEntity&lt;List&lt;PermisoMetadataDTO&gt;&gt; listarMetadataPermisos() {
+
+    List&lt;PermisoMetadataDTO&gt; permisos =
+<span class="fc" id="L45">            Arrays.stream(Permiso.values())</span>
+<span class="fc" id="L46">                    .map(permiso -&gt;</span>
+<span class="fc" id="L47">                            new PermisoMetadataDTO(</span>
+<span class="fc" id="L48">                                    permiso.name(),</span>
+<span class="fc" id="L49">                                    obtenerCategoria(permiso)</span>
+                            )
+                    )
+<span class="fc" id="L52">                    .toList();</span>
+
+<span class="fc" id="L54">    return ResponseEntity.ok(permisos);</span>
+}
+
+
+// =================================================
+// CATEGORIZAR PERMISOS
+// =================================================
+private String obtenerCategoria(Permiso permiso) {
+
+<span class="fc" id="L63">    String nombre =</span>
+<span class="fc" id="L64">            permiso.name();</span>
+
+<span class="fc bfc" id="L66" title="All 2 branches covered.">    if (nombre.startsWith(&quot;ACCESO_&quot;)) {</span>
+<span class="fc" id="L67">        return &quot;ACCESO&quot;;</span>
+    }
+
+<span class="fc bfc" id="L70" title="All 2 branches covered.">    if (nombre.contains(&quot;USUARIOS&quot;)) {</span>
+<span class="fc" id="L71">        return &quot;USUARIOS&quot;;</span>
+    }
+
+<span class="fc bfc" id="L74" title="All 2 branches covered.">    if (nombre.contains(&quot;ROLES&quot;)</span>
+<span class="fc bfc" id="L75" title="All 2 branches covered.">            || nombre.contains(&quot;PERMISOS&quot;)) {</span>
+<span class="fc" id="L76">        return &quot;ROLES_Y_PERMISOS&quot;;</span>
+    }
+
+<span class="fc bfc" id="L79" title="All 2 branches covered.">    if (nombre.contains(&quot;MEDICOS&quot;)) {</span>
+<span class="fc" id="L80">        return &quot;MEDICOS&quot;;</span>
+    }
+
+<span class="fc bfc" id="L83" title="All 2 branches covered.">    if (nombre.contains(&quot;ESPECIALIDADES&quot;)) {</span>
+<span class="fc" id="L84">        return &quot;ESPECIALIDADES&quot;;</span>
+    }
+
+<span class="fc bfc" id="L87" title="All 2 branches covered.">    if (nombre.contains(&quot;HORARIOS&quot;)) {</span>
+<span class="fc" id="L88">        return &quot;HORARIOS&quot;;</span>
+    }
+
+<span class="fc bfc" id="L91" title="All 2 branches covered.">    if (nombre.contains(&quot;CITA&quot;)</span>
+<span class="pc bpc" id="L92" title="1 of 2 branches missed.">            || nombre.contains(&quot;CITAS&quot;)</span>
+<span class="fc bfc" id="L93" title="All 2 branches covered.">            || nombre.contains(&quot;HISTORIAL&quot;)</span>
+<span class="pc bpc" id="L94" title="1 of 2 branches missed.">            || nombre.contains(&quot;DIAGNOSTICO&quot;)) {</span>
+<span class="fc" id="L95">        return &quot;CITAS&quot;;</span>
+    }
+
+<span class="nc" id="L98">    return &quot;OTROS&quot;;</span>
+}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

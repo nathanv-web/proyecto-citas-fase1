@@ -1,5 +1,17 @@
 package com.proyectocitas.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+
 import java.util.Locale;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -30,6 +42,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import org.springframework.dao.DataIntegrityViolationException;
 
+@Tag(name = "Médicos", description = "Administración de perfiles médicos, especialidades y estado de disponibilidad.")
+@SecurityRequirement(name = "bearerAuth")
 @RestController
 @RequestMapping("/api/v1/medicos")
 public class MedicoController {
@@ -68,6 +82,28 @@ public class MedicoController {
 // LISTAR Y BUSCAR MÉDICOS
 // =================================================
 
+@Operation(
+    summary = "Listar médicos",
+    description = "Devuelve los perfiles médicos con filtros opcionales de búsqueda, especialidad y estado. " +
+        "Requiere el permiso VER_MEDICOS.",
+    parameters = {
+        @Parameter(name = "search", in = ParameterIn.QUERY,
+            description = "Texto de búsqueda del médico.", example = "Ana"),
+        @Parameter(name = "especialidad", in = ParameterIn.QUERY,
+            description = "Texto de la especialidad por el cual filtrar.", example = "Cardiología"),
+        @Parameter(name = "estado", in = ParameterIn.QUERY,
+            description = "Estado del perfil médico.", example = "ACTIVO",
+            schema = @Schema(allowableValues = {"ACTIVO", "INACTIVO"}))
+    },
+    responses = {
+        @ApiResponse(responseCode = "200", description = "Consulta u operación realizada correctamente.",
+            content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = MedicoResponseDTO.class)))),
+        @ApiResponse(responseCode = "400", ref = "#/components/responses/Error400"),
+        @ApiResponse(responseCode = "401", ref = "#/components/responses/Error401"),
+        @ApiResponse(responseCode = "403", ref = "#/components/responses/Error403"),
+        @ApiResponse(responseCode = "500", ref = "#/components/responses/Error500")
+    }
+)
 @GetMapping
 public List<MedicoResponseDTO> obtenerMedicos(
         @RequestParam(name = "search", required = false)
@@ -123,6 +159,23 @@ private static String normalizar(String texto) {
     // BUSCAR MÉDICO POR ID
     // =================================================
 
+    @Operation(
+        summary = "Consultar médico por ID",
+        description = "Obtiene los datos del perfil médico y sus asociaciones por identificador. Requiere el permiso " +
+            "VER_MEDICOS.",
+        parameters = {
+            @Parameter(name = "id", in = ParameterIn.PATH,
+                description = "Identificador del médico.", example = "1", required = true)
+        },
+        responses = {
+            @ApiResponse(responseCode = "200", description = "Consulta u operación realizada correctamente.",
+                content = @Content(mediaType = "application/json", schema = @Schema(implementation = MedicoResponseDTO.class))),
+            @ApiResponse(responseCode = "401", ref = "#/components/responses/Error401"),
+            @ApiResponse(responseCode = "403", ref = "#/components/responses/Error403"),
+            @ApiResponse(responseCode = "404", ref = "#/components/responses/Error404"),
+            @ApiResponse(responseCode = "500", ref = "#/components/responses/Error500")
+        }
+    )
     @GetMapping("/{id}")
     public ResponseEntity<MedicoResponseDTO>
             obtenerMedicoPorId(
@@ -147,6 +200,28 @@ private static String normalizar(String texto) {
     // CREAR MÉDICO
     // =================================================
 
+    @Operation(
+        summary = "Crear perfil de médico",
+        description = "Crea un perfil activo para un usuario existente, lo asocia con una especialidad y asigna el rol " +
+            "ROLE_DOCTOR. El usuario y el número de colegiado no deben estar asociados a otro perfil. " +
+            "Requiere el permiso CREAR_MEDICOS.",
+        requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "Identificadores existentes de usuario y especialidad, colegiado con formato COL-0000, años de " +
+                "experiencia no negativos y biografía opcional.",
+            required = true, useParameterTypeSchema = true,
+            content = @Content(mediaType = "application/json", examples = @ExampleObject(
+                name = "Ejemplo", value = "{\"idUsuario\": 1, \"idEspecialidad\": 1, \"colegiado\": \"COL-1234\", \"aniosExperiencia\": 5, \"biografia\": \"Médico especialista en cardiología.\"}"))),
+        responses = {
+            @ApiResponse(responseCode = "201", description = "Registro creado correctamente.",
+                content = @Content(mediaType = "application/json", schema = @Schema(implementation = MedicoResponseDTO.class))),
+            @ApiResponse(responseCode = "400", ref = "#/components/responses/Error400"),
+            @ApiResponse(responseCode = "401", ref = "#/components/responses/Error401"),
+            @ApiResponse(responseCode = "403", ref = "#/components/responses/Error403"),
+            @ApiResponse(responseCode = "404", ref = "#/components/responses/Error404"),
+            @ApiResponse(responseCode = "409", ref = "#/components/responses/Error409"),
+            @ApiResponse(responseCode = "500", ref = "#/components/responses/Error500")
+        }
+    )
     @PostMapping
     public ResponseEntity<MedicoResponseDTO>
             crearMedico(
@@ -270,6 +345,30 @@ private static String normalizar(String texto) {
             //====================================
 
 
+@Operation(
+    summary = "Actualizar médico",
+    description = "Actualiza los campos proporcionados del perfil médico, incluida su especialidad o estado. " +
+        "Requiere el permiso ACTUALIZAR_MEDICOS.",
+    parameters = {
+        @Parameter(name = "id", in = ParameterIn.PATH,
+            description = "Identificador del médico.", example = "1", required = true)
+    },
+    requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+        description = "Campos del perfil que se desean modificar; los omitidos conservan su valor.",
+        required = true, useParameterTypeSchema = true,
+        content = @Content(mediaType = "application/json", examples = @ExampleObject(
+            name = "Ejemplo", value = "{\"idEspecialidad\": 1, \"colegiado\": \"COL-1234\", \"aniosExperiencia\": 6, \"biografia\": \"Médico especialista en cardiología.\", \"estado\": \"ACTIVO\"}"))),
+    responses = {
+        @ApiResponse(responseCode = "200", description = "Consulta u operación realizada correctamente.",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = MedicoResponseDTO.class))),
+        @ApiResponse(responseCode = "400", ref = "#/components/responses/Error400"),
+        @ApiResponse(responseCode = "401", ref = "#/components/responses/Error401"),
+        @ApiResponse(responseCode = "403", ref = "#/components/responses/Error403"),
+        @ApiResponse(responseCode = "404", ref = "#/components/responses/Error404"),
+        @ApiResponse(responseCode = "409", ref = "#/components/responses/Error409"),
+        @ApiResponse(responseCode = "500", ref = "#/components/responses/Error500")
+    }
+)
 @PutMapping("/{id}")
 public ResponseEntity<MedicoResponseDTO> actualizarMedico(
         @PathVariable Long id,
@@ -324,6 +423,22 @@ public ResponseEntity<MedicoResponseDTO> actualizarMedico(
     // DESACTIVAR MÉDICO
     // =================================================
 
+    @Operation(
+        summary = "Desactivar médico",
+        description = "Cambia el estado del perfil a INACTIVO sin borrar el registro. Requiere el permiso " +
+            "ELIMINAR_MEDICOS.",
+        parameters = {
+            @Parameter(name = "id", in = ParameterIn.PATH,
+                description = "Identificador del médico.", example = "1", required = true)
+        },
+        responses = {
+            @ApiResponse(responseCode = "204", description = "Operación realizada correctamente, sin contenido de respuesta.", content = @Content),
+            @ApiResponse(responseCode = "401", ref = "#/components/responses/Error401"),
+            @ApiResponse(responseCode = "403", ref = "#/components/responses/Error403"),
+            @ApiResponse(responseCode = "404", ref = "#/components/responses/Error404"),
+            @ApiResponse(responseCode = "500", ref = "#/components/responses/Error500")
+        }
+    )
     @DeleteMapping("/{id}")
     public ResponseEntity<Void>
             eliminarMedico(

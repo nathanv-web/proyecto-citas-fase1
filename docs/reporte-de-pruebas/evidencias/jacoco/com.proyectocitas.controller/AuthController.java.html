@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuthController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">citas-backend</a> &gt; <a href="index.source.html" class="el_package">com.proyectocitas.controller</a> &gt; <span class="el_source">AuthController.java</span></div><h1>AuthController.java</h1><pre class="source lang-java linenums">package com.proyectocitas.controller;
+
+import com.proyectocitas.dto.request.LoginRequestDTO;
+import com.proyectocitas.security.JwtService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+import com.proyectocitas.dto.response.LoginResponseDTO;
+import com.proyectocitas.dto.response.LoginUsuarioResponseDTO;
+
+import java.util.HashSet;
+import java.util.Set;
+import com.proyectocitas.dto.response.UsuarioResponseDTO;
+import com.proyectocitas.dto.request.UsuarioCreateRequestDTO;
+import com.proyectocitas.mapper.UsuarioMapper;
+import com.proyectocitas.model.Usuario;
+import com.proyectocitas.service.UsuarioService;
+import com.proyectocitas.service.EmailVerificationService;
+
+import jakarta.validation.Valid;
+
+import org.springframework.http.HttpStatus;
+
+
+@RestController
+@RequestMapping(&quot;/api/v1/auth&quot;)
+public class AuthController {
+
+    private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
+    private final UsuarioService usuarioService;
+    private final UsuarioMapper usuarioMapper;
+    private final EmailVerificationService emailVerification;
+
+    public AuthController(
+            AuthenticationManager authenticationManager,
+            JwtService jwtService,
+            UsuarioService usuarioService,
+            UsuarioMapper usuarioMapper,
+            EmailVerificationService emailVerification
+<span class="fc" id="L43">    ) {</span>
+<span class="fc" id="L44">        this.authenticationManager = authenticationManager;</span>
+<span class="fc" id="L45">        this.jwtService = jwtService;</span>
+<span class="fc" id="L46">        this.usuarioService = usuarioService;</span>
+<span class="fc" id="L47">        this.usuarioMapper = usuarioMapper;</span>
+<span class="fc" id="L48">        this.emailVerification = emailVerification;</span>
+
+<span class="fc" id="L50">    }</span>
+
+   @PostMapping(&quot;/login&quot;)
+public ResponseEntity&lt;LoginResponseDTO&gt; login(
+        @Valid @RequestBody LoginRequestDTO loginRequest
+) {
+
+    // =================================================
+    // AUTENTICAR CREDENCIALES
+    // =================================================
+<span class="fc" id="L60">    Authentication authentication = authenticationManager.authenticate(</span>
+<span class="fc" id="L61">            new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));</span>
+    // =================================================
+    // USUARIO AUTENTICADO
+    // =================================================
+
+<span class="fc" id="L66">    Usuario usuario =</span>
+<span class="fc" id="L67">            (Usuario) authentication.getPrincipal();</span>
+    // =================================================
+    // GENERAR JWT
+    // =================================================
+<span class="fc" id="L71">    String jwt =</span>
+<span class="fc" id="L72">            jwtService.generateToken(</span>
+                    usuario
+            );
+    // =================================================
+    // OBTENER ROLES Y PERMISOS
+    // =================================================
+<span class="fc" id="L78">    Set&lt;String&gt; roles =</span>
+            new HashSet&lt;&gt;();
+<span class="fc" id="L80">    Set&lt;String&gt; permisos =</span>
+            new HashSet&lt;&gt;();
+<span class="fc" id="L82">    usuario.getRoles().forEach(rol -&gt; {</span>
+<span class="fc" id="L83">        roles.add(</span>
+<span class="fc" id="L84">                rol.getNombre()</span>
+        );
+<span class="pc bpc" id="L86" title="1 of 2 branches missed.">        if (rol.getPermisos() != null) {</span>
+<span class="fc" id="L87">            rol.getPermisos().forEach(</span>
+                    permiso -&gt;
+<span class="fc" id="L89">                            permisos.add(</span>
+<span class="fc" id="L90">                                    permiso.name()</span>
+                            )
+            );
+        }
+<span class="fc" id="L94">    });</span>
+    // =================================================
+    // INFORMACIÓN DEL USUARIO
+    // =================================================
+
+<span class="fc" id="L99">    LoginUsuarioResponseDTO usuarioLogin =</span>
+            new LoginUsuarioResponseDTO(
+<span class="fc" id="L101">                    usuario.getIdUsuario(),</span>
+<span class="fc" id="L102">                    usuario.getNombre(),</span>
+<span class="fc" id="L103">                    usuario.getApellido(),</span>
+<span class="fc" id="L104">                    usuario.getCorreo(),</span>
+                    roles,
+                    permisos
+            );
+    // =================================================
+    // RESPUESTA DEL LOGIN
+    // =================================================
+
+<span class="fc" id="L112">    LoginResponseDTO respuesta =</span>
+            new LoginResponseDTO(
+                    jwt,
+                    &quot;Bearer&quot;,
+                    usuarioLogin
+            );
+<span class="fc" id="L118">    respuesta.setDebeCambiarPassword(usuario.isDebeCambiarPassword());</span>
+<span class="fc" id="L119">    usuarioLogin.setCorreoVerificado(usuario.isCorreoVerificado());</span>
+<span class="fc" id="L120">    usuarioLogin.setTelefono(usuario.getTelefono());</span>
+<span class="fc" id="L121">    return ResponseEntity.ok(</span>
+            respuesta
+    );
+}
+    @PostMapping(&quot;/register&quot;)
+    public ResponseEntity&lt;UsuarioResponseDTO&gt; register(
+    @Valid
+    @RequestBody UsuarioCreateRequestDTO usuarioRequestDTO){
+
+        // Convertir DTO de entrada a entidad de Usuario
+<span class="fc" id="L131">        Usuario usuario = usuarioMapper.toEntity(usuarioRequestDTO);</span>
+
+        //Registrar usuario asignado automaticamente como ROLE_PATIENT
+<span class="fc" id="L134">        Usuario usuarioguardado = usuarioService.registrarPaciente(usuario);</span>
+<span class="fc" id="L135">        emailVerification.requestAfterRegistration(usuarioguardado.getCorreo());</span>
+
+        //Convertir entidad guardada a DTO de respuesta
+<span class="fc" id="L138">        UsuarioResponseDTO usuarioDTO = usuarioMapper.toDTO(usuarioguardado);</span>
+
+<span class="fc" id="L140">        return ResponseEntity</span>
+<span class="fc" id="L141">                .status(HttpStatus.CREATED)</span>
+<span class="fc" id="L142">                .body(usuarioDTO);</span>
+    }
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

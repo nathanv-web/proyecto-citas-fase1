@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RecordatorioCitaService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">citas-backend</a> &gt; <a href="index.source.html" class="el_package">com.proyectocitas.service</a> &gt; <span class="el_source">RecordatorioCitaService.java</span></div><h1>RecordatorioCitaService.java</h1><pre class="source lang-java linenums">package com.proyectocitas.service;
+
+import com.proyectocitas.model.Cita;
+import com.proyectocitas.model.EstadoCita;
+import com.proyectocitas.model.HorarioDisponible;
+import com.proyectocitas.model.Notificacion;
+import com.proyectocitas.repository.CitaRepository;
+import com.proyectocitas.repository.HorarioDisponibleRepository;
+import java.time.Clock;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.Objects;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+public class RecordatorioCitaService {
+    private final CitaRepository citas;
+    private final HorarioDisponibleRepository horarios;
+    private final ApplicationEventPublisher eventos;
+    private final Clock reloj;
+
+    public RecordatorioCitaService(CitaRepository citas, HorarioDisponibleRepository horarios,
+            ApplicationEventPublisher eventos, @Qualifier(&quot;identityClock&quot;) Clock reloj,
+<span class="fc" id="L31">            @Value(&quot;${app.notifications.time-zone:America/Guatemala}&quot;) String zonaHoraria) {</span>
+<span class="fc" id="L32">        this.citas = citas;</span>
+<span class="fc" id="L33">        this.horarios = horarios;</span>
+<span class="fc" id="L34">        this.eventos = eventos;</span>
+<span class="fc" id="L35">        this.reloj = reloj.withZone(ZoneId.of(zonaHoraria));</span>
+<span class="fc" id="L36">    }</span>
+
+    @Transactional(readOnly = true)
+    public List&lt;Long&gt; buscarPendientes() {
+<span class="nc" id="L40">        LocalDateTime ahora = LocalDateTime.now(reloj);</span>
+<span class="nc" id="L41">        LocalDateTime limite = ahora.plusHours(24);</span>
+<span class="nc" id="L42">        return citas.buscarCitasParaRecordatorio(EstadoCita.NombreEstado.PENDIENTE,</span>
+<span class="nc" id="L43">                ahora.toLocalDate(), ahora.toLocalTime(), limite.toLocalDate(), limite.toLocalTime(),</span>
+<span class="nc" id="L44">                PageRequest.of(0, 200));</span>
+    }
+
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public void enviarRecordatorio(Long idCita) {
+<span class="nc" id="L49">        Long idHorario = citas.obtenerIdHorarioDeCita(idCita).orElse(null);</span>
+<span class="nc bnc" id="L50" title="All 2 branches missed.">        if (idHorario == null) return;</span>
+
+        // Se usa el mismo bloqueo que cancelar, reprogramar y diagnosticar.
+        // Otra instancia del servidor debe volver a comprobar la marca después de esperar.
+<span class="nc" id="L54">        HorarioDisponible horario = horarios.buscarHorarioConBloqueo(idHorario).orElse(null);</span>
+<span class="nc bnc" id="L55" title="All 2 branches missed.">        if (horario == null) return;</span>
+<span class="nc" id="L56">        Cita cita = citas.findById(idCita).orElse(null);</span>
+<span class="nc bnc" id="L57" title="All 4 branches missed.">        if (cita == null || cita.isRecordatorioEnviado()</span>
+<span class="nc bnc" id="L58" title="All 2 branches missed.">                || cita.getHorario() == null</span>
+<span class="nc bnc" id="L59" title="All 2 branches missed.">                || !Objects.equals(cita.getHorario().getIdHorario(), idHorario)</span>
+<span class="nc bnc" id="L60" title="All 2 branches missed.">                || cita.getEstado().getNombre() != EstadoCita.NombreEstado.PENDIENTE</span>
+<span class="nc bnc" id="L61" title="All 2 branches missed.">                || horario.getEstado() != HorarioDisponible.EstadoHorario.RESERVADO) return;</span>
+
+<span class="nc" id="L63">        LocalDateTime ahora = LocalDateTime.now(reloj);</span>
+<span class="nc" id="L64">        LocalDateTime atencion = LocalDateTime.of(horario.getFecha(), horario.getHoraInicio());</span>
+<span class="nc bnc" id="L65" title="All 4 branches missed.">        if (!atencion.isAfter(ahora) || atencion.isAfter(ahora.plusHours(24))) return;</span>
+
+<span class="nc" id="L67">        cita.setRecordatorioEnviado(true);</span>
+<span class="nc" id="L68">        citas.save(cita);</span>
+<span class="nc" id="L69">        eventos.publishEvent(new CitaPacienteEvent(idCita, Notificacion.Tipo.RECORDATORIO_CITA));</span>
+<span class="nc" id="L70">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

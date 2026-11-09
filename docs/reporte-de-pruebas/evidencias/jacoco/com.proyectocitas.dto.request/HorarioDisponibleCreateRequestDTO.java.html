@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HorarioDisponibleCreateRequestDTO.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">citas-backend</a> &gt; <a href="index.source.html" class="el_package">com.proyectocitas.dto.request</a> &gt; <span class="el_source">HorarioDisponibleCreateRequestDTO.java</span></div><h1>HorarioDisponibleCreateRequestDTO.java</h1><pre class="source lang-java linenums">package com.proyectocitas.dto.request;
+
+import jakarta.validation.constraints.FutureOrPresent;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+
+public class HorarioDisponibleCreateRequestDTO {
+
+    //ID del medico al que pertenece el horario
+    @NotNull(message = &quot;El medico es obligatorio&quot;)
+    @Positive(message = &quot;El ID del medico debe ser mayor que cero&quot;)
+    private Long idMedico;
+
+    //La fecha debe ser hoy o una fecha futura
+    @NotNull(message = &quot;La fecha es obligatoria&quot;)
+    private LocalDate fecha;
+
+    //Hora de inicio del horario
+    @NotNull(message = &quot;La hora de inicio es obligatoria&quot;)
+    private LocalTime horaInicio;
+
+    //Hora de finalización del horario
+    @NotNull(message = &quot;La hora de finalización es obligatoria&quot;)
+    private LocalTime horaFin;
+
+
+<span class="fc" id="L30">    public HorarioDisponibleCreateRequestDTO() {</span>
+<span class="fc" id="L31">    }</span>
+
+
+    public Long getIdMedico() {
+<span class="nc" id="L35">        return idMedico;</span>
+    }
+
+    public void setIdMedico(Long idMedico) {
+<span class="nc" id="L39">        this.idMedico = idMedico;</span>
+<span class="nc" id="L40">    }</span>
+
+    public LocalDate getFecha() {
+<span class="fc" id="L43">        return fecha;</span>
+    }
+
+    public void setFecha(LocalDate fecha) {
+<span class="fc" id="L47">        this.fecha = fecha;</span>
+<span class="fc" id="L48">    }</span>
+
+    public LocalTime getHoraInicio() {
+<span class="fc" id="L51">        return horaInicio;</span>
+    }
+
+    public void setHoraInicio(LocalTime horaInicio) {
+<span class="fc" id="L55">        this.horaInicio = horaInicio;</span>
+<span class="fc" id="L56">    }</span>
+
+    public LocalTime getHoraFin() {
+<span class="fc" id="L59">        return horaFin;</span>
+    }
+
+    public void setHoraFin(LocalTime horaFin) {
+<span class="fc" id="L63">        this.horaFin = horaFin;</span>
+<span class="fc" id="L64">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

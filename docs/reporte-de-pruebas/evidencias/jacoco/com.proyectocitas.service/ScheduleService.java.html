@@ -1,0 +1,400 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ScheduleService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">citas-backend</a> &gt; <a href="index.source.html" class="el_package">com.proyectocitas.service</a> &gt; <span class="el_source">ScheduleService.java</span></div><h1>ScheduleService.java</h1><pre class="source lang-java linenums">package com.proyectocitas.service;
+
+import com.proyectocitas.model.HorarioDisponible;
+import com.proyectocitas.model.HorarioDisponible.EstadoHorario;
+import com.proyectocitas.model.Medico;
+
+import com.proyectocitas.repository.CitaRepository;
+import com.proyectocitas.repository.HorarioDisponibleRepository;
+import com.proyectocitas.repository.MedicoRepository;
+import com.proyectocitas.exception.ResourceNotFoundException;
+import com.proyectocitas.exception.ScheduleConflictException;
+
+import com.proyectocitas.model.EstadoCita;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Comparator;
+import java.util.List;
+
+@Service
+public class ScheduleService {
+
+    private final HorarioDisponibleRepository horarioRepository;
+    private final MedicoRepository medicoRepository;
+    private final CitaRepository citaRepository;
+
+
+    //Constructor para inyectar los repositorios
+    public ScheduleService(
+            HorarioDisponibleRepository horarioRepository,
+            MedicoRepository medicoRepository,
+<span class="fc" id="L40">            CitaRepository citaRepository) {</span>
+
+<span class="fc" id="L42">        this.horarioRepository = horarioRepository;</span>
+<span class="fc" id="L43">        this.medicoRepository = medicoRepository;</span>
+<span class="fc" id="L44">        this.citaRepository = citaRepository;</span>
+<span class="fc" id="L45">    }</span>
+
+    /**
+     * Crea el horario mientras mantiene bloqueada la fila del médico. Así,
+     * otra creación o edición del mismo médico no puede validar el mismo
+     * hueco en paralelo.
+     */
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public HorarioDisponible crearHorarioAtomico(
+            Long idMedico,
+            LocalDate fecha,
+            LocalTime horaInicio,
+            LocalTime horaFin) {
+
+<span class="fc" id="L59">        Medico medico = bloquearMedicoActivo(idMedico);</span>
+<span class="fc" id="L60">        validarIntervalo(fecha, horaInicio, horaFin);</span>
+<span class="fc" id="L61">        validarFechaFutura(fecha, horaInicio, &quot;crear&quot;);</span>
+
+<span class="fc bfc" id="L63" title="All 2 branches covered.">        if (!noHayTraslape(idMedico, fecha, horaInicio, horaFin, null)) {</span>
+<span class="fc" id="L64">            throw new ScheduleConflictException(</span>
+                    &quot;El horario se cruza con otro horario existente&quot;);
+        }
+
+<span class="fc" id="L68">        HorarioDisponible horario = new HorarioDisponible();</span>
+<span class="fc" id="L69">        horario.setMedico(medico);</span>
+<span class="fc" id="L70">        horario.setFecha(fecha);</span>
+<span class="fc" id="L71">        horario.setHoraInicio(horaInicio);</span>
+<span class="fc" id="L72">        horario.setHoraFin(horaFin);</span>
+<span class="fc" id="L73">        return horarioRepository.save(horario);</span>
+    }
+
+    /**
+     * Bloquea médico y horario hasta terminar la validación y persistencia.
+     * La reserva bloquea la misma fila del horario, por lo que una edición
+     * no puede pasar entre la comprobación de citas y el guardado.
+     */
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public HorarioDisponible actualizarHorarioAtomico(
+            Long idHorario,
+            Long idMedico,
+            LocalDate fecha,
+            LocalTime horaInicio,
+            LocalTime horaFin) {
+
+<span class="fc" id="L89">        bloquearMedicoActivo(idMedico);</span>
+<span class="fc" id="L90">        validarIntervalo(fecha, horaInicio, horaFin);</span>
+
+<span class="fc" id="L92">        HorarioDisponible horario = horarioRepository</span>
+<span class="fc" id="L93">                .buscarHorarioConBloqueo(idHorario)</span>
+<span class="pc" id="L94">                .orElseThrow(() -&gt; new ResourceNotFoundException(</span>
+                        &quot;El horario indicado no existe&quot;));
+
+<span class="pc bpc" id="L97" title="1 of 2 branches missed.">        if (horario.getMedico() == null</span>
+<span class="pc bpc" id="L98" title="1 of 2 branches missed.">                || !idMedico.equals(horario.getMedico().getIdMedico())) {</span>
+<span class="nc" id="L99">            throw new ResponseStatusException(</span>
+                    HttpStatus.FORBIDDEN,
+                    &quot;No puedes modificar un horario de otro médico&quot;);
+        }
+
+<span class="fc" id="L104">        LocalDateTime ahora = LocalDateTime.now(ZoneId.of(&quot;America/Guatemala&quot;));</span>
+<span class="pc bpc" id="L105" title="2 of 4 branches missed.">        if (horario.getFecha() == null || horario.getHoraInicio() == null</span>
+<span class="pc bpc" id="L106" title="1 of 2 branches missed.">                || !LocalDateTime.of(horario.getFecha(), horario.getHoraInicio()).isAfter(ahora)) {</span>
+<span class="nc" id="L107">            throw new ScheduleConflictException(</span>
+                    &quot;No se puede modificar un horario cuya hora ya pasó&quot;);
+        }
+<span class="fc" id="L110">        validarFechaFutura(fecha, horaInicio, &quot;cambiar&quot;);</span>
+
+<span class="fc bfc" id="L112" title="All 2 branches covered.">        if (citaRepository.existsByHorario_IdHorario(idHorario)) {</span>
+<span class="fc" id="L113">            throw new ScheduleConflictException(</span>
+                    &quot;No se puede modificar un horario que ya tiene una cita asociada&quot;);
+        }
+
+<span class="pc bpc" id="L117" title="1 of 2 branches missed.">        if (!noHayTraslape(idMedico, fecha, horaInicio, horaFin, idHorario)) {</span>
+<span class="nc" id="L118">            throw new ScheduleConflictException(</span>
+                    &quot;El horario se cruza con otro horario existente&quot;);
+        }
+
+<span class="fc" id="L122">        horario.setFecha(fecha);</span>
+<span class="fc" id="L123">        horario.setHoraInicio(horaInicio);</span>
+<span class="fc" id="L124">        horario.setHoraFin(horaFin);</span>
+<span class="fc" id="L125">        return horarioRepository.save(horario);</span>
+    }
+
+
+    //Consultar los horarios disponibles de un medico en una fecha
+    public List&lt;HorarioDisponible&gt; consultarHorariosDisponibles(
+            Long idMedico,
+            LocalDate fecha) {
+
+        //Verificar que el medico exista
+<span class="fc" id="L135">        validarMedico(idMedico);</span>
+
+        //Verificar que la fecha tenga valor
+<span class="fc bfc" id="L138" title="All 2 branches covered.">        if (fecha == null) {</span>
+<span class="fc" id="L139">            throw new IllegalArgumentException(</span>
+                    &quot;La fecha es obligatoria&quot;
+            );
+        }
+
+        // Un horario disponible deja de ofrecerse en cuanto comienza,
+        // usando la misma zona horaria de la clínica en todos los clientes.
+<span class="fc" id="L146">        LocalDateTime ahora = LocalDateTime.now(ZoneId.of(&quot;America/Guatemala&quot;));</span>
+<span class="fc" id="L147">        return horarioRepository</span>
+<span class="fc" id="L148">                .findByMedico_IdMedicoAndFechaAndEstado(  //findByMedico_IdMedicoAndFechaAndEstado</span>
+                        idMedico,
+                        fecha,
+                        EstadoHorario.DISPONIBLE
+                )
+<span class="fc" id="L153">                .stream()</span>
+<span class="pc bpc" id="L154" title="1 of 2 branches missed.">                .filter(horario -&gt; horario.getFecha() != null</span>
+<span class="pc bpc" id="L155" title="1 of 2 branches missed.">                        &amp;&amp; horario.getHoraInicio() != null</span>
+<span class="fc" id="L156">                        &amp;&amp; LocalDateTime.of(horario.getFecha(), horario.getHoraInicio())</span>
+<span class="fc bfc" id="L157" title="All 2 branches covered.">                                .isAfter(ahora))</span>
+<span class="fc" id="L158">                .sorted(Comparator.comparing(HorarioDisponible::getHoraInicio))</span>
+<span class="fc" id="L159">                .toList();</span>
+    }
+
+
+    //Verificar si un horario puede ser reservado
+    public boolean estaDisponible(Long idHorario) {
+
+        //Buscar el horario
+<span class="fc" id="L167">        HorarioDisponible horario =</span>
+<span class="fc" id="L168">                horarioRepository.findById(idHorario)</span>
+<span class="fc" id="L169">                        .orElseThrow(() -&gt;</span>
+<span class="fc" id="L170">                                new ResourceNotFoundException(</span>
+                                        &quot;El horario no existe&quot;
+                                )
+                        );
+
+        //Verificar que el estado del horario sea DISPONIBLE
+<span class="fc bfc" id="L176" title="All 2 branches covered.">        if (horario.getEstado() != EstadoHorario.DISPONIBLE) {</span>
+<span class="fc" id="L177">            return false;</span>
+        }
+
+        //Verificar que el horario no tenga una cita asociada
+        // Solo bloquear si existe una cita vigente
+// Verificar que el horario no tenga una cita vigente
+<span class="fc" id="L183">if (citaRepository</span>
+<span class="fc bfc" id="L184" title="All 2 branches covered.">        .existsByHorario_IdHorarioAndEstado_NombreNot(</span>
+                idHorario,
+                EstadoCita.NombreEstado.CANCELADA
+        )) {
+<span class="fc" id="L188">    return false;</span>
+}
+
+// Si todas las validaciones se cumplen,
+// el horario está disponible.
+<span class="fc" id="L193">return true;</span>
+}
+    //Validar que un nuevo horario no se traslape con otro horario del medico
+    public boolean validarNuevoHorario(
+            Long idMedico,
+            LocalDate fecha,
+            LocalTime horaInicio,
+            LocalTime horaFin) {
+
+        //Verificar que el medico exista
+<span class="fc" id="L203">        validarMedico(idMedico);</span>
+
+
+        //Verificar que los datos obligatorios tengan valor
+<span class="fc bfc" id="L207" title="All 6 branches covered.">        if (fecha == null</span>
+                || horaInicio == null
+                || horaFin == null) {
+
+<span class="fc" id="L211">            throw new IllegalArgumentException(</span>
+                    &quot;La fecha y las horas son obligatorias&quot;
+            );
+        }
+
+
+        //Verificar que la hora final sea posterior a la inicial
+<span class="fc bfc" id="L218" title="All 2 branches covered.">        if (!horaFin.isAfter(horaInicio)) {</span>
+
+<span class="fc" id="L220">            throw new IllegalArgumentException(</span>
+                    &quot;La hora de fin debe ser posterior a la hora de inicio&quot;
+            );
+        }
+
+
+        //Buscar todos los horarios del medico en esa fecha
+<span class="fc" id="L227">        List&lt;HorarioDisponible&gt; horariosExistentes =</span>
+                horarioRepository
+<span class="fc" id="L229">                        .findByMedico_IdMedicoAndFecha(</span>
+                                idMedico,
+                                fecha
+                        );
+
+
+        //Comparar el nuevo horario con los existentes
+<span class="fc bfc" id="L236" title="All 2 branches covered.">        for (HorarioDisponible horario : horariosExistentes) {</span>
+
+<span class="fc bfc" id="L238" title="All 2 branches covered.">            if (hayTraslape(</span>
+                    horaInicio,
+                    horaFin,
+<span class="fc" id="L241">                    horario.getHoraInicio(),</span>
+<span class="fc" id="L242">                    horario.getHoraFin())) {</span>
+
+<span class="fc" id="L244">                return false;</span>
+            }
+<span class="fc" id="L246">        }</span>
+
+<span class="fc" id="L248">        return true;</span>
+    }
+
+
+    //Determinar si dos horarios se traslapan
+    public boolean hayTraslape(
+            LocalTime inicioNuevo,
+            LocalTime finNuevo,
+            LocalTime inicioExistente,
+            LocalTime finExistente) {
+
+<span class="fc bfc" id="L259" title="All 2 branches covered.">        return inicioNuevo.isBefore(finExistente)</span>
+<span class="fc bfc" id="L260" title="All 2 branches covered.">                &amp;&amp; finNuevo.isAfter(inicioExistente);</span>
+    }
+
+
+    //Verificar que el medico exista
+    private void validarMedico(Long idMedico) {
+
+        //Verificar que el ID tenga valor
+<span class="fc bfc" id="L268" title="All 2 branches covered.">        if (idMedico == null) {</span>
+
+<span class="fc" id="L270">            throw new IllegalArgumentException(</span>
+                    &quot;El identificador del medico es obligatorio&quot;
+            );
+        }
+
+
+<span class="fc" id="L276">        Medico medico = medicoRepository.findById(idMedico)</span>
+<span class="fc" id="L277">                .orElseThrow(() -&gt; new ResourceNotFoundException(</span>
+                        &quot;El medico indicado no existe&quot;));
+<span class="fc bfc" id="L279" title="All 2 branches covered.">        if (medico.getEstado() != Medico.EstadoMedico.ACTIVO) {</span>
+<span class="fc" id="L280">            throw new ResourceNotFoundException(</span>
+                    &quot;El médico no está disponible&quot;);
+        }
+<span class="fc" id="L283">    }</span>
+
+    private Medico bloquearMedicoActivo(Long idMedico) {
+<span class="pc bpc" id="L286" title="1 of 2 branches missed.">        if (idMedico == null) {</span>
+<span class="nc" id="L287">            throw new IllegalArgumentException(</span>
+                    &quot;El identificador del medico es obligatorio&quot;);
+        }
+<span class="fc" id="L290">        Medico medico = medicoRepository.buscarMedicoConBloqueo(idMedico)</span>
+<span class="pc" id="L291">                .orElseThrow(() -&gt; new ResourceNotFoundException(</span>
+                        &quot;El medico indicado no existe&quot;));
+<span class="pc bpc" id="L293" title="1 of 2 branches missed.">        if (medico.getEstado() != Medico.EstadoMedico.ACTIVO) {</span>
+<span class="nc" id="L294">            throw new ResourceNotFoundException(</span>
+                    &quot;El médico no está disponible&quot;);
+        }
+<span class="fc" id="L297">        return medico;</span>
+    }
+
+    private void validarIntervalo(
+            LocalDate fecha,
+            LocalTime horaInicio,
+            LocalTime horaFin) {
+<span class="pc bpc" id="L304" title="3 of 6 branches missed.">        if (fecha == null || horaInicio == null || horaFin == null) {</span>
+<span class="nc" id="L305">            throw new IllegalArgumentException(</span>
+                    &quot;La fecha y las horas son obligatorias&quot;);
+        }
+<span class="pc bpc" id="L308" title="1 of 2 branches missed.">        if (!horaFin.isAfter(horaInicio)) {</span>
+<span class="nc" id="L309">            throw new IllegalArgumentException(</span>
+                    &quot;La hora de fin debe ser posterior a la hora de inicio&quot;);
+        }
+<span class="fc" id="L312">    }</span>
+
+    private void validarFechaFutura(
+            LocalDate fecha,
+            LocalTime horaInicio,
+            String accion) {
+<span class="fc" id="L318">        LocalDateTime ahora = LocalDateTime.now(ZoneId.of(&quot;America/Guatemala&quot;));</span>
+<span class="pc bpc" id="L319" title="1 of 2 branches missed.">        if (!LocalDateTime.of(fecha, horaInicio).isAfter(ahora)) {</span>
+<span class="nc bnc" id="L320" title="All 2 branches missed.">            String mensaje = &quot;crear&quot;.equals(accion)</span>
+<span class="nc" id="L321">                    ? &quot;No se puede crear un horario en una fecha u hora que ya pasó&quot;</span>
+<span class="nc" id="L322">                    : &quot;No se puede cambiar el horario a una fecha u hora que ya pasó&quot;;</span>
+<span class="nc" id="L323">            throw new ScheduleConflictException(mensaje);</span>
+        }
+<span class="fc" id="L325">    }</span>
+
+    private boolean noHayTraslape(
+            Long idMedico,
+            LocalDate fecha,
+            LocalTime horaInicio,
+            LocalTime horaFin,
+            Long idHorarioIgnorado) {
+<span class="fc" id="L333">        return horarioRepository.findByMedico_IdMedicoAndFecha(idMedico, fecha)</span>
+<span class="fc" id="L334">                .stream()</span>
+<span class="pc bpc" id="L335" title="1 of 2 branches missed.">                .filter(horario -&gt; idHorarioIgnorado == null</span>
+<span class="pc bnc" id="L336" title="All 2 branches missed.">                        || !idHorarioIgnorado.equals(horario.getIdHorario()))</span>
+<span class="fc" id="L337">                .noneMatch(horario -&gt; hayTraslape(</span>
+                        horaInicio, horaFin,
+<span class="fc" id="L339">                        horario.getHoraInicio(), horario.getHoraFin()));</span>
+    }
+    public boolean validarHorarioActualizado(
+        Long idHorario,
+        Long idMedico,
+        LocalDate fecha,
+        LocalTime horaInicio,
+        LocalTime horaFin) {
+
+<span class="nc bnc" id="L348" title="All 2 branches missed.">    if (idHorario == null) {</span>
+<span class="nc" id="L349">        throw new IllegalArgumentException(</span>
+                &quot;El identificador del horario es obligatorio&quot;
+        );
+    }
+
+<span class="nc bnc" id="L354" title="All 2 branches missed.">    if (idMedico == null) {</span>
+<span class="nc" id="L355">        throw new IllegalArgumentException(</span>
+                &quot;El identificador del medico es obligatorio&quot;
+        );
+    }
+
+<span class="nc bnc" id="L360" title="All 6 branches missed.">    if (fecha == null || horaInicio == null || horaFin == null) {</span>
+<span class="nc" id="L361">        throw new IllegalArgumentException(</span>
+                &quot;La fecha y las horas son obligatorias&quot;
+        );
+    }
+
+<span class="nc bnc" id="L366" title="All 2 branches missed.">    if (!horaFin.isAfter(horaInicio)) {</span>
+<span class="nc" id="L367">        throw new IllegalArgumentException(</span>
+                &quot;La hora de fin debe ser posterior a la hora de inicio&quot;
+        );
+    }
+
+<span class="nc" id="L372">    List&lt;HorarioDisponible&gt; horarios =</span>
+            horarioRepository
+<span class="nc" id="L374">                    .findByMedico_IdMedicoAndFecha(</span>
+                            idMedico,
+                            fecha
+                    );
+
+<span class="nc" id="L379">    return horarios</span>
+<span class="nc" id="L380">            .stream()</span>
+
+            // Ignoramos el horario que estamos editando
+<span class="nc" id="L383">            .filter(horario -&gt;</span>
+<span class="nc" id="L384">                    !horario</span>
+<span class="nc" id="L385">                            .getIdHorario()</span>
+<span class="nc bnc" id="L386" title="All 2 branches missed.">                            .equals(idHorario)</span>
+            )
+
+            // Verificar si se cruza con otro
+<span class="nc" id="L390">            .noneMatch(horario -&gt;</span>
+<span class="nc" id="L391">                    hayTraslape(</span>
+                            horaInicio,
+                            horaFin,
+<span class="nc" id="L394">                            horario.getHoraInicio(),</span>
+<span class="nc" id="L395">                            horario.getHoraFin()</span>
+                    )
+            );
+}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

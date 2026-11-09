@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ScheduleController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">citas-backend</a> &gt; <a href="index.source.html" class="el_package">com.proyectocitas.controller</a> &gt; <span class="el_source">ScheduleController.java</span></div><h1>ScheduleController.java</h1><pre class="source lang-java linenums">package com.proyectocitas.controller;
+
+import com.proyectocitas.dto.response.HorarioDisponibleResponseDTO;
+import com.proyectocitas.dto.request.HorarioDisponibleCreateRequestDTO;
+import com.proyectocitas.dto.request.HorarioDisponibleUpdateRequestDTO;
+
+import com.proyectocitas.exception.ResourceNotFoundException;
+import com.proyectocitas.exception.ScheduleConflictException;
+
+import com.proyectocitas.mapper.HorarioDisponibleMapper;
+
+import com.proyectocitas.model.HorarioDisponible;
+import com.proyectocitas.model.Medico;
+
+import com.proyectocitas.repository.CitaRepository;
+import com.proyectocitas.repository.HorarioDisponibleRepository;
+import com.proyectocitas.repository.MedicoRepository;
+
+import com.proyectocitas.service.ScheduleService;
+
+import jakarta.validation.Valid;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.security.Principal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.Comparator;
+
+
+@RestController
+@RequestMapping(&quot;/api/v1/schedules&quot;)
+public class ScheduleController {
+
+    private final ScheduleService scheduleService;
+    private final MedicoRepository medicoRepository;
+    private final HorarioDisponibleRepository horarioRepository;
+    private final HorarioDisponibleMapper horarioMapper;
+    private final CitaRepository citaRepository;
+
+
+    public ScheduleController(
+            ScheduleService scheduleService,
+            MedicoRepository medicoRepository,
+            HorarioDisponibleRepository horarioRepository,
+            HorarioDisponibleMapper horarioMapper,
+<span class="fc" id="L53">            CitaRepository citaRepository) {</span>
+
+<span class="fc" id="L55">        this.scheduleService = scheduleService;</span>
+<span class="fc" id="L56">        this.medicoRepository = medicoRepository;</span>
+<span class="fc" id="L57">        this.horarioRepository = horarioRepository;</span>
+<span class="fc" id="L58">        this.horarioMapper = horarioMapper;</span>
+<span class="fc" id="L59">        this.citaRepository = citaRepository;</span>
+<span class="fc" id="L60">    }</span>
+
+
+    // =================================================
+    // CREAR HORARIO
+    // =================================================
+
+    @PostMapping
+    public ResponseEntity&lt;HorarioDisponibleResponseDTO&gt;
+            crearHorario(
+                    @Valid
+                    @RequestBody
+                    HorarioDisponibleCreateRequestDTO request,
+                    Principal principal) {
+
+        // ---------------------------------------------
+        // BUSCAR MÉDICO AUTENTICADO
+        // ---------------------------------------------
+
+<span class="fc" id="L79">        Medico medico =</span>
+                medicoRepository
+<span class="fc" id="L81">                        .findByUsuario_Correo(</span>
+<span class="fc" id="L82">                                principal.getName()</span>
+                        )
+<span class="fc" id="L84">                        .orElseThrow(() -&gt;</span>
+<span class="nc" id="L85">                                new ResourceNotFoundException(</span>
+                                        &quot;El usuario autenticado no tiene perfil de médico&quot;
+                                )
+                        );
+
+
+<span class="fc" id="L91">        HorarioDisponible guardado = scheduleService.crearHorarioAtomico(</span>
+<span class="fc" id="L92">                medico.getIdMedico(),</span>
+<span class="fc" id="L93">                request.getFecha(),</span>
+<span class="fc" id="L94">                request.getHoraInicio(),</span>
+<span class="fc" id="L95">                request.getHoraFin());</span>
+
+
+<span class="fc" id="L98">        return ResponseEntity</span>
+<span class="fc" id="L99">                .status(HttpStatus.CREATED)</span>
+<span class="fc" id="L100">                .body(</span>
+<span class="fc" id="L101">                        horarioMapper.toDTO(</span>
+                                guardado
+                        )
+                );
+    }
+
+
+    // =================================================
+    // CONSULTAR HORARIOS DISPONIBLES
+    // =================================================
+
+    @GetMapping(&quot;/available&quot;)
+    public ResponseEntity&lt;List&lt;HorarioDisponibleResponseDTO&gt;&gt;
+            obtenerHorariosDisponibles(
+                    @RequestParam Long idMedico,
+                    @RequestParam LocalDate fecha) {
+
+<span class="nc" id="L118">        List&lt;HorarioDisponibleResponseDTO&gt; horarios =</span>
+                scheduleService
+<span class="nc" id="L120">                        .consultarHorariosDisponibles(idMedico, fecha)</span>
+<span class="nc" id="L121">                        .stream()</span>
+<span class="nc" id="L122">                        .map(horarioMapper::toDTO)</span>
+<span class="nc" id="L123">                        .toList();</span>
+
+
+<span class="nc" id="L126">        return ResponseEntity.ok(</span>
+                horarios
+        );
+    }
+
+    @GetMapping(&quot;/my-schedules&quot;)
+    public ResponseEntity&lt;List&lt;HorarioDisponibleResponseDTO&gt;&gt; obtenerMisHorarios(Principal principal) {
+<span class="fc" id="L133">        Medico medico = medicoRepository.findByUsuario_Correo(principal.getName())</span>
+<span class="pc" id="L134">                .orElseThrow(() -&gt; new ResourceNotFoundException(</span>
+                        &quot;El usuario autenticado no tiene perfil de médico&quot;));
+
+<span class="fc" id="L137">        LocalDateTime ahora = LocalDateTime.now(ZoneId.of(&quot;America/Guatemala&quot;));</span>
+<span class="fc" id="L138">        return ResponseEntity.ok(horarioRepository.findByMedico_IdMedico(medico.getIdMedico())</span>
+<span class="fc" id="L139">                .stream()</span>
+<span class="pc bpc" id="L140" title="2 of 4 branches missed.">                .filter(horario -&gt; horario.getFecha() != null &amp;&amp; horario.getHoraInicio() != null</span>
+<span class="fc bfc" id="L141" title="All 2 branches covered.">                        &amp;&amp; LocalDateTime.of(horario.getFecha(), horario.getHoraInicio()).isAfter(ahora))</span>
+<span class="fc" id="L142">                .sorted(Comparator.comparing(HorarioDisponible::getFecha)</span>
+<span class="fc" id="L143">                        .thenComparing(HorarioDisponible::getHoraInicio))</span>
+<span class="fc" id="L144">                .map(horarioMapper::toDTO)</span>
+<span class="fc" id="L145">                .toList());</span>
+    }
+
+
+    // =================================================
+    // ACTUALIZAR HORARIO
+    // =================================================
+
+    @PutMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;HorarioDisponibleResponseDTO&gt;
+            actualizarHorario(
+                    @PathVariable Long id,
+                    @Valid
+                    @RequestBody
+                    HorarioDisponibleUpdateRequestDTO request,
+                    Principal principal) {
+
+
+        // ---------------------------------------------
+        // BUSCAR MÉDICO AUTENTICADO
+        // ---------------------------------------------
+
+<span class="fc" id="L167">        Medico medico =</span>
+                medicoRepository
+<span class="fc" id="L169">                        .findByUsuario_Correo(</span>
+<span class="fc" id="L170">                                principal.getName()</span>
+                        )
+<span class="fc" id="L172">                        .orElseThrow(() -&gt;</span>
+<span class="nc" id="L173">                                new ResourceNotFoundException(</span>
+                                        &quot;El usuario autenticado no tiene perfil de médico&quot;
+                                )
+                        );
+
+
+<span class="pc" id="L179">        HorarioDisponible actualizado = scheduleService.actualizarHorarioAtomico(</span>
+                id,
+<span class="fc" id="L181">                medico.getIdMedico(),</span>
+<span class="fc" id="L182">                request.getFecha(),</span>
+<span class="fc" id="L183">                request.getHoraInicio(),</span>
+<span class="fc" id="L184">                request.getHoraFin());</span>
+
+
+<span class="nc" id="L187">        return ResponseEntity.ok(</span>
+<span class="nc" id="L188">                horarioMapper.toDTO(</span>
+                        actualizado
+                )
+        );
+    }
+
+
+    // =================================================
+    // ELIMINAR HORARIO
+    // =================================================
+
+    @DeleteMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;Void&gt;
+            eliminarHorario(
+                    @PathVariable Long id,
+                    Principal principal) {
+
+
+        // ---------------------------------------------
+        // BUSCAR MÉDICO AUTENTICADO
+        // ---------------------------------------------
+
+<span class="nc" id="L210">        Medico medico =</span>
+                medicoRepository
+<span class="nc" id="L212">                        .findByUsuario_Correo(</span>
+<span class="nc" id="L213">                                principal.getName()</span>
+                        )
+<span class="nc" id="L215">                        .orElseThrow(() -&gt;</span>
+<span class="nc" id="L216">                                new ResourceNotFoundException(</span>
+                                        &quot;El usuario autenticado no tiene perfil de médico&quot;
+                                )
+                        );
+
+
+        // ---------------------------------------------
+        // BUSCAR HORARIO
+        // ---------------------------------------------
+
+<span class="nc" id="L226">        HorarioDisponible horario =</span>
+                horarioRepository
+<span class="nc" id="L228">                        .findById(id)</span>
+<span class="nc" id="L229">                        .orElseThrow(() -&gt;</span>
+<span class="nc" id="L230">                                new ResourceNotFoundException(</span>
+                                        &quot;El horario indicado no existe&quot;
+                                )
+                        );
+
+
+        // ---------------------------------------------
+        // VERIFICAR PROPIETARIO
+        // ---------------------------------------------
+
+<span class="nc" id="L240">        if (!horario</span>
+<span class="nc" id="L241">                .getMedico()</span>
+<span class="nc" id="L242">                .getIdMedico()</span>
+<span class="nc bnc" id="L243" title="All 2 branches missed.">                .equals(</span>
+<span class="nc" id="L244">                        medico.getIdMedico()</span>
+                )) {
+
+<span class="nc" id="L247">            throw new ResponseStatusException(</span>
+                    HttpStatus.FORBIDDEN,
+                    &quot;No puedes eliminar un horario de otro médico&quot;
+            );
+        }
+
+
+        // ---------------------------------------------
+        // NO ELIMINAR SI YA TIENE CITA
+        // ---------------------------------------------
+
+<span class="nc" id="L258">        if (citaRepository</span>
+<span class="nc bnc" id="L259" title="All 2 branches missed.">                .existsByHorario_IdHorario(id)) {</span>
+
+<span class="nc" id="L261">            throw new ScheduleConflictException(</span>
+                    &quot;No se puede eliminar un horario que ya tiene una cita asociada&quot;
+            );
+        }
+
+
+        // ---------------------------------------------
+        // ELIMINAR
+        // ---------------------------------------------
+
+<span class="nc" id="L271">        horarioRepository.delete(</span>
+                horario
+        );
+
+
+<span class="nc" id="L276">        return ResponseEntity</span>
+<span class="nc" id="L277">                .noContent()</span>
+<span class="nc" id="L278">                .build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

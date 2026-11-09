@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EspecialidadController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">citas-backend</a> &gt; <a href="index.source.html" class="el_package">com.proyectocitas.controller</a> &gt; <span class="el_source">EspecialidadController.java</span></div><h1>EspecialidadController.java</h1><pre class="source lang-java linenums">package com.proyectocitas.controller;
+
+import com.proyectocitas.dto.response.EspecialidadResponseDTO;
+import com.proyectocitas.dto.request.EspecialidadEstadoRequestDTO;
+import com.proyectocitas.dto.request.EspecialidadRequestDTO;
+import com.proyectocitas.exception.ResourceNotFoundException;
+import com.proyectocitas.mapper.EspecialidadMapper;
+import com.proyectocitas.model.Especialidad;
+import com.proyectocitas.service.EspecialidadService;
+
+import jakarta.validation.Valid;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping(&quot;/api/v1/especialidades&quot;)
+public class EspecialidadController {
+
+    private final EspecialidadService especialidadService;
+    private final EspecialidadMapper especialidadMapper;
+
+
+    public EspecialidadController( EspecialidadService especialidadService,
+            EspecialidadMapper especialidadMapper
+<span class="fc" id="L29">            ) {</span>
+<span class="fc" id="L30">        this.especialidadMapper = especialidadMapper;</span>
+<span class="fc" id="L31">        this.especialidadService = especialidadService;</span>
+
+<span class="fc" id="L33">    }</span>
+
+
+    // =================================================
+    // LISTAR
+    // =================================================
+
+    @GetMapping
+    public ResponseEntity&lt;List&lt;EspecialidadResponseDTO&gt;&gt;
+            obtenerTodas() {
+
+<span class="nc" id="L44">        List&lt;EspecialidadResponseDTO&gt; especialidades =</span>
+                especialidadService
+<span class="nc" id="L46">                        .obtenerTodos()</span>
+<span class="nc" id="L47">                        .stream()</span>
+<span class="nc" id="L48">                        .map(especialidadMapper::toDTO)</span>
+<span class="nc" id="L49">                        .toList();</span>
+
+<span class="nc" id="L51">        return ResponseEntity.ok(</span>
+                especialidades
+        );
+    }
+
+
+    // =================================================
+    // BUSCAR POR ID
+    // =================================================
+
+    @GetMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;EspecialidadResponseDTO&gt;
+            obtenerPorId(
+                    @PathVariable Long id
+            ) {
+
+<span class="nc" id="L67">        Especialidad especialidad =</span>
+                especialidadService
+<span class="nc" id="L69">                        .obtenerPorId(id)</span>
+<span class="nc" id="L70">                        .orElseThrow(() -&gt;</span>
+<span class="nc" id="L71">                                new ResourceNotFoundException(</span>
+                                        &quot;No existe la especialidad con ID: &quot;
+                                                + id
+                                )
+                        );
+
+<span class="nc" id="L77">        return ResponseEntity.ok(</span>
+<span class="nc" id="L78">                especialidadMapper.toDTO(</span>
+                        especialidad
+                )
+        );
+    }
+
+
+    // =================================================
+    // CREAR
+    // =================================================
+
+    @PostMapping
+    public ResponseEntity&lt;EspecialidadResponseDTO&gt;
+            guardar(
+                    @Valid
+                    @RequestBody
+                    EspecialidadRequestDTO request
+            ) {
+
+<span class="nc" id="L97">        Especialidad especialidad =</span>
+                especialidadMapper
+<span class="nc" id="L99">                        .toEntity(request);</span>
+
+<span class="nc" id="L101">        Especialidad nueva =</span>
+                especialidadService
+<span class="nc" id="L103">                        .guardar(especialidad);</span>
+
+<span class="nc" id="L105">        return ResponseEntity</span>
+<span class="nc" id="L106">                .status(HttpStatus.CREATED)</span>
+<span class="nc" id="L107">                .body(</span>
+                        especialidadMapper
+<span class="nc" id="L109">                                .toDTO(nueva)</span>
+                );
+    }
+
+
+    // =================================================
+    // ACTUALIZAR
+    // =================================================
+
+    @PutMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;EspecialidadResponseDTO&gt;
+            actualizar(
+                    @PathVariable Long id,
+
+                    @Valid
+                    @RequestBody
+                    EspecialidadRequestDTO request
+            ) {
+
+<span class="fc" id="L128">        Especialidad especialidad =</span>
+                especialidadMapper
+<span class="fc" id="L130">                        .toEntity(request);</span>
+
+<span class="fc" id="L132">        Especialidad actualizada =</span>
+                especialidadService
+<span class="fc" id="L134">                        .actualizar(</span>
+                                especialidad,
+                                id
+                        );
+
+<span class="fc" id="L139">        return ResponseEntity.ok(</span>
+                especialidadMapper
+<span class="fc" id="L141">                        .toDTO(actualizada)</span>
+        );
+    }
+
+
+    // =================================================
+    // CAMBIAR SOLO EL ESTADO, CONSERVANDO LOS DEMÁS DATOS
+    // =================================================
+
+    @PatchMapping(&quot;/{id}/estado&quot;)
+    public ResponseEntity&lt;EspecialidadResponseDTO&gt; actualizarEstado(
+            @PathVariable Long id,
+            @Valid @RequestBody EspecialidadEstadoRequestDTO request
+    ) {
+<span class="fc" id="L155">        Especialidad cambios = new Especialidad();</span>
+<span class="fc" id="L156">        cambios.setActivo(request.activo());</span>
+<span class="fc" id="L157">        Especialidad actualizada = especialidadService.actualizar(cambios, id);</span>
+<span class="fc" id="L158">        return ResponseEntity.ok(especialidadMapper.toDTO(actualizada));</span>
+    }
+
+    // =================================================
+    // DESACTIVAR (NO BORRAR)
+    // =================================================
+
+    @DeleteMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;Void&gt;
+            eliminar(
+                    @PathVariable Long id
+            ) {
+
+<span class="fc" id="L171">        especialidadService</span>
+<span class="fc" id="L172">                .eliminar(id);</span>
+
+<span class="fc" id="L174">        return ResponseEntity</span>
+<span class="fc" id="L175">                .noContent()</span>
+<span class="fc" id="L176">                .build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

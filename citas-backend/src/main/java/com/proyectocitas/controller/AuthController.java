@@ -1,5 +1,13 @@
 package com.proyectocitas.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+
 import com.proyectocitas.dto.request.LoginRequestDTO;
 import com.proyectocitas.security.JwtService;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +32,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 
 
+@Tag(name = "Autenticación", description = "Inicio de sesión y registro público de pacientes.")
 @RestController
 @RequestMapping("/api/v1/auth")
 public class AuthController {
@@ -49,6 +58,23 @@ public class AuthController {
 
     }
 
+   @Operation(
+       summary = "Iniciar sesión",
+       description = "Autentica una cuenta activa mediante correo y contraseña. Devuelve el JWT, su tipo, los datos " +
+           "del usuario, sus roles, permisos y el indicador de cambio de contraseña obligatorio.",
+       requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+           description = "Correo y contraseña de la cuenta. Los datos del ejemplo son ficticios.",
+           required = true, useParameterTypeSchema = true,
+           content = @Content(mediaType = "application/json", examples = @ExampleObject(
+               name = "Ejemplo", value = "{\"email\": \"ana@example.com\", \"password\": \"EjemploClave123\"}"))),
+       responses = {
+           @ApiResponse(responseCode = "200", description = "Consulta u operación realizada correctamente.",
+               content = @Content(mediaType = "application/json", schema = @Schema(implementation = LoginResponseDTO.class))),
+           @ApiResponse(responseCode = "400", ref = "#/components/responses/Error400"),
+           @ApiResponse(responseCode = "401", ref = "#/components/responses/Error401"),
+           @ApiResponse(responseCode = "500", ref = "#/components/responses/Error500")
+       }
+   )
    @PostMapping("/login")
 public ResponseEntity<LoginResponseDTO> login(
         @Valid @RequestBody LoginRequestDTO loginRequest
@@ -122,6 +148,24 @@ public ResponseEntity<LoginResponseDTO> login(
             respuesta
     );
 }
+    @Operation(
+        summary = "Registrar paciente",
+        description = "Registra una cuenta con el rol ROLE_PATIENT y solicita el envío de un enlace de verificación de " +
+            "correo.",
+        requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "Datos del paciente. Nombre y apellido comienzan con mayúscula y no admiten espacios; teléfono " +
+                "de 8 a 15 dígitos y contraseña de 8 a 64 caracteres.",
+            required = true, useParameterTypeSchema = true,
+            content = @Content(mediaType = "application/json", examples = @ExampleObject(
+                name = "Ejemplo", value = "{\"nombre\": \"Ana\", \"apellido\": \"Lopez\", \"correo\": \"ana@example.com\", \"telefono\": \"55554444\", \"contrasena\": \"EjemploClave123\"}"))),
+        responses = {
+            @ApiResponse(responseCode = "201", description = "Registro creado correctamente.",
+                content = @Content(mediaType = "application/json", schema = @Schema(implementation = UsuarioResponseDTO.class))),
+            @ApiResponse(responseCode = "400", ref = "#/components/responses/Error400"),
+            @ApiResponse(responseCode = "409", ref = "#/components/responses/Error409"),
+            @ApiResponse(responseCode = "500", ref = "#/components/responses/Error500")
+        }
+    )
     @PostMapping("/register")
     public ResponseEntity<UsuarioResponseDTO> register(
     @Valid

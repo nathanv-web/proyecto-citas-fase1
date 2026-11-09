@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NotificacionService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">citas-backend</a> &gt; <a href="index.source.html" class="el_package">com.proyectocitas.service</a> &gt; <span class="el_source">NotificacionService.java</span></div><h1>NotificacionService.java</h1><pre class="source lang-java linenums">package com.proyectocitas.service;
+
+import com.proyectocitas.dto.response.NotificacionResponseDTO;
+import com.proyectocitas.model.Notificacion;
+import com.proyectocitas.model.Usuario;
+import com.proyectocitas.repository.NotificacionRepository;
+import com.proyectocitas.repository.UsuarioRepository;
+
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+
+@Service
+public class NotificacionService {
+
+    private final NotificacionRepository notificacionRepository;
+    private final UsuarioRepository usuarioRepository;
+
+    public NotificacionService(
+            NotificacionRepository notificacionRepository,
+<span class="fc" id="L24">            UsuarioRepository usuarioRepository) {</span>
+
+<span class="fc" id="L26">        this.notificacionRepository = notificacionRepository;</span>
+<span class="fc" id="L27">        this.usuarioRepository = usuarioRepository;</span>
+<span class="fc" id="L28">    }</span>
+
+    // ==============================================
+    // OBTENER USUARIO AUTENTICADO
+    // ==============================================
+
+    private Usuario obtenerUsuario(String correo) {
+
+<span class="fc" id="L36">        return usuarioRepository.findByCorreo(correo)</span>
+<span class="fc" id="L37">                .orElseThrow(() -&gt;</span>
+<span class="fc" id="L38">                        new ResponseStatusException(</span>
+                                HttpStatus.UNAUTHORIZED,
+                                &quot;Usuario autenticado no encontrado&quot;
+                        )
+                );
+    }
+
+    // ==============================================
+    // LISTAR MIS NOTIFICACIONES
+    // ==============================================
+
+    @Transactional(readOnly = true)
+    public List&lt;NotificacionResponseDTO&gt; listarMias(
+            String correo) {
+
+<span class="fc" id="L53">        Usuario usuario = obtenerUsuario(correo);</span>
+
+<span class="fc" id="L55">        return notificacionRepository</span>
+<span class="fc" id="L56">                .findByDestinatario_IdUsuarioOrderByFechaCreacionDesc(</span>
+<span class="fc" id="L57">                        usuario.getIdUsuario()</span>
+                )
+<span class="fc" id="L59">                .stream()</span>
+<span class="fc" id="L60">                .map(this::convertirDTO)</span>
+<span class="fc" id="L61">                .toList();</span>
+    }
+
+    // ==============================================
+    // MARCAR MI NOTIFICACION COMO LEIDA
+    // ==============================================
+
+    @Transactional
+    public NotificacionResponseDTO marcarComoLeida(
+            Long idNotificacion,
+            String correo) {
+
+<span class="fc" id="L73">        Usuario usuario = obtenerUsuario(correo);</span>
+
+        // Se consulta por ID y propietario a la vez.
+        // Asi nadie puede modificar avisos ajenos.
+<span class="fc" id="L77">        Notificacion notificacion = notificacionRepository</span>
+<span class="fc" id="L78">                .findByIdNotificacionAndDestinatario_IdUsuario(</span>
+                        idNotificacion,
+<span class="fc" id="L80">                        usuario.getIdUsuario()</span>
+                )
+<span class="fc" id="L82">                .orElseThrow(() -&gt;</span>
+<span class="fc" id="L83">                        new ResponseStatusException(</span>
+                                HttpStatus.NOT_FOUND,
+                                &quot;Notificacion no encontrada&quot;
+                        )
+                );
+
+<span class="fc bfc" id="L89" title="All 2 branches covered.">        if (!notificacion.isLeida()) {</span>
+<span class="fc" id="L90">            notificacion.setLeida(true);</span>
+<span class="fc" id="L91">            notificacionRepository.save(notificacion);</span>
+        }
+
+<span class="fc" id="L94">        return convertirDTO(notificacion);</span>
+    }
+
+    // ==============================================
+    // CONTAR NOTIFICACIONES NO LEIDAS
+    // ==============================================
+
+    @Transactional(readOnly = true)
+    public long contarNoLeidas(String correo) {
+
+<span class="fc" id="L104">        Usuario usuario = obtenerUsuario(correo);</span>
+
+<span class="fc" id="L106">        return notificacionRepository</span>
+<span class="fc" id="L107">                .countByDestinatario_IdUsuarioAndLeidaFalse(</span>
+<span class="fc" id="L108">                        usuario.getIdUsuario()</span>
+                );
+    }
+
+    // ==============================================
+    // CONVERTIR ENTIDAD A DTO
+    // ==============================================
+
+    private NotificacionResponseDTO convertirDTO(
+            Notificacion notificacion) {
+
+<span class="fc" id="L119">        return new NotificacionResponseDTO(</span>
+<span class="fc" id="L120">                notificacion.getIdNotificacion(),</span>
+<span class="fc" id="L121">                notificacion.getTitulo(),</span>
+<span class="fc" id="L122">                notificacion.getMensaje(),</span>
+<span class="fc" id="L123">                notificacion.getTipo().name(),</span>
+<span class="fc" id="L124">                notificacion.isLeida(),</span>
+<span class="fc" id="L125">                notificacion.getFechaCreacion()</span>
+        );
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

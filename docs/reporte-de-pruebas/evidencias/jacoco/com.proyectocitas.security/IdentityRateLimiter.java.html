@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>IdentityRateLimiter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">citas-backend</a> &gt; <a href="index.source.html" class="el_package">com.proyectocitas.security</a> &gt; <span class="el_source">IdentityRateLimiter.java</span></div><h1>IdentityRateLimiter.java</h1><pre class="source lang-java linenums">package com.proyectocitas.security;
+
+import com.proyectocitas.config.IdentityProperties;
+import java.time.Clock;
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
+
+/** Límite por instancia, acotado en memoria e independiente de la existencia de cuentas. */
+@Component
+public class IdentityRateLimiter {
+    private final Clock clock;
+    private final IdentityProperties properties;
+<span class="fc" id="L19">    private final Map&lt;String, Window&gt; windows = new HashMap&lt;&gt;();</span>
+
+<span class="fc" id="L21">    public IdentityRateLimiter(@Qualifier(&quot;identityClock&quot;) Clock clock, IdentityProperties properties) {</span>
+<span class="fc" id="L22">        this.clock = clock;</span>
+<span class="fc" id="L23">        this.properties = properties;</span>
+<span class="fc" id="L24">    }</span>
+
+    public synchronized void checkRequest(String operation, String email, String remoteAddress) {
+<span class="fc" id="L27">        Instant now = clock.instant();</span>
+<span class="fc bfc" id="L28" title="All 2 branches covered.">        windows.values().removeIf(window -&gt; !window.expires.isAfter(now));</span>
+<span class="fc bfc" id="L29" title="All 2 branches covered.">        if (!allow(operation + &quot;:ip:&quot; + IdentityTokens.hash(remoteAddress), properties.getIpRequestLimit(), now)) {</span>
+<span class="fc" id="L30">            throw limited();</span>
+        }
+<span class="fc" id="L32">        boolean account = allow(operation + &quot;:email:&quot; + IdentityTokens.hash(email.trim().toLowerCase(Locale.ROOT)),</span>
+<span class="fc" id="L33">                properties.getEmailRequestLimit(), now);</span>
+<span class="fc bfc" id="L34" title="All 2 branches covered.">        if (!account) throw limited();</span>
+<span class="fc" id="L35">    }</span>
+
+    public synchronized void checkTokenAttempt(String operation, String remoteAddress) {
+<span class="fc" id="L38">        Instant now = clock.instant();</span>
+<span class="pc bpc" id="L39" title="1 of 2 branches missed.">        windows.values().removeIf(window -&gt; !window.expires.isAfter(now));</span>
+<span class="pc bpc" id="L40" title="1 of 2 branches missed.">        if (!allow(operation + &quot;:ip:&quot; + IdentityTokens.hash(remoteAddress), properties.getIpRequestLimit(), now)) throw limited();</span>
+<span class="fc" id="L41">    }</span>
+
+    private boolean allow(String key, int limit, Instant now) {
+<span class="fc" id="L44">        Window window = windows.get(key);</span>
+<span class="fc bfc" id="L45" title="All 2 branches covered.">        if (window == null) {</span>
+<span class="fc bfc" id="L46" title="All 2 branches covered.">            if (windows.size() &gt;= properties.getMaxRateLimitEntries()) return false;</span>
+<span class="fc" id="L47">            window = new Window(now.plus(properties.getRequestWindow()));</span>
+<span class="fc" id="L48">            windows.put(key, window);</span>
+        }
+<span class="fc bfc" id="L50" title="All 2 branches covered.">        if (window.requests &gt;= limit) return false;</span>
+<span class="fc" id="L51">        window.requests++;</span>
+<span class="fc" id="L52">        return true;</span>
+    }
+
+    private ResponseStatusException limited() {
+<span class="fc" id="L56">        return new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS,</span>
+                &quot;Se alcanzó el límite de solicitudes. Intenta nuevamente más tarde.&quot;);
+    }
+
+    private static final class Window {
+        private final Instant expires;
+        private int requests;
+<span class="fc" id="L63">        private Window(Instant expires) { this.expires = expires; }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

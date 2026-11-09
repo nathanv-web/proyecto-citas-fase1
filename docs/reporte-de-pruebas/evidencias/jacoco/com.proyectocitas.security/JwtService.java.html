@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JwtService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">citas-backend</a> &gt; <a href="index.source.html" class="el_package">com.proyectocitas.security</a> &gt; <span class="el_source">JwtService.java</span></div><h1>JwtService.java</h1><pre class="source lang-java linenums">package com.proyectocitas.security;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Service;
+
+import javax.crypto.SecretKey;
+import java.util.Date;
+import java.util.function.Function;
+
+@Service
+<span class="fc" id="L15">public class JwtService {</span>
+
+    @Value(&quot;${jwt.secret}&quot;)
+    private String secret;
+
+    @Value(&quot;${jwt.expiration}&quot;)
+    private long expiration;
+
+    public String generateToken(UserDetails userDetails) {
+<span class="fc" id="L24">        com.proyectocitas.model.Usuario usuario =</span>
+                (com.proyectocitas.model.Usuario) userDetails;
+<span class="fc" id="L26">        return Jwts.builder()</span>
+<span class="fc" id="L27">                .subject(userDetails.getUsername())</span>
+<span class="fc" id="L28">                .claim(&quot;idUsuario&quot;, usuario.getIdUsuario())</span>
+<span class="fc" id="L29">                .claim(&quot;versionSesion&quot;, usuario.getVersionSesion())</span>
+<span class="fc" id="L30">                .issuedAt(new Date())</span>
+<span class="fc" id="L31">                .expiration(new Date(System.currentTimeMillis() + expiration))</span>
+<span class="fc" id="L32">                .signWith(getSigningKey()).compact();</span>
+    }
+
+    public String extractUsername(String token) {
+<span class="fc" id="L36">        return extractClaim(token, Claims::getSubject);</span>
+    }
+
+    public boolean isTokenValid(String token, UserDetails userDetails) {
+<span class="fc" id="L40">        String username = extractUsername(token);</span>
+
+<span class="pc bpc" id="L42" title="1 of 2 branches missed.">        return username.equals(userDetails.getUsername())</span>
+<span class="pc bpc" id="L43" title="1 of 2 branches missed.">                &amp;&amp; !isTokenExpired(token)</span>
+<span class="pc bpc" id="L44" title="2 of 4 branches missed.">                &amp;&amp; userDetails.isEnabled() &amp;&amp; userDetails.isAccountNonLocked()</span>
+<span class="fc bfc" id="L45" title="All 2 branches covered.">                &amp;&amp; versionValida(token, userDetails)</span>
+<span class="fc bfc" id="L46" title="All 2 branches covered.">                &amp;&amp; usuarioValido(token, userDetails);</span>
+    }
+
+    private boolean usuarioValido(String token, UserDetails userDetails) {
+<span class="fc" id="L50">        Number idToken = extractClaim(token, claims -&gt; (Number) claims.get(&quot;idUsuario&quot;));</span>
+<span class="fc" id="L51">        Long idActual = ((com.proyectocitas.model.Usuario) userDetails).getIdUsuario();</span>
+<span class="pc bpc" id="L52" title="2 of 6 branches missed.">        return idToken != null &amp;&amp; idActual != null &amp;&amp; idToken.longValue() == idActual;</span>
+    }
+
+    private boolean versionValida(String token, UserDetails userDetails) {
+<span class="fc" id="L56">        Number version = extractClaim(token, claims -&gt; (Number) claims.get(&quot;versionSesion&quot;));</span>
+<span class="fc" id="L57">        long actual = ((com.proyectocitas.model.Usuario) userDetails).getVersionSesion();</span>
+<span class="pc bpc" id="L58" title="1 of 4 branches missed.">        return (version == null ? 0 : version.longValue()) == actual;</span>
+    }
+
+    private boolean isTokenExpired(String token) {
+<span class="fc" id="L62">        return extractExpiration(token).before(new Date());</span>
+    }
+
+    private Date extractExpiration(String token) {
+<span class="fc" id="L66">        return extractClaim(token, Claims::getExpiration);</span>
+    }
+
+    private &lt;T&gt; T extractClaim(String token, Function&lt;Claims, T&gt; claimsResolver) {
+<span class="fc" id="L70">        Claims claims = Jwts.parser()</span>
+<span class="fc" id="L71">                .verifyWith(getSigningKey())</span>
+<span class="fc" id="L72">                .build()</span>
+<span class="fc" id="L73">                .parseSignedClaims(token)</span>
+<span class="fc" id="L74">                .getPayload();</span>
+
+<span class="fc" id="L76">        return claimsResolver.apply(claims);</span>
+    }
+
+    private SecretKey getSigningKey() {
+<span class="fc" id="L80">        return Keys.hmacShaKeyFor(secret.getBytes());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

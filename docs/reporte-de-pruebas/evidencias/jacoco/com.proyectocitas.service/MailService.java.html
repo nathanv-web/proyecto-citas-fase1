@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MailService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">citas-backend</a> &gt; <a href="index.source.html" class="el_package">com.proyectocitas.service</a> &gt; <span class="el_source">MailService.java</span></div><h1>MailService.java</h1><pre class="source lang-java linenums">package com.proyectocitas.service;
+
+import com.proyectocitas.config.IdentityProperties;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriComponentsBuilder;
+
+/** Única infraestructura de correo, reutilizable por el integrante de citas/notificaciones. */
+@Service
+public class MailService {
+    private final JavaMailSender sender;
+    private final IdentityProperties properties;
+
+<span class="fc" id="L15">    public MailService(JavaMailSender sender, IdentityProperties properties) {</span>
+<span class="fc" id="L16">        this.sender = sender;</span>
+<span class="fc" id="L17">        this.properties = properties;</span>
+<span class="fc" id="L18">    }</span>
+
+    public void sendPasswordRecovery(PasswordRecoveryService.TokenDelivery delivery) {
+<span class="fc" id="L21">        String link = UriComponentsBuilder.fromUri(properties.getFrontendBaseUrl())</span>
+<span class="fc" id="L22">                .path(&quot;/reset-password&quot;).queryParam(&quot;token&quot;, delivery.token()).build().toUriString();</span>
+<span class="fc" id="L23">        send(delivery.email(), &quot;CitaNova: restablecer contraseña&quot;,</span>
+                &quot;Solicitaste restablecer tu contraseña. Abre este enlace:\n&quot; + link
+                + &quot;\n\nEl enlace es temporal y solo puede utilizarse una vez.&quot;
+                + &quot;\nSi no realizaste esta solicitud, ignora este correo. No compartas el enlace.&quot;);
+<span class="fc" id="L27">    }</span>
+
+    public void send(String recipient, String subject, String body) {
+<span class="fc" id="L30">        var message = new SimpleMailMessage();</span>
+<span class="fc" id="L31">        message.setFrom(properties.getMailFrom());</span>
+<span class="fc" id="L32">        message.setTo(recipient);</span>
+<span class="fc" id="L33">        message.setSubject(subject);</span>
+<span class="fc" id="L34">        message.setText(body);</span>
+<span class="fc" id="L35">        sender.send(message);</span>
+<span class="fc" id="L36">    }</span>
+
+    public void sendEmailVerification(EmailVerificationService.TokenDelivery delivery) {
+<span class="fc" id="L39">        String link = UriComponentsBuilder.fromUri(properties.getFrontendBaseUrl())</span>
+<span class="fc" id="L40">                .path(&quot;/verify-email&quot;).queryParam(&quot;token&quot;, delivery.token()).build().toUriString();</span>
+<span class="fc" id="L41">        send(delivery.email(), &quot;CitaNova: verifica tu correo&quot;,</span>
+                &quot;Confirma tu dirección de correo abriendo este enlace:\n&quot; + link
+                + &quot;\n\nEl enlace es temporal y solo puede utilizarse una vez.&quot;
+                + &quot;\nSi no realizaste esta solicitud, ignora este correo. No compartas el enlace.&quot;);
+<span class="fc" id="L45">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

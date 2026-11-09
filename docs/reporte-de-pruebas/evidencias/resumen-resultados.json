@@ -1,0 +1,510 @@
+{
+  "fecha": "2026-11-08T18:56:10-06:00",
+  "entorno": {
+    "java": "27.0.1.0.3",
+    "node": "26.13.0",
+    "npm": "12.2.2",
+    "jacoco": "0.8.15",
+    "base_pruebas": "H2"
+  },
+  "backend": {
+    "suites": 52,
+    "tests": 269,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "surefire_seconds": 14.599,
+    "coverage": {
+      "INSTRUCTION": {
+        "covered": 8524,
+        "missed": 2356,
+        "total": 10880,
+        "percentage": 78.35
+      },
+      "BRANCH": {
+        "covered": 472,
+        "missed": 292,
+        "total": 764,
+        "percentage": 61.78
+      },
+      "LINE": {
+        "covered": 2461,
+        "missed": 664,
+        "total": 3125,
+        "percentage": 78.75
+      },
+      "COMPLEXITY": {
+        "covered": 841,
+        "missed": 389,
+        "total": 1230,
+        "percentage": 68.37
+      },
+      "METHOD": {
+        "covered": 669,
+        "missed": 176,
+        "total": 845,
+        "percentage": 79.17
+      },
+      "CLASS": {
+        "covered": 118,
+        "missed": 6,
+        "total": 124,
+        "percentage": 95.16
+      }
+    }
+  },
+  "paquetes": {
+    "com.proyectocitas.service": {
+      "INSTRUCTION": {
+        "covered": 2650,
+        "missed": 581,
+        "total": 3231,
+        "percentage": 82.02
+      },
+      "BRANCH": {
+        "covered": 211,
+        "missed": 113,
+        "total": 324,
+        "percentage": 65.12
+      },
+      "LINE": {
+        "covered": 712,
+        "missed": 129,
+        "total": 841,
+        "percentage": 84.66
+      },
+      "COMPLEXITY": {
+        "covered": 194,
+        "missed": 103,
+        "total": 297,
+        "percentage": 65.32
+      },
+      "METHOD": {
+        "covered": 110,
+        "missed": 22,
+        "total": 132,
+        "percentage": 83.33
+      },
+      "CLASS": {
+        "covered": 22,
+        "missed": 1,
+        "total": 23,
+        "percentage": 95.65
+      }
+    },
+    "com.proyectocitas.dto": {
+      "INSTRUCTION": {
+        "covered": 15,
+        "missed": 11,
+        "total": 26,
+        "percentage": 57.69
+      },
+      "LINE": {
+        "covered": 6,
+        "missed": 6,
+        "total": 12,
+        "percentage": 50.0
+      },
+      "COMPLEXITY": {
+        "covered": 3,
+        "missed": 3,
+        "total": 6,
+        "percentage": 50.0
+      },
+      "METHOD": {
+        "covered": 3,
+        "missed": 3,
+        "total": 6,
+        "percentage": 50.0
+      },
+      "CLASS": {
+        "covered": 1,
+        "missed": 0,
+        "total": 1,
+        "percentage": 100.0
+      }
+    },
+    "com.proyectocitas.repository": {},
+    "com.proyectocitas.exception": {
+      "INSTRUCTION": {
+        "covered": 399,
+        "missed": 176,
+        "total": 575,
+        "percentage": 69.39
+      },
+      "BRANCH": {
+        "covered": 7,
+        "missed": 3,
+        "total": 10,
+        "percentage": 70.0
+      },
+      "LINE": {
+        "covered": 104,
+        "missed": 43,
+        "total": 147,
+        "percentage": 70.75
+      },
+      "COMPLEXITY": {
+        "covered": 16,
+        "missed": 8,
+        "total": 24,
+        "percentage": 66.67
+      },
+      "METHOD": {
+        "covered": 14,
+        "missed": 5,
+        "total": 19,
+        "percentage": 73.68
+      },
+      "CLASS": {
+        "covered": 5,
+        "missed": 0,
+        "total": 5,
+        "percentage": 100.0
+      }
+    },
+    "com.proyectocitas.dto.response": {
+      "INSTRUCTION": {
+        "covered": 505,
+        "missed": 57,
+        "total": 562,
+        "percentage": 89.86
+      },
+      "LINE": {
+        "covered": 203,
+        "missed": 24,
+        "total": 227,
+        "percentage": 89.43
+      },
+      "COMPLEXITY": {
+        "covered": 123,
+        "missed": 17,
+        "total": 140,
+        "percentage": 87.86
+      },
+      "METHOD": {
+        "covered": 123,
+        "missed": 17,
+        "total": 140,
+        "percentage": 87.86
+      },
+      "CLASS": {
+        "covered": 13,
+        "missed": 0,
+        "total": 13,
+        "percentage": 100.0
+      }
+    },
+    "com.proyectocitas.config": {
+      "INSTRUCTION": {
+        "covered": 1163,
+        "missed": 12,
+        "total": 1175,
+        "percentage": 98.98
+      },
+      "BRANCH": {
+        "covered": 28,
+        "missed": 10,
+        "total": 38,
+        "percentage": 73.68
+      },
+      "LINE": {
+        "covered": 242,
+        "missed": 3,
+        "total": 245,
+        "percentage": 98.78
+      },
+      "COMPLEXITY": {
+        "covered": 47,
+        "missed": 13,
+        "total": 60,
+        "percentage": 78.33
+      },
+      "METHOD": {
+        "covered": 38,
+        "missed": 3,
+        "total": 41,
+        "percentage": 92.68
+      },
+      "CLASS": {
+        "covered": 7,
+        "missed": 0,
+        "total": 7,
+        "percentage": 100.0
+      }
+    },
+    "com.proyectocitas": {
+      "INSTRUCTION": {
+        "covered": 3,
+        "missed": 5,
+        "total": 8,
+        "percentage": 37.5
+      },
+      "LINE": {
+        "covered": 1,
+        "missed": 2,
+        "total": 3,
+        "percentage": 33.33
+      },
+      "COMPLEXITY": {
+        "covered": 1,
+        "missed": 1,
+        "total": 2,
+        "percentage": 50.0
+      },
+      "METHOD": {
+        "covered": 1,
+        "missed": 1,
+        "total": 2,
+        "percentage": 50.0
+      },
+      "CLASS": {
+        "covered": 1,
+        "missed": 0,
+        "total": 1,
+        "percentage": 100.0
+      }
+    },
+    "com.proyectocitas.model": {
+      "INSTRUCTION": {
+        "covered": 898,
+        "missed": 71,
+        "total": 969,
+        "percentage": 92.67
+      },
+      "BRANCH": {
+        "covered": 13,
+        "missed": 5,
+        "total": 18,
+        "percentage": 72.22
+      },
+      "LINE": {
+        "covered": 282,
+        "missed": 24,
+        "total": 306,
+        "percentage": 92.16
+      },
+      "COMPLEXITY": {
+        "covered": 154,
+        "missed": 26,
+        "total": 180,
+        "percentage": 85.56
+      },
+      "METHOD": {
+        "covered": 150,
+        "missed": 21,
+        "total": 171,
+        "percentage": 87.72
+      },
+      "CLASS": {
+        "covered": 15,
+        "missed": 1,
+        "total": 16,
+        "percentage": 93.75
+      }
+    },
+    "com.proyectocitas.security": {
+      "INSTRUCTION": {
+        "covered": 583,
+        "missed": 43,
+        "total": 626,
+        "percentage": 93.13
+      },
+      "BRANCH": {
+        "covered": 55,
+        "missed": 21,
+        "total": 76,
+        "percentage": 72.37
+      },
+      "LINE": {
+        "covered": 132,
+        "missed": 10,
+        "total": 142,
+        "percentage": 92.96
+      },
+      "COMPLEXITY": {
+        "covered": 55,
+        "missed": 20,
+        "total": 75,
+        "percentage": 73.33
+      },
+      "METHOD": {
+        "covered": 36,
+        "missed": 1,
+        "total": 37,
+        "percentage": 97.3
+      },
+      "CLASS": {
+        "covered": 9,
+        "missed": 0,
+        "total": 9,
+        "percentage": 100.0
+      }
+    },
+    "com.proyectocitas.service.Impl": {
+      "INSTRUCTION": {
+        "covered": 731,
+        "missed": 531,
+        "total": 1262,
+        "percentage": 57.92
+      },
+      "BRANCH": {
+        "covered": 74,
+        "missed": 78,
+        "total": 152,
+        "percentage": 48.68
+      },
+      "LINE": {
+        "covered": 226,
+        "missed": 139,
+        "total": 365,
+        "percentage": 61.92
+      },
+      "COMPLEXITY": {
+        "covered": 47,
+        "missed": 98,
+        "total": 145,
+        "percentage": 32.41
+      },
+      "METHOD": {
+        "covered": 30,
+        "missed": 39,
+        "total": 69,
+        "percentage": 43.48
+      },
+      "CLASS": {
+        "covered": 5,
+        "missed": 0,
+        "total": 5,
+        "percentage": 100.0
+      }
+    },
+    "com.proyectocitas.controller": {
+      "INSTRUCTION": {
+        "covered": 758,
+        "missed": 764,
+        "total": 1522,
+        "percentage": 49.8
+      },
+      "BRANCH": {
+        "covered": 35,
+        "missed": 57,
+        "total": 92,
+        "percentage": 38.04
+      },
+      "LINE": {
+        "covered": 238,
+        "missed": 245,
+        "total": 483,
+        "percentage": 49.28
+      },
+      "COMPLEXITY": {
+        "covered": 61,
+        "missed": 78,
+        "total": 139,
+        "percentage": 43.88
+      },
+      "METHOD": {
+        "covered": 48,
+        "missed": 45,
+        "total": 93,
+        "percentage": 51.61
+      },
+      "CLASS": {
+        "covered": 15,
+        "missed": 0,
+        "total": 15,
+        "percentage": 100.0
+      }
+    },
+    "com.proyectocitas.dto.request": {
+      "INSTRUCTION": {
+        "covered": 331,
+        "missed": 78,
+        "total": 409,
+        "percentage": 80.93
+      },
+      "LINE": {
+        "covered": 142,
+        "missed": 27,
+        "total": 169,
+        "percentage": 84.02
+      },
+      "COMPLEXITY": {
+        "covered": 96,
+        "missed": 18,
+        "total": 114,
+        "percentage": 84.21
+      },
+      "METHOD": {
+        "covered": 96,
+        "missed": 18,
+        "total": 114,
+        "percentage": 84.21
+      },
+      "CLASS": {
+        "covered": 18,
+        "missed": 4,
+        "total": 22,
+        "percentage": 81.82
+      }
+    },
+    "com.proyectocitas.mapper": {
+      "INSTRUCTION": {
+        "covered": 488,
+        "missed": 27,
+        "total": 515,
+        "percentage": 94.76
+      },
+      "BRANCH": {
+        "covered": 49,
+        "missed": 5,
+        "total": 54,
+        "percentage": 90.74
+      },
+      "LINE": {
+        "covered": 173,
+        "missed": 12,
+        "total": 185,
+        "percentage": 93.51
+      },
+      "COMPLEXITY": {
+        "covered": 44,
+        "missed": 4,
+        "total": 48,
+        "percentage": 91.67
+      },
+      "METHOD": {
+        "covered": 20,
+        "missed": 1,
+        "total": 21,
+        "percentage": 95.24
+      },
+      "CLASS": {
+        "covered": 7,
+        "missed": 0,
+        "total": 7,
+        "percentage": 100.0
+      }
+    }
+  },
+  "angular": {
+    "files": 13,
+    "tests": 34,
+    "failures": 0,
+    "skipped": 0,
+    "vitest": "5.0.2",
+    "build_ok": true,
+    "build_warnings": 1
+  },
+  "ionic": {
+    "files": 17,
+    "tests": 24,
+    "failures": 0,
+    "skipped": 0,
+    "vitest": "4.0.18",
+    "build_ok": true,
+    "build_warnings": 6
+  },
+  "total_tests": 327
+}

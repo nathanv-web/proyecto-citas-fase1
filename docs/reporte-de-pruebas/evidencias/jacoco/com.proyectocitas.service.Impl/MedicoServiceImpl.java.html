@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MedicoServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">citas-backend</a> &gt; <a href="index.source.html" class="el_package">com.proyectocitas.service.Impl</a> &gt; <span class="el_source">MedicoServiceImpl.java</span></div><h1>MedicoServiceImpl.java</h1><pre class="source lang-java linenums">package com.proyectocitas.service.Impl;
+
+import com.proyectocitas.exception.ResourceNotFoundException;
+import com.proyectocitas.model.Medico;
+import com.proyectocitas.model.Especialidad;
+import com.proyectocitas.model.Usuario;
+import com.proyectocitas.model.Rol;
+
+import com.proyectocitas.repository.MedicoRepository;
+import com.proyectocitas.repository.EspecialidadRepository;
+import com.proyectocitas.repository.UsuarioRepository;
+import com.proyectocitas.repository.RolRepository;
+
+import com.proyectocitas.service.MedicoService;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Optional;
+import org.hibernate.ResourceClosedException;
+
+@Service
+public class MedicoServiceImpl implements MedicoService {
+
+    private final MedicoRepository medicoRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final EspecialidadRepository especialidadRepository;
+    private final RolRepository rolRepository;
+
+
+    //Constructor para inyectar los repositorios
+
+    public MedicoServiceImpl(
+            MedicoRepository medicoRepository,
+            UsuarioRepository usuarioRepository,
+            EspecialidadRepository especialidadRepository,
+<span class="fc" id="L38">            RolRepository rolRepository) {</span>
+
+<span class="fc" id="L40">        this.medicoRepository = medicoRepository;</span>
+<span class="fc" id="L41">        this.usuarioRepository = usuarioRepository;</span>
+<span class="fc" id="L42">        this.especialidadRepository = especialidadRepository;</span>
+<span class="fc" id="L43">        this.rolRepository = rolRepository;</span>
+<span class="fc" id="L44">    }</span>
+
+
+    //Obtener todos los médicos
+
+    @Override
+    public List&lt;Medico&gt; obtenerTodos() {
+<span class="nc" id="L51">        return medicoRepository.findAll();</span>
+    }
+    //Buscar un médico por su ID
+
+    @Override
+    public Optional&lt;Medico&gt; obtenerPorId(Long id) {
+<span class="nc" id="L57">        return medicoRepository.findById(id);</span>
+    }
+    //Buscar un médico por el ID del usuario
+
+    @Override
+    public Optional&lt;Medico&gt; obtenerPorUsuario(Long idUsuario) {
+
+<span class="nc" id="L64">        return medicoRepository</span>
+<span class="nc" id="L65">                .findByUsuario_IdUsuario(idUsuario);</span>
+    }
+    //Guardar un nuevo médico
+
+    @Override
+    public Medico guardar(Medico medico) {
+<span class="nc" id="L71">        return medicoRepository.save(medico);</span>
+    }
+
+    @Override
+    @Transactional
+    public Medico crearConRolDoctor(Medico medico) {
+<span class="pc bpc" id="L77" title="2 of 4 branches missed.">        if (medico == null || medico.getUsuario() == null</span>
+<span class="pc bpc" id="L78" title="1 of 2 branches missed.">                || medico.getUsuario().getIdUsuario() == null) {</span>
+<span class="nc" id="L79">            throw new IllegalArgumentException(&quot;El usuario del médico es obligatorio&quot;);</span>
+        }
+
+<span class="fc" id="L82">        Usuario usuario = usuarioRepository.findById(medico.getUsuario().getIdUsuario())</span>
+<span class="pc" id="L83">                .orElseThrow(() -&gt; new ResourceNotFoundException(</span>
+                        &quot;El usuario indicado no existe&quot;));
+<span class="fc" id="L85">        Rol rolDoctor = rolRepository.findByNombre(&quot;ROLE_DOCTOR&quot;)</span>
+<span class="pc" id="L86">                .orElseThrow(() -&gt; new ResourceNotFoundException(</span>
+                        &quot;El rol ROLE_DOCTOR no existe&quot;));
+
+<span class="pc bpc" id="L89" title="1 of 2 branches missed.">        if (usuario.getRoles() == null) {</span>
+<span class="nc" id="L90">            usuario.setRoles(new java.util.HashSet&lt;&gt;());</span>
+        }
+<span class="fc" id="L92">        usuario.getRoles().add(rolDoctor);</span>
+<span class="fc" id="L93">        usuarioRepository.save(usuario);</span>
+<span class="fc" id="L94">        medico.setUsuario(usuario);</span>
+
+        // Flush dentro de la transacción para detectar aquí la restricción UNIQUE.
+<span class="fc" id="L97">        return medicoRepository.saveAndFlush(medico);</span>
+    }
+    //Actualizar solamente los campos que tengan información
+    @Override
+    public Medico actualizar(Medico medico, Long id) {
+
+        //Buscar el médico existente
+<span class="nc" id="L104">        Medico medicoDB =</span>
+<span class="nc" id="L105">                medicoRepository.findById(id)</span>
+<span class="nc" id="L106">                .orElseThrow(()-&gt;</span>
+<span class="nc" id="L107">                new ResourceClosedException(&quot;El medico indicado no existe&quot;)</span>
+);
+
+        //Actualizar usuario si viene con información
+<span class="nc bnc" id="L111" title="All 2 branches missed.">        if (medico.getUsuario() != null) {</span>
+
+<span class="nc" id="L113">            Usuario usuarioDB = usuarioRepository.findById(</span>
+<span class="nc" id="L114">                    medico.getUsuario().getIdUsuario()</span>
+            )
+<span class="nc" id="L116">                    .orElseThrow(()-&gt;</span>
+<span class="nc" id="L117">                    new  ResourceNotFoundException(&quot;El usuario indicado no existe&quot;)</span>
+                    );
+
+<span class="nc" id="L120">            medicoDB.setUsuario(usuarioDB);</span>
+        }
+
+
+        //Actualizar especialidad si viene con información
+<span class="nc bnc" id="L125" title="All 2 branches missed.">        if (medico.getEspecialidad() != null) {</span>
+
+<span class="nc" id="L127">            Especialidad especialidadDB =</span>
+<span class="nc" id="L128">                    especialidadRepository.findById(</span>
+<span class="nc" id="L129">                            medico.getEspecialidad()</span>
+<span class="nc" id="L130">                                    .getIdEspecialidad()</span>
+                    )
+<span class="nc" id="L132">                    .orElseThrow(()-&gt;</span>
+<span class="nc" id="L133">                    new ResourceNotFoundException(&quot;La especialidad indicada no existe&quot;)</span>
+                    );
+
+<span class="nc" id="L136">            medicoDB.setEspecialidad(especialidadDB);</span>
+        }
+
+
+        //Actualizar número de colegiado si viene con valor
+<span class="nc bnc" id="L141" title="All 2 branches missed.">        if (medico.getColegiado() != null</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">                &amp;&amp; !medico.getColegiado().isEmpty()) {</span>
+
+<span class="nc" id="L144">            medicoDB.setColegiado(</span>
+<span class="nc" id="L145">                    medico.getColegiado()</span>
+            );
+        }
+
+
+        //Actualizar años de experiencia si viene con valor
+<span class="nc bnc" id="L151" title="All 2 branches missed.">        if (medico.getAniosExperiencia() != null) {</span>
+
+<span class="nc" id="L153">            medicoDB.setAniosExperiencia(</span>
+<span class="nc" id="L154">                    medico.getAniosExperiencia()</span>
+            );
+        }
+
+
+        //Actualizar biografía si viene con valor
+<span class="nc bnc" id="L160" title="All 2 branches missed.">        if (medico.getBiografia() != null</span>
+<span class="nc bnc" id="L161" title="All 2 branches missed.">                &amp;&amp; !medico.getBiografia().isEmpty()) {</span>
+
+<span class="nc" id="L163">            medicoDB.setBiografia(</span>
+<span class="nc" id="L164">                    medico.getBiografia()</span>
+            );
+        }
+
+
+        //Actualizar estado si viene con valor
+<span class="nc bnc" id="L170" title="All 2 branches missed.">        if (medico.getEstado() != null) {</span>
+
+<span class="nc" id="L172">            medicoDB.setEstado(</span>
+<span class="nc" id="L173">                    medico.getEstado()</span>
+            );
+        }
+
+
+        //Guardar los cambios realizados
+<span class="nc" id="L179">        return medicoRepository.save(medicoDB);</span>
+    }
+
+
+    //Eliminar un médico por su ID
+
+    @Override
+    public void eliminar(Long id) {
+
+<span class="nc" id="L188">        medicoRepository.deleteById(id);</span>
+<span class="nc" id="L189">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

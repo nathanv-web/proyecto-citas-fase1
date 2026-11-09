@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EstadisticaService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">citas-backend</a> &gt; <a href="index.source.html" class="el_package">com.proyectocitas.service</a> &gt; <span class="el_source">EstadisticaService.java</span></div><h1>EstadisticaService.java</h1><pre class="source lang-java linenums">package com.proyectocitas.service;
+
+import com.proyectocitas.dto.response.EstadisticaResponseDTO;
+import com.proyectocitas.repository.CitaRepository;
+import com.proyectocitas.repository.MedicoRepository;
+import com.proyectocitas.repository.RolRepository;
+import com.proyectocitas.repository.UsuarioRepository;
+import java.time.YearMonth;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+public class EstadisticaService {
+    private final UsuarioRepository usuarioRepository;
+    private final MedicoRepository medicoRepository;
+    private final CitaRepository citaRepository;
+    private final RolRepository rolRepository;
+
+    public EstadisticaService(UsuarioRepository usuarioRepository, MedicoRepository medicoRepository,
+<span class="fc" id="L20">            CitaRepository citaRepository, RolRepository rolRepository) {</span>
+<span class="fc" id="L21">        this.usuarioRepository = usuarioRepository;</span>
+<span class="fc" id="L22">        this.medicoRepository = medicoRepository;</span>
+<span class="fc" id="L23">        this.citaRepository = citaRepository;</span>
+<span class="fc" id="L24">        this.rolRepository = rolRepository;</span>
+<span class="fc" id="L25">    }</span>
+
+    @Transactional(readOnly = true)
+    public EstadisticaResponseDTO obtenerResumen(YearMonth mes) {
+<span class="fc" id="L29">        return new EstadisticaResponseDTO(</span>
+<span class="fc" id="L30">                usuarioRepository.count(),</span>
+<span class="fc" id="L31">                medicoRepository.count(),</span>
+<span class="fc" id="L32">                citaRepository.countByHorario_FechaBetween(mes.atDay(1), mes.atEndOfMonth()),</span>
+<span class="fc" id="L33">                rolRepository.count(),</span>
+<span class="fc" id="L34">                mes.toString());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

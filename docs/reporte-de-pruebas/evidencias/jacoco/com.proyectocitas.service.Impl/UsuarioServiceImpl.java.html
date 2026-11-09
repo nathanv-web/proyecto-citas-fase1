@@ -1,0 +1,440 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UsuarioServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">citas-backend</a> &gt; <a href="index.source.html" class="el_package">com.proyectocitas.service.Impl</a> &gt; <span class="el_source">UsuarioServiceImpl.java</span></div><h1>UsuarioServiceImpl.java</h1><pre class="source lang-java linenums">package com.proyectocitas.service.Impl;
+
+import com.proyectocitas.dto.request.UsuarioUpdateRequestDTO;
+import com.proyectocitas.model.Usuario;
+import com.proyectocitas.repository.UsuarioRepository;
+import com.proyectocitas.service.UsuarioService;
+import org.springframework.stereotype.Service;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import com.proyectocitas.exception.DuplicateResourceException;
+import com.proyectocitas.exception.ResourceNotFoundException;
+import com.proyectocitas.model.Rol;
+import com.proyectocitas.repository.RolRepository;
+import com.proyectocitas.exception.ResourceConflictException;
+import com.proyectocitas.service.AuditoriaService;
+import java.util.HashSet;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+public class UsuarioServiceImpl implements UsuarioService {
+
+    private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final RolRepository rolRepository;
+
+    //Constructor para inyectar el repositorio de usuarios
+
+    public UsuarioServiceImpl(UsuarioRepository usuarioRepository,
+            PasswordEncoder passwordEncoder,
+<span class="fc" id="L40">            RolRepository rolRepository) {</span>
+<span class="fc" id="L41">        this.usuarioRepository = usuarioRepository;</span>
+<span class="fc" id="L42">        this.passwordEncoder = passwordEncoder;</span>
+<span class="fc" id="L43">        this.rolRepository = rolRepository;</span>
+<span class="fc" id="L44">    }</span>
+
+    //Obtener todos los usuarios registrados
+
+    @Override
+    public List&lt;Usuario&gt; obtenerTodos() {
+<span class="nc" id="L50">        return usuarioRepository.findAll();</span>
+    }
+
+  // =================================================
+ // BUSCAR Y FILTRAR USUARIOS
+// =================================================
+// Permite buscar usuarios por nombre, apellido o correo.
+// También puede filtrar opcionalmente por estado y rol.
+@Override
+public List&lt;Usuario&gt; buscarConFiltros(
+        String search,
+        Boolean activo,
+        String rol) {
+
+    // Limpiar espacios innecesarios en los parámetros de texto.
+    String searchLimpio =
+<span class="pc bpc" id="L66" title="1 of 2 branches missed.">            search != null ? search.trim() : null;</span>
+
+    String rolLimpio =
+<span class="pc bpc" id="L69" title="1 of 2 branches missed.">            rol != null ? rol.trim() : null;</span>
+
+    // Delegar la búsqueda al repositorio.
+<span class="fc" id="L72">    return usuarioRepository.buscarConFiltros(</span>
+            searchLimpio,
+            activo,
+            rolLimpio
+    );
+}
+
+    //Buscar un usuario por su ID
+
+    @Override
+    public Usuario obtenerPorId(Long id) {
+<span class="nc" id="L83">        return usuarioRepository.findById(id)</span>
+<span class="nc" id="L84">                .orElseThrow(() -&gt;</span>
+<span class="nc" id="L85">                new ResourceNotFoundException(&quot;El usuario indicado no existe&quot;</span>
+                ));
+    }
+
+    //Buscar un usuario por su correo
+
+    @Override
+    public Optional&lt;Usuario&gt; obtenerPorCorreo(String correo) {
+<span class="nc" id="L93">        return usuarioRepository.findByCorreo(correo);</span>
+    }
+
+    //Guardar un nuevo usuario
+
+    @Override
+    public Usuario guardar(Usuario usuario) {
+<span class="nc" id="L100">        usuario.setDebeCambiarPassword(true);</span>
+
+<span class="nc bnc" id="L102" title="All 2 branches missed.">        if (usuarioRepository.existsByCorreo(usuario.getCorreo())) {</span>
+<span class="nc" id="L103">            throw new DuplicateResourceException(&quot;Ya existe un usuario registrado con este correo.&quot;);</span>
+        }
+
+<span class="nc" id="L106">        usuario.setContraseña(</span>
+<span class="nc" id="L107">        passwordEncoder.encode(usuario.getContrasena())</span>
+        );
+<span class="nc" id="L109">        return usuarioRepository.save(usuario);</span>
+    }
+
+    //Actualizar los datos principales de un usuario existente
+
+    @Override
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public Usuario actualizar(Long id,UsuarioUpdateRequestDTO usuario) {
+
+    //Buscar el usuario existente en la base de datos
+<span class="fc" id="L119">    Usuario usuarioDB = usuarioRepository.findById(id)</span>
+<span class="fc" id="L120">            .orElseThrow(()-&gt;</span>
+<span class="nc" id="L121">            new ResourceNotFoundException(&quot;El usuario Indicado no existe&quot;));</span>
+
+    //actualizar nombre
+<span class="pc bpc" id="L124" title="1 of 2 branches missed.">        if (usuario.getNombre() != null) {</span>
+<span class="nc" id="L125">            usuarioDB.setNombre(usuario.getNombre());</span>
+        }
+     //Actualizar apellido
+<span class="pc bpc" id="L128" title="1 of 2 branches missed.">            if (usuario.getApellido()!= null) {</span>
+<span class="nc" id="L129">                usuarioDB.setApellido(usuario.getApellido());</span>
+            }
+            //Actualizar correo y verificar si no hay una duplicacion de correo
+<span class="fc bfc" id="L132" title="All 2 branches covered.">            if (usuario.getCorreo() != null) {</span>
+<span class="fc bfc" id="L133" title="All 2 branches covered.">                if (!usuario.getCorreo().equalsIgnoreCase(usuarioDB.getCorreo())) {</span>
+<span class="fc bfc" id="L134" title="All 2 branches covered.">                    if (usuarioRepository.existsByCorreo(usuario.getCorreo())) {</span>
+<span class="fc" id="L135">                        throw new DuplicateResourceException(&quot;Ya existe un usuario registrado con este correo&quot;);</span>
+                    }
+<span class="fc" id="L137">                    usuarioDB.setCorreoVerificado(false);</span>
+                }
+<span class="fc" id="L139">                usuarioDB.setCorreo(usuario.getCorreo());</span>
+            }
+
+            //Actualizar telefono
+<span class="fc bfc" id="L143" title="All 2 branches covered.">            if (usuario.getTelefono() != null) {</span>
+<span class="fc" id="L144">            usuarioDB.setTelefono(usuario.getTelefono());</span>
+            }
+            //Actualizar estado
+<span class="fc bfc" id="L147" title="All 2 branches covered.">                if (usuario.getActivo() != null) {</span>
+<span class="pc bpc" id="L148" title="2 of 4 branches missed.">                    if (usuarioDB.isEnabled() &amp;&amp; !usuario.getActivo()) {</span>
+<span class="fc" id="L149">                        exigirPermiso(&quot;DESACTIVAR_USUARIOS&quot;);</span>
+<span class="nc" id="L150">                        desactivar(id);</span>
+<span class="nc" id="L151">                        return usuarioDB;</span>
+                    }
+<span class="nc" id="L153">                    usuarioDB.setActivo(usuario.getActivo());</span>
+                }
+
+<span class="fc" id="L156">                return usuarioRepository.save(usuarioDB);</span>
+
+    }
+
+    // =================================================
+// ASIGNAR ROLES A UN USUARIO
+// =================================================
+// Protecciones:
+// - Un usuario no puede modificar sus propios roles.
+// - ROLE_ADMIN solo puede ser concedido por un administrador.
+// - No se puede retirar ROLE_ADMIN al último administrador activo.
+@Override
+public Usuario asignarRol(
+        Long idUsuario,
+        Set&lt;Long&gt; idsRol) {
+
+    // Obtener al usuario autenticado desde Spring Security.
+    Authentication authentication =
+            SecurityContextHolder
+<span class="fc" id="L175">                    .getContext()</span>
+<span class="fc" id="L176">                    .getAuthentication();</span>
+
+<span class="pc bpc" id="L178" title="1 of 2 branches missed.">    if (authentication == null</span>
+<span class="pc bpc" id="L179" title="1 of 2 branches missed.">            || !(authentication.getPrincipal() instanceof Usuario actor)) {</span>
+
+<span class="nc" id="L181">        throw new ResponseStatusException(</span>
+                HttpStatus.FORBIDDEN,
+                &quot;No fue posible identificar al usuario autenticado.&quot;
+        );
+    }
+
+    // Evitar que un usuario modifique sus propios roles.
+<span class="pc bpc" id="L188" title="1 of 2 branches missed.">    if (actor.getIdUsuario() != null</span>
+<span class="fc bfc" id="L189" title="All 2 branches covered.">        &amp;&amp; actor.getIdUsuario().equals(idUsuario)) {</span>
+
+<span class="fc" id="L191">    AuditoriaService.registrar(</span>
+            &quot;ASIGNAR_ROLES&quot;,
+            &quot;USUARIO_ID_&quot; + idUsuario,
+            &quot;FALLO&quot;,
+            &quot;Intento de modificar los propios roles&quot;
+    );
+
+<span class="fc" id="L198">    throw new ResponseStatusException(</span>
+            HttpStatus.FORBIDDEN,
+            &quot;No puedes modificar tus propios roles.&quot;
+    );
+}
+
+    // Buscar al usuario objetivo.
+<span class="fc" id="L205">    Usuario usuario =</span>
+<span class="fc" id="L206">            usuarioRepository.findById(idUsuario)</span>
+<span class="fc" id="L207">                    .orElseThrow(() -&gt;</span>
+<span class="nc" id="L208">                            new ResourceNotFoundException(</span>
+                                    &quot;El usuario indicado no existe&quot;
+                            )
+                    );
+
+<span class="fc" id="L213">    Set&lt;Rol&gt; nuevosRoles =</span>
+            new HashSet&lt;&gt;();
+
+    // Buscar cada rol solicitado.
+<span class="fc bfc" id="L217" title="All 2 branches covered.">    for (Long idRol : idsRol) {</span>
+
+<span class="fc" id="L219">        Rol rol =</span>
+<span class="fc" id="L220">                rolRepository.findById(idRol)</span>
+<span class="fc" id="L221">                        .orElseThrow(() -&gt;</span>
+<span class="nc" id="L222">                                new ResourceNotFoundException(</span>
+                                        &quot;El rol con ID &quot;
+                                                + idRol
+                                                + &quot; no existe&quot;
+                                )
+                        );
+
+<span class="fc" id="L229">        nuevosRoles.add(rol);</span>
+<span class="fc" id="L230">    }</span>
+
+<span class="fc" id="L232">    boolean asignaRolAdmin =</span>
+<span class="fc" id="L233">            nuevosRoles.stream()</span>
+<span class="fc" id="L234">                    .anyMatch(rol -&gt;</span>
+<span class="fc" id="L235">                            &quot;ROLE_ADMIN&quot;.equalsIgnoreCase(</span>
+<span class="fc" id="L236">                                    rol.getNombre()</span>
+                            )
+                    );
+
+    // Para conceder ROLE_ADMIN, el actor también debe
+    // tener acceso administrativo.
+<span class="pc bpc" id="L242" title="1 of 2 branches missed.">    if (asignaRolAdmin) {</span>
+
+<span class="nc" id="L244">        boolean actorEsAdministrador =</span>
+<span class="nc" id="L245">                authentication.getAuthorities()</span>
+<span class="nc" id="L246">                        .stream()</span>
+<span class="nc" id="L247">                        .anyMatch(authority -&gt;</span>
+<span class="nc" id="L248">                                &quot;ACCESO_ADMIN&quot;.equals(</span>
+<span class="nc" id="L249">                                        authority.getAuthority()</span>
+                                )
+                        );
+
+<span class="nc bnc" id="L253" title="All 2 branches missed.">        if (!actorEsAdministrador) {</span>
+
+<span class="nc" id="L255">    AuditoriaService.registrar(</span>
+            &quot;ASIGNAR_ROLES&quot;,
+            &quot;USUARIO_ID_&quot; + idUsuario,
+            &quot;FALLO&quot;,
+            &quot;Intento no autorizado de asignar ROLE_ADMIN&quot;
+    );
+
+<span class="nc" id="L262">    throw new ResponseStatusException(</span>
+            HttpStatus.FORBIDDEN,
+            &quot;No tienes autorización para asignar el rol de administrador.&quot;
+    );
+}
+    }
+
+<span class="fc" id="L269">    boolean eraAdministrador =</span>
+<span class="fc" id="L270">            usuario.getRoles()</span>
+<span class="fc" id="L271">                    .stream()</span>
+<span class="fc" id="L272">                    .anyMatch(rol -&gt;</span>
+<span class="fc" id="L273">                            &quot;ROLE_ADMIN&quot;.equalsIgnoreCase(</span>
+<span class="fc" id="L274">                                    rol.getNombre()</span>
+                            )
+                    );
+
+<span class="fc" id="L278">    boolean seguiraSiendoAdministrador =</span>
+<span class="fc" id="L279">            nuevosRoles.stream()</span>
+<span class="fc" id="L280">                    .anyMatch(rol -&gt;</span>
+<span class="fc" id="L281">                            &quot;ROLE_ADMIN&quot;.equalsIgnoreCase(</span>
+<span class="fc" id="L282">                                    rol.getNombre()</span>
+                            )
+                    );
+
+    // Evitar retirar ROLE_ADMIN al último administrador activo.
+<span class="pc bpc" id="L287" title="3 of 6 branches missed.">    if (usuario.isEnabled()</span>
+            &amp;&amp; eraAdministrador
+            &amp;&amp; !seguiraSiendoAdministrador) {
+
+<span class="fc" id="L291">        long administradoresActivos =</span>
+                usuarioRepository
+<span class="fc" id="L293">                        .countByActivoTrueAndRoles_Nombre(</span>
+                                &quot;ROLE_ADMIN&quot;
+                        );
+
+<span class="pc bpc" id="L297" title="1 of 2 branches missed.">        if (administradoresActivos &lt;= 1) {</span>
+
+<span class="fc" id="L299">    AuditoriaService.registrar(</span>
+            &quot;ASIGNAR_ROLES&quot;,
+            &quot;USUARIO_ID_&quot; + idUsuario,
+            &quot;FALLO&quot;,
+            &quot;Intento de retirar ROLE_ADMIN al último administrador activo&quot;
+    );
+
+<span class="fc" id="L306">    throw new ResourceConflictException(</span>
+            &quot;No se puede retirar el rol de administrador al último administrador activo del sistema.&quot;
+    );
+}
+    }
+
+<span class="nc" id="L312">    usuario.getRoles().clear();</span>
+<span class="nc" id="L313">usuario.getRoles().addAll(nuevosRoles);</span>
+
+<span class="nc" id="L315">Usuario usuarioActualizado =</span>
+<span class="nc" id="L316">        usuarioRepository.save(usuario);</span>
+
+<span class="nc" id="L318">AuditoriaService.registrar(</span>
+        &quot;ASIGNAR_ROLES&quot;,
+        &quot;USUARIO_ID_&quot; + idUsuario,
+        &quot;EXITO&quot;,
+        &quot;Roles actualizados correctamente&quot;
+);
+
+<span class="nc" id="L325">return usuarioActualizado;</span>
+}
+
+    // =================================================
+// DESACTIVAR USUARIO
+// =================================================
+// Antes de desactivar un administrador se valida que
+// exista por lo menos otro administrador activo.
+@Override
+@Transactional(isolation = Isolation.READ_COMMITTED)
+public void desactivar(Long id) {
+
+<span class="fc" id="L337">    Usuario usuario =</span>
+<span class="fc" id="L338">            usuarioRepository.findById(id)</span>
+<span class="fc" id="L339">                    .orElseThrow(() -&gt;</span>
+<span class="nc" id="L340">                            new ResourceNotFoundException(</span>
+                                    &quot;Usuario no encontrado con ID: &quot; + id
+                            )
+                    );
+
+<span class="fc" id="L345">    boolean esAdministrador =</span>
+<span class="fc" id="L346">            usuario.getRoles()</span>
+<span class="fc" id="L347">                    .stream()</span>
+<span class="fc" id="L348">                    .anyMatch(rol -&gt;</span>
+<span class="fc" id="L349">                            &quot;ROLE_ADMIN&quot;.equalsIgnoreCase(</span>
+<span class="fc" id="L350">                                    rol.getNombre()</span>
+                            )
+                    );
+
+    // Si el usuario es un administrador activo,
+    // no se permite desactivarlo cuando es el último.
+<span class="pc bpc" id="L356" title="2 of 4 branches missed.">    if (usuario.isEnabled() &amp;&amp; esAdministrador) {</span>
+
+        // Todos los intentos de desactivar administradores se serializan
+        // sobre la misma fila antes de contar los administradores activos.
+<span class="fc" id="L360">        rolRepository.buscarPorNombreConBloqueo(&quot;ROLE_ADMIN&quot;);</span>
+
+<span class="fc" id="L362">        long administradoresActivos =</span>
+                usuarioRepository
+<span class="fc" id="L364">                        .countByActivoTrueAndRoles_Nombre(</span>
+                                &quot;ROLE_ADMIN&quot;
+                        );
+
+<span class="fc bfc" id="L368" title="All 2 branches covered.">        if (administradoresActivos &lt;= 1) {</span>
+
+<span class="fc" id="L370">    AuditoriaService.registrar(</span>
+            &quot;DESACTIVAR_USUARIO&quot;,
+            &quot;USUARIO_ID_&quot; + id,
+            &quot;FALLO&quot;,
+            &quot;Intento de desactivar al último administrador activo&quot;
+    );
+
+<span class="fc" id="L377">    throw new ResourceConflictException(</span>
+            &quot;No se puede desactivar al último administrador activo del sistema.&quot;
+    );
+}
+    }
+
+<span class="fc" id="L383">    usuario.setActivo(false);</span>
+
+<span class="fc" id="L385">usuarioRepository.save(usuario);</span>
+
+<span class="fc" id="L387">AuditoriaService.registrar(</span>
+        &quot;DESACTIVAR_USUARIO&quot;,
+        &quot;USUARIO_ID_&quot; + id,
+        &quot;EXITO&quot;,
+        &quot;Usuario desactivado correctamente&quot;
+);
+<span class="fc" id="L393">}</span>
+
+private void exigirPermiso(String permiso) {
+<span class="fc" id="L396">    Authentication autenticacion = SecurityContextHolder.getContext().getAuthentication();</span>
+<span class="pc bpc" id="L397" title="1 of 2 branches missed.">    boolean autorizado = autenticacion != null</span>
+<span class="fc" id="L398">            &amp;&amp; autenticacion.getAuthorities().stream()</span>
+<span class="fc bfc" id="L399" title="All 2 branches covered.">                    .anyMatch(authority -&gt; permiso.equals(authority.getAuthority()));</span>
+<span class="fc bfc" id="L400" title="All 2 branches covered.">    if (!autorizado) {</span>
+<span class="fc" id="L401">        throw new AccessDeniedException(</span>
+                &quot;No tienes permiso para desactivar usuarios.&quot;);
+    }
+<span class="fc" id="L404">}</span>
+
+    //Login usuario pacientes
+    @Override
+    public Usuario registrarPaciente(Usuario usuario){
+<span class="fc" id="L409">        usuario.setDebeCambiarPassword(false);</span>
+
+        //Verificar correo dupĺicado
+<span class="pc bpc" id="L412" title="1 of 2 branches missed.">        if (usuarioRepository.existsByCorreo(usuario.getCorreo())) {</span>
+<span class="nc" id="L413">            throw  new DuplicateResourceException(</span>
+            &quot;Ya existe un usuario registrado con ese correo&quot;
+            );
+        }
+
+        //  Buscar el Rol del paciente
+
+<span class="fc" id="L420">        Rol rolPaciente = rolRepository.findByNombre(&quot;ROLE_PATIENT&quot;)</span>
+<span class="fc" id="L421">                .orElseThrow(()-&gt;</span>
+<span class="nc" id="L422">                        new ResourceNotFoundException(&quot;El rol ROLE_PATIENT no existe&quot;)</span>
+                );
+
+        //Cifrar Contraseña
+
+<span class="fc" id="L427">        usuario.setContraseña(passwordEncoder.encode(usuario.getContrasena()));</span>
+
+        //Asignar automaticamente ROLE_PATIENT
+
+<span class="fc" id="L431">        usuario.getRoles().add(rolPaciente);</span>
+
+        //Guardar Usuario
+
+<span class="fc" id="L435">         return usuarioRepository.save(usuario);</span>
+
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

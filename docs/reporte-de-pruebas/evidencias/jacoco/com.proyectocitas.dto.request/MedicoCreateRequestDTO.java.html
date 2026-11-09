@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MedicoCreateRequestDTO.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">citas-backend</a> &gt; <a href="index.source.html" class="el_package">com.proyectocitas.dto.request</a> &gt; <span class="el_source">MedicoCreateRequestDTO.java</span></div><h1>MedicoCreateRequestDTO.java</h1><pre class="source lang-java linenums">package com.proyectocitas.dto.request;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Size;
+
+public class MedicoCreateRequestDTO {
+
+    //ID del usuario que tendrá el perfil de   medico
+    @NotNull(message = &quot;El usuario es obligatorio&quot;)
+    @Positive(message = &quot;El ID del usuario debe ser mayor que cero&quot;)
+    private Long idUsuario;
+
+    //ID de la especialidad del medico
+    @NotNull(message = &quot;La especialidad es obligatoria&quot;)
+    @Positive(message = &quot;El ID de la especialidad debe ser mayor que cero&quot;)
+    private Long idEspecialidad;
+
+    //Número de colegiado del medico
+    @NotBlank(message = &quot;El número de colegiado es obligatorio&quot;)
+    @Size(
+        max = 50,
+        message = &quot;El colegiado no puede superar los 50 caracteres&quot;
+    )
+    @Pattern(
+            regexp = &quot;^COL-[0-9]{4}$&quot;,
+            message = &quot;El colegiado debe tener el formato COL-0000 (cuatro dígitos)&quot;
+    )
+    private String colegiado;
+
+    //Años de experiencia profesional
+    @PositiveOrZero(message = &quot;Los años de experiencia no pueden ser negativos&quot;)
+    @NotNull(message = &quot;Los años de experiencia son boligatorios&quot;)
+    private Integer aniosExperiencia;
+
+    //Descripción o información profesional del medico
+    @Size(
+        max = 1000,
+        message = &quot;La biografía no puede superar los 1000 caracteres&quot;
+    )
+    private String biografia;
+
+
+<span class="fc" id="L47">    public MedicoCreateRequestDTO() {</span>
+<span class="fc" id="L48">    }</span>
+
+
+    public Long getIdUsuario() {
+<span class="fc" id="L52">        return idUsuario;</span>
+    }
+
+    public void setIdUsuario(Long idUsuario) {
+<span class="fc" id="L56">        this.idUsuario = idUsuario;</span>
+<span class="fc" id="L57">    }</span>
+
+    public Long getIdEspecialidad() {
+<span class="fc" id="L60">        return idEspecialidad;</span>
+    }
+
+    public void setIdEspecialidad(Long idEspecialidad) {
+<span class="fc" id="L64">        this.idEspecialidad = idEspecialidad;</span>
+<span class="fc" id="L65">    }</span>
+
+    public String getColegiado() {
+<span class="fc" id="L68">        return colegiado;</span>
+    }
+
+    public void setColegiado(String colegiado) {
+<span class="fc" id="L72">        this.colegiado = colegiado;</span>
+<span class="fc" id="L73">    }</span>
+
+    public Integer getAniosExperiencia() {
+<span class="fc" id="L76">        return aniosExperiencia;</span>
+    }
+
+    public void setAniosExperiencia(Integer aniosExperiencia) {
+<span class="fc" id="L80">        this.aniosExperiencia = aniosExperiencia;</span>
+<span class="fc" id="L81">    }</span>
+
+    public String getBiografia() {
+<span class="fc" id="L84">        return biografia;</span>
+    }
+
+    public void setBiografia(String biografia) {
+<span class="fc" id="L88">        this.biografia = biografia;</span>
+<span class="fc" id="L89">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

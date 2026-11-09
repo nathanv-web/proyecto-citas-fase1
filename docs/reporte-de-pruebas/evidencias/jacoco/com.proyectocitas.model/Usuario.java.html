@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Usuario.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">citas-backend</a> &gt; <a href="index.source.html" class="el_package">com.proyectocitas.model</a> &gt; <span class="el_source">Usuario.java</span></div><h1>Usuario.java</h1><pre class="source lang-java linenums">package com.proyectocitas.model;
+
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
+@Entity
+@Table(name = &quot;usuarios&quot;)
+public class Usuario implements UserDetails { //Metodo de autenticazion y autorizacion de una persona
+
+    // ATRIBUTOS DE LA TABLA USUARIO
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = &quot;id_usuario&quot;) //
+    private Long idUsuario; //
+
+    @Column(nullable = false)
+    private String nombre;
+
+    @Column(nullable = false)
+    private String apellido;
+
+    @Column(unique = true, nullable = false)
+    private String correo;
+
+    @Column(nullable = false)
+    private String telefono;
+
+    @Column(nullable = false)
+    private String contrasena;
+
+    @Column(name = &quot;fecha_registro&quot;, nullable = false)
+    private LocalDateTime fechaRegistro;
+
+<span class="fc" id="L42">    @Column(nullable = false)</span>
+<span class="fc" id="L43">    private Boolean activo = true;</span>
+
+    @Column(name = &quot;debe_cambiar_password&quot;, nullable = false)
+    private boolean debeCambiarPassword;
+
+    @Column(name = &quot;intentos_fallidos&quot;, nullable = false)
+    private int intentosFallidos;
+
+    @Column(name = &quot;bloqueado_hasta&quot;)
+    private LocalDateTime bloqueadoHasta;
+
+    @Column(name = &quot;version_sesion&quot;, nullable = false)
+    private long versionSesion;
+
+    @Column(name = &quot;correo_verificado&quot;, nullable = false)
+    private boolean correoVerificado;
+
+    // Control de escrituras concurrentes; no es la versión utilizada para revocar JWT.
+    @Version
+    @Column(name = &quot;version_registro&quot;, nullable = false)
+    private long versionRegistro;
+
+    // RELACION USUARIO CON ROLES
+    //Roles que tiene asignados el usuario
+<span class="fc" id="L67">    @ManyToMany(fetch = FetchType.EAGER)</span>
+    @JoinTable(
+        name = &quot;usuario_rol&quot;,
+        joinColumns = @JoinColumn(name = &quot;id_usuario&quot;),
+        inverseJoinColumns = @JoinColumn(name = &quot;id_rol&quot;)
+)
+private Set&lt;Rol&gt; roles = new HashSet&lt;&gt;();
+    //CONSTRUCTOR VACIO
+
+<span class="fc" id="L76">    public Usuario(){}</span>
+
+    //FECHAN DE REGISTRO
+
+    @PrePersist
+    public void prePersist(){
+<span class="pc bpc" id="L82" title="1 of 2 branches missed.">        if (fechaRegistro == null) {</span>
+<span class="fc" id="L83">            fechaRegistro = LocalDateTime.now();</span>
+        }
+<span class="pc bpc" id="L85" title="1 of 2 branches missed.">        if (activo == null) {</span>
+<span class="nc" id="L86">            activo = true;</span>
+        }
+<span class="fc" id="L88">    }</span>
+
+    // GETTER Y SETTERS
+
+    public Long getIdUsuario() {
+<span class="fc" id="L93">        return idUsuario;</span>
+    }
+
+    public void setIdUsuario(Long idUsuario) {
+<span class="fc" id="L97">        this.idUsuario = idUsuario;</span>
+<span class="fc" id="L98">    }</span>
+
+    public String getNombre() {
+<span class="fc" id="L101">        return nombre;</span>
+    }
+
+    public void setNombre(String nombre) {
+<span class="fc" id="L105">        this.nombre = nombre;</span>
+<span class="fc" id="L106">    }</span>
+
+    public String getApellido() {
+<span class="fc" id="L109">        return apellido;</span>
+    }
+
+    public void setApellido(String apellido) {
+<span class="fc" id="L113">        this.apellido = apellido;</span>
+<span class="fc" id="L114">    }</span>
+
+    public String getCorreo() {
+<span class="fc" id="L117">        return correo;</span>
+    }
+
+    public void setCorreo(String correo) {
+<span class="fc" id="L121">        this.correo = correo;</span>
+<span class="fc" id="L122">    }</span>
+
+    public String getTelefono() {
+<span class="fc" id="L125">        return telefono;</span>
+    }
+
+    public void setTelefono(String telefono) {
+<span class="fc" id="L129">        this.telefono = telefono;</span>
+<span class="fc" id="L130">    }</span>
+
+    public String getContrasena() {
+<span class="fc" id="L133">        return contrasena;</span>
+    }
+
+    public void setContraseña(String contrasena) {
+<span class="fc" id="L137">        this.contrasena = contrasena;</span>
+<span class="fc" id="L138">    }</span>
+
+    public LocalDateTime getFechaRegistro() {
+<span class="nc" id="L141">        return fechaRegistro;</span>
+    }
+
+    public void setFechaRegistro(LocalDateTime fechaRegistro) {
+<span class="nc" id="L145">        this.fechaRegistro = fechaRegistro;</span>
+<span class="nc" id="L146">    }</span>
+
+    public Boolean getActivo() {
+<span class="fc" id="L149">        return activo;</span>
+    }
+
+    public void setActivo(Boolean activo) {
+<span class="fc" id="L153">        this.activo = activo;</span>
+<span class="fc" id="L154">    }</span>
+
+    public Set&lt;Rol&gt; getRoles() {
+<span class="fc" id="L157">        return roles;</span>
+    }
+
+    public void setRoles(Set&lt;Rol&gt; roles) {
+<span class="fc" id="L161">        this.roles = roles;</span>
+<span class="fc" id="L162">    }</span>
+
+    public boolean isDebeCambiarPassword() {
+<span class="fc" id="L165">        return debeCambiarPassword;</span>
+    }
+
+    public void setDebeCambiarPassword(boolean valor) {
+<span class="fc" id="L169">        debeCambiarPassword = valor;</span>
+<span class="fc" id="L170">    }</span>
+
+    public int getIntentosFallidos() {
+<span class="fc" id="L173">        return intentosFallidos;</span>
+    }
+
+    public void setIntentosFallidos(int valor) {
+<span class="fc" id="L177">        intentosFallidos = valor;</span>
+<span class="fc" id="L178">    }</span>
+
+    public LocalDateTime getBloqueadoHasta() {
+<span class="fc" id="L181">        return bloqueadoHasta;</span>
+    }
+
+    public void setBloqueadoHasta(LocalDateTime valor) {
+<span class="fc" id="L185">        bloqueadoHasta = valor;</span>
+<span class="fc" id="L186">    }</span>
+
+    public long getVersionSesion() {
+<span class="fc" id="L189">        return versionSesion;</span>
+    }
+
+<span class="fc" id="L192">    public boolean isCorreoVerificado() { return correoVerificado; }</span>
+
+<span class="fc" id="L194">    public void setCorreoVerificado(boolean valor) { correoVerificado = valor; }</span>
+
+<span class="nc" id="L196">    public long getVersionRegistro() { return versionRegistro; }</span>
+
+    public void setVersionSesion(long valor) {
+<span class="fc" id="L199">        versionSesion = valor;</span>
+<span class="fc" id="L200">    }</span>
+
+
+    // METODOS DE USERDETAILS
+    // SPRING SECURITY
+
+@Override
+public Collection&lt;? extends GrantedAuthority&gt; getAuthorities() {
+
+<span class="fc" id="L209">    Set&lt;GrantedAuthority&gt; authorities =</span>
+            new HashSet&lt;&gt;();
+
+    // Recorrer todos los roles del usuario
+<span class="fc bfc" id="L213" title="All 2 branches covered.">    for (Rol rol : roles) {</span>
+
+        // =================================================
+        // AGREGAR ROL
+        // =================================================
+<span class="fc" id="L218">        authorities.add(</span>
+                new SimpleGrantedAuthority(
+<span class="fc" id="L220">                        rol.getNombre()</span>
+                )
+        );
+
+
+        // =================================================
+        // AGREGAR PERMISOS DEL ROL
+        // =================================================
+<span class="pc bpc" id="L228" title="1 of 2 branches missed.">        if (rol.getPermisos() != null) {</span>
+
+<span class="fc bfc" id="L230" title="All 2 branches covered.">            for (Permiso permiso : rol.getPermisos()) {</span>
+
+<span class="fc" id="L232">                authorities.add(</span>
+                        new SimpleGrantedAuthority(
+<span class="fc" id="L234">                                permiso.name()</span>
+                        )
+                );
+<span class="fc" id="L237">            }</span>
+        }
+<span class="fc" id="L239">    }</span>
+
+<span class="fc" id="L241">    return authorities;</span>
+}
+
+    @Override
+    public String getUsername(){
+<span class="fc" id="L246">        return correo;</span>
+    }
+    @Override
+    public String getPassword(){
+<span class="fc" id="L250">        return contrasena;</span>
+    }
+    @Override
+    public boolean isAccountNonExpired(){
+<span class="nc" id="L254">        return true;</span>
+    }
+    @Override
+    public boolean isAccountNonLocked(){
+<span class="fc bfc" id="L258" title="All 4 branches covered.">        return bloqueadoHasta == null || !bloqueadoHasta.isAfter(LocalDateTime.now());</span>
+    }
+    @Override
+    public boolean isCredentialsNonExpired(){
+<span class="nc" id="L262">        return true;</span>
+    }
+    @Override
+    public boolean isEnabled() {
+<span class="fc" id="L266">       return activo;</span>
+}
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

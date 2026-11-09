@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AppointmentResponseDTO.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">citas-backend</a> &gt; <a href="index.source.html" class="el_package">com.proyectocitas.dto.response</a> &gt; <span class="el_source">AppointmentResponseDTO.java</span></div><h1>AppointmentResponseDTO.java</h1><pre class="source lang-java linenums">package com.proyectocitas.dto.response;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+
+public class AppointmentResponseDTO {
+
+    //ID de la cita médica
+    private Long idCita;
+
+    // Identificador del médico para consultar sus horarios al reprogramar
+    private Long idMedico;
+
+    //Nombre completo del paciente
+    private String paciente;
+
+    //Nombre completo del medico
+    private String medico;
+
+    //Especialidad del medico
+    private String especialidad;
+
+    //Fecha de la cita
+    private LocalDate fecha;
+
+    //Hora de inicio de la cita
+    private LocalTime horaInicio;
+
+    //Hora de finalización de la cita
+    private LocalTime horaFin;
+
+    //Estado actual de la cita
+    private String estado;
+
+    //Motivo de la consulta
+    private String motivo;
+    
+    //Motivo de la cancelacion
+    private String motivoCancelacion;
+
+    //Diagnóstico y receta de la cita
+    private String diagnosticoReceta;
+
+    //Observaciones adicionales
+    private String observaciones;
+
+
+<span class="fc" id="L48">    public AppointmentResponseDTO() {</span>
+<span class="fc" id="L49">    }</span>
+
+
+    public Long getIdMedico() {
+<span class="fc" id="L53">        return idMedico;</span>
+    }
+
+
+    public void setIdMedico(Long idMedico) {
+<span class="fc" id="L58">        this.idMedico = idMedico;</span>
+<span class="fc" id="L59">    }</span>
+
+
+    public Long getIdCita() {
+<span class="fc" id="L63">        return idCita;</span>
+    }
+
+    public void setIdCita(Long idCita) {
+<span class="fc" id="L67">        this.idCita = idCita;</span>
+<span class="fc" id="L68">    }</span>
+
+    public String getPaciente() {
+<span class="fc" id="L71">        return paciente;</span>
+    }
+
+    public void setPaciente(String paciente) {
+<span class="fc" id="L75">        this.paciente = paciente;</span>
+<span class="fc" id="L76">    }</span>
+
+    public String getMedico() {
+<span class="fc" id="L79">        return medico;</span>
+    }
+
+    public void setMedico(String medico) {
+<span class="fc" id="L83">        this.medico = medico;</span>
+<span class="fc" id="L84">    }</span>
+
+    public String getEspecialidad() {
+<span class="fc" id="L87">        return especialidad;</span>
+    }
+
+    public void setEspecialidad(String especialidad) {
+<span class="fc" id="L91">        this.especialidad = especialidad;</span>
+<span class="fc" id="L92">    }</span>
+
+    public LocalDate getFecha() {
+<span class="fc" id="L95">        return fecha;</span>
+    }
+
+    public void setFecha(LocalDate fecha) {
+<span class="fc" id="L99">        this.fecha = fecha;</span>
+<span class="fc" id="L100">    }</span>
+
+    public LocalTime getHoraInicio() {
+<span class="fc" id="L103">        return horaInicio;</span>
+    }
+
+    public void setHoraInicio(LocalTime horaInicio) {
+<span class="fc" id="L107">        this.horaInicio = horaInicio;</span>
+<span class="fc" id="L108">    }</span>
+
+    public LocalTime getHoraFin() {
+<span class="fc" id="L111">        return horaFin;</span>
+    }
+
+    public void setHoraFin(LocalTime horaFin) {
+<span class="fc" id="L115">        this.horaFin = horaFin;</span>
+<span class="fc" id="L116">    }</span>
+
+    public String getEstado() {
+<span class="fc" id="L119">        return estado;</span>
+    }
+
+    public void setEstado(String estado) {
+<span class="fc" id="L123">        this.estado = estado;</span>
+<span class="fc" id="L124">    }</span>
+
+    public String getMotivo() {
+<span class="fc" id="L127">        return motivo;</span>
+    }
+
+    public void setMotivo(String motivo) {
+<span class="fc" id="L131">        this.motivo = motivo;</span>
+<span class="fc" id="L132">    }</span>
+    
+    public String getMotivoCancelacion() {
+<span class="nc" id="L135">    return motivoCancelacion;</span>
+    }
+
+    public void setMotivoCancelacion(String motivoCancelacion) {
+<span class="fc" id="L139">    this.motivoCancelacion = motivoCancelacion;</span>
+<span class="fc" id="L140">    }</span>
+
+    public String getDiagnosticoReceta() {
+<span class="nc" id="L143">        return diagnosticoReceta;</span>
+    }
+
+    public void setDiagnosticoReceta(String diagnosticoReceta) {
+<span class="fc" id="L147">        this.diagnosticoReceta = diagnosticoReceta;</span>
+<span class="fc" id="L148">    }</span>
+
+    public String getObservaciones() {
+<span class="nc" id="L151">        return observaciones;</span>
+    }
+
+    public void setObservaciones(String observaciones) {
+<span class="fc" id="L155">        this.observaciones = observaciones;</span>
+<span class="fc" id="L156">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

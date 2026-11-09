@@ -9,9 +9,6 @@ El diseño de [`welcome.html`](src/app/features/public/welcome/welcome.html) y
 [`welcome.css`](src/app/features/public/welcome/welcome.css) sirve como referencia
 para las pantallas de acceso, administración, médicos y pacientes.
 
-La [documentación del frontend](docs/frontend.md) describe la estructura del código,
-el funcionamiento de los módulos y los estilos compartidos.
-
 ## Requisitos
 
 El entorno local requiere las siguientes herramientas:

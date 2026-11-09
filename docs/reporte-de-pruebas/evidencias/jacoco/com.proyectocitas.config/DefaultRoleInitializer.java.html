@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DefaultRoleInitializer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">citas-backend</a> &gt; <a href="index.source.html" class="el_package">com.proyectocitas.config</a> &gt; <span class="el_source">DefaultRoleInitializer.java</span></div><h1>DefaultRoleInitializer.java</h1><pre class="source lang-java linenums">package com.proyectocitas.config;
+
+import com.proyectocitas.model.Permiso;
+import com.proyectocitas.model.Rol;
+import com.proyectocitas.repository.RolRepository;
+
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+
+@Component
+public class DefaultRoleInitializer
+        implements CommandLineRunner {
+
+    private final RolRepository rolRepository;
+
+
+    // =================================================
+    // CONSTRUCTOR
+    // =================================================
+
+    public DefaultRoleInitializer(
+<span class="fc" id="L27">            RolRepository rolRepository) {</span>
+
+<span class="fc" id="L29">        this.rolRepository = rolRepository;</span>
+<span class="fc" id="L30">    }</span>
+
+
+    // =================================================
+    // INICIALIZACIÓN DE ROLES PRINCIPALES
+    // =================================================
+    // Se ejecuta cuando Spring Boot inicia.
+    //
+    // Solo crea ROLE_ADMIN, ROLE_DOCTOR y ROLE_PATIENT
+    // cuando todavía no existen.
+    //
+    // Si ya existen, NO modifica sus permisos.
+
+    @Override
+    public void run(String... args) {
+
+<span class="fc" id="L46">        List&lt;Rol&gt; rolesExistentes =</span>
+<span class="fc" id="L47">                rolRepository.findAll();</span>
+
+
+<span class="fc" id="L50">        Set&lt;String&gt; nombresExistentes =</span>
+                rolesExistentes
+<span class="fc" id="L52">                        .stream()</span>
+<span class="fc" id="L53">                        .map(Rol::getNombre)</span>
+<span class="fc" id="L54">                        .collect(Collectors.toSet());</span>
+
+
+        // =================================================
+        // ROLE_ADMIN
+        // =================================================
+
+<span class="fc bfc" id="L61" title="All 2 branches covered.">        if (!nombresExistentes.contains(&quot;ROLE_ADMIN&quot;)) {</span>
+
+<span class="fc" id="L63">            Rol admin = new Rol(</span>
+                    &quot;ROLE_ADMIN&quot;,
+                    &quot;Personal encargado de gestión administrativa y control de citas&quot;
+            );
+
+<span class="fc" id="L68">            admin.setPermisos(</span>
+<span class="fc" id="L69">                    Set.of(</span>
+                            Permiso.ACCESO_ADMIN,
+                            Permiso.CREAR_USUARIOS,
+                            Permiso.VER_USUARIOS,
+                            Permiso.ACTUALIZAR_USUARIOS,
+                            Permiso.DESACTIVAR_USUARIOS,
+
+                            Permiso.CREAR_ROLES,
+                            Permiso.VER_ROLES,
+                            Permiso.ACTUALIZAR_ROLES,
+                            Permiso.ELIMINAR_ROLES,
+                            Permiso.ASIGNAR_ROLES,
+                            Permiso.ASIGNAR_PERMISOS,
+
+                            Permiso.CREAR_MEDICOS,
+                            Permiso.VER_MEDICOS,
+                            Permiso.ACTUALIZAR_MEDICOS,
+                            Permiso.ELIMINAR_MEDICOS,
+
+                            Permiso.CREAR_ESPECIALIDADES,
+                            Permiso.VER_ESPECIALIDADES,
+                            Permiso.ACTUALIZAR_ESPECIALIDADES,
+                            Permiso.ELIMINAR_ESPECIALIDADES,
+
+                            Permiso.CREAR_HORARIOS,
+                            Permiso.VER_HORARIOS_DISPONIBLES,
+
+                            Permiso.VER_CITAS,
+                            Permiso.REGISTRAR_DIAGNOSTICO
+                    )
+            );
+
+<span class="fc" id="L101">            rolRepository.save(admin);</span>
+        }
+
+
+        // =================================================
+        // ROLE_DOCTOR
+        // =================================================
+
+<span class="fc bfc" id="L109" title="All 2 branches covered.">        if (!nombresExistentes.contains(&quot;ROLE_DOCTOR&quot;)) {</span>
+
+<span class="fc" id="L111">            Rol doctor = new Rol(</span>
+                    &quot;ROLE_DOCTOR&quot;,
+                    &quot;Médico del sistema&quot;
+            );
+
+<span class="fc" id="L116">            doctor.setPermisos(</span>
+<span class="fc" id="L117">                    Set.of(</span>
+                            Permiso.ACCESO_MEDICO,
+                            Permiso.VER_MEDICOS,
+                            Permiso.VER_ESPECIALIDADES,
+                            Permiso.CREAR_HORARIOS,
+                            Permiso.VER_CITAS,
+                            Permiso.REGISTRAR_DIAGNOSTICO
+                    )
+            );
+
+<span class="fc" id="L127">            rolRepository.save(doctor);</span>
+        }
+
+
+        // =================================================
+        // ROLE_PATIENT
+        // =================================================
+
+<span class="fc bfc" id="L135" title="All 2 branches covered.">        if (!nombresExistentes.contains(&quot;ROLE_PATIENT&quot;)) {</span>
+
+<span class="fc" id="L137">            Rol patient = new Rol(</span>
+                    &quot;ROLE_PATIENT&quot;,
+                    &quot;Paciente del sistema&quot;
+            );
+
+<span class="fc" id="L142">            patient.setPermisos(</span>
+<span class="fc" id="L143">                    Set.of(</span>
+                            Permiso.ACCESO_PACIENTE,
+                            Permiso.VER_MEDICOS,
+                            Permiso.VER_ESPECIALIDADES,
+                            Permiso.VER_HORARIOS_DISPONIBLES,
+                            Permiso.CREAR_CITA,
+                            Permiso.VER_HISTORIAL,
+                            Permiso.CANCELAR_CITA
+                    )
+            );
+
+<span class="fc" id="L154">            rolRepository.save(patient);</span>
+        }
+<span class="fc" id="L156">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

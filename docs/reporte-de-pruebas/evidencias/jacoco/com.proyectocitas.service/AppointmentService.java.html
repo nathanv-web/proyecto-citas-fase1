@@ -1,0 +1,849 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AppointmentService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">citas-backend</a> &gt; <a href="index.source.html" class="el_package">com.proyectocitas.service</a> &gt; <span class="el_source">AppointmentService.java</span></div><h1>AppointmentService.java</h1><pre class="source lang-java linenums">package com.proyectocitas.service;
+
+import com.proyectocitas.dto.request.AppointmentCreateRequestDTO;
+import com.proyectocitas.dto.response.AppointmentResponseDTO;
+import com.proyectocitas.dto.request.DiagnosisRequestDTO;
+import com.proyectocitas.exception.ResourceConflictException;
+import com.proyectocitas.exception.ResourceNotFoundException;
+import com.proyectocitas.exception.ScheduleConflictException;
+
+import org.springframework.context.ApplicationEventPublisher;
+
+import com.proyectocitas.mapper.AppointmentMapper;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Isolation;
+
+import com.proyectocitas.dto.request.RescheduleRequestDTO;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.DayOfWeek;
+import java.util.Locale;
+import java.util.Objects;
+
+import com.proyectocitas.model.Cita;
+import com.proyectocitas.model.EstadoCita;
+import com.proyectocitas.model.HorarioDisponible;
+import com.proyectocitas.model.Notificacion;
+import com.proyectocitas.model.Usuario;
+import com.proyectocitas.model.Medico;
+
+import com.proyectocitas.repository.CitaRepository;
+import com.proyectocitas.repository.EstadoCitaRepository;
+import com.proyectocitas.repository.HorarioDisponibleRepository;
+import com.proyectocitas.repository.UsuarioRepository;
+import java.time.LocalDate;
+import com.proyectocitas.dto.response.DoctorAgendaResponseDTO;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
+import org.springframework.http.HttpStatusCode;
+
+
+@Service
+public class AppointmentService {
+
+    private final CitaRepository citaRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final EstadoCitaRepository estadoCitaRepository;
+    private final HorarioDisponibleRepository horarioRepository;
+    private final AppointmentMapper appointmentMapper;
+    private final ApplicationEventPublisher publicadorEventos;
+
+    public AppointmentService(
+<span class="fc" id="L56">            CitaRepository citaRepository, UsuarioRepository usuarioRepository, EstadoCitaRepository estadoCitaRepository, HorarioDisponibleRepository horarioRepository, AppointmentMapper appointmentMapper, ApplicationEventPublisher publicadorEventos) {</span>
+        
+<span class="fc" id="L58">        this.citaRepository = citaRepository;</span>
+<span class="fc" id="L59">        this.usuarioRepository = usuarioRepository;</span>
+<span class="fc" id="L60">        this.estadoCitaRepository = estadoCitaRepository;</span>
+<span class="fc" id="L61">        this.horarioRepository = horarioRepository;</span>
+<span class="fc" id="L62">        this.appointmentMapper = appointmentMapper;</span>
+<span class="fc" id="L63">        this.publicadorEventos = publicadorEventos;</span>
+<span class="fc" id="L64">    }</span>
+
+
+    // =================================================
+    // CREAR CITA
+    // =================================================
+
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+            public AppointmentResponseDTO agendarCita(
+            AppointmentCreateRequestDTO request,
+            String emailPaciente) {
+
+
+        // 1. Buscar al paciente autenticado
+<span class="fc" id="L78">        Usuario paciente = usuarioRepository</span>
+<span class="fc" id="L79">                .findByCorreo(emailPaciente)</span>
+<span class="fc" id="L80">                .orElseThrow(() -&gt;</span>
+<span class="fc" id="L81">                        new ResponseStatusException(</span>
+                                HttpStatus.UNAUTHORIZED,
+                                &quot;Paciente autenticado no encontrado&quot;
+                        )
+                );
+
+
+        // 2. Buscar el horario solicitado
+       // Buscar el horario y bloquearlo mientras se reserva
+<span class="fc" id="L90">        HorarioDisponible horario = horarioRepository</span>
+<span class="fc" id="L91">        .buscarHorarioConBloqueo(request.getIdHorario())</span>
+<span class="fc" id="L92">        .orElseThrow(() -&gt;</span>
+<span class="fc" id="L93">                new ResourceNotFoundException(</span>
+                        &quot;El horario solicitado no existe&quot;
+                )
+        );
+
+
+        // 3. Comprobar que esté disponible
+<span class="pc bpc" id="L100" title="1 of 2 branches missed.">        if (horario.getEstado()</span>
+                != HorarioDisponible.EstadoHorario.DISPONIBLE) {
+
+<span class="nc" id="L103">            throw new ScheduleConflictException(</span>
+                    &quot;El horario seleccionado no está disponible&quot;
+            );
+        }
+
+
+        // 4. Comprobar que no exista ya una cita
+        // asociada a ese horario
+<span class="fc" id="L111">        boolean tieneCitaActiva = citaRepository</span>
+<span class="fc" id="L112">        .existsByHorario_IdHorarioAndEstado_NombreNot(</span>
+<span class="fc" id="L113">                horario.getIdHorario(),</span>
+                EstadoCita.NombreEstado.CANCELADA
+        );
+
+<span class="fc bfc" id="L117" title="All 2 branches covered.">if (tieneCitaActiva) {</span>
+<span class="fc" id="L118">    throw new ScheduleConflictException(</span>
+            &quot;El horario ya tiene una cita vigente&quot;
+    );
+}
+
+
+        // 5. Obtener el estado inicial PENDIENTE
+<span class="fc" id="L125">        EstadoCita estadoPendiente =</span>
+                estadoCitaRepository
+<span class="fc" id="L127">                        .findByNombre(</span>
+                                EstadoCita.NombreEstado.PENDIENTE
+                        )
+<span class="fc" id="L130">                        .orElseThrow(() -&gt;</span>
+<span class="nc" id="L131">                                new ResponseStatusException(</span>
+                                        HttpStatus.INTERNAL_SERVER_ERROR,
+                                        &quot;No existe el estado PENDIENTE&quot;
+                                )
+                        );
+        // Validar que el horario tenga un medico registrado
+<span class="pc bpc" id="L137" title="1 of 2 branches missed.">        if (horario.getMedico() == null</span>
+<span class="pc bpc" id="L138" title="1 of 2 branches missed.">        || horario.getMedico().getUsuario() == null</span>
+<span class="pc bpc" id="L139" title="1 of 2 branches missed.">        || horario.getMedico().getUsuario().getIdUsuario() == null) {</span>
+
+<span class="nc" id="L141">        throw new ResourceConflictException(</span>
+            &quot;El horario no tiene un medico asignado correctamente&quot;
+        );
+        }
+
+<span class="fc bfc" id="L146" title="All 2 branches covered.">        if (horario.getMedico().getEstado() != Medico.EstadoMedico.ACTIVO) {</span>
+<span class="fc" id="L147">            throw new ScheduleConflictException(</span>
+                    &quot;El horario seleccionado pertenece a un médico que no está disponible&quot;);
+        }
+
+
+        // Comprobarlo bajo el bloqueo: la disponibilidad vista por el
+        // cliente puede haber vencido antes de confirmar la reserva.
+<span class="pc bpc" id="L154" title="1 of 2 branches missed.">        if (horario.getFecha() == null</span>
+<span class="pc bpc" id="L155" title="1 of 2 branches missed.">                || horario.getHoraInicio() == null</span>
+<span class="fc" id="L156">                || !LocalDateTime.of(horario.getFecha(), horario.getHoraInicio())</span>
+<span class="fc bfc" id="L157" title="All 2 branches covered.">                        .isAfter(LocalDateTime.now(ZoneId.of(&quot;America/Guatemala&quot;)))) {</span>
+<span class="fc" id="L158">            throw new ScheduleConflictException(</span>
+                    &quot;El horario seleccionado ya pasó y no puede reservarse&quot;
+            );
+        }
+
+        // 6. Crear la cita
+<span class="fc" id="L164">        Cita cita =</span>
+<span class="fc" id="L165">                appointmentMapper.toEntity(request);</span>
+
+<span class="fc" id="L167">        cita.setPaciente(paciente);</span>
+<span class="fc" id="L168">        cita.setHorario(horario);</span>
+<span class="fc" id="L169">        cita.setEstado(estadoPendiente);</span>
+
+<span class="fc" id="L171">        cita.setMotivo(</span>
+<span class="fc" id="L172">                request.getMotivo().trim()</span>
+        );
+
+
+        // 7. Cambiar el horario a RESERVADO
+<span class="fc" id="L177">        horario.setEstado(</span>
+                HorarioDisponible.EstadoHorario.RESERVADO
+        );
+
+<span class="fc" id="L181">        horarioRepository.save(horario);</span>
+
+
+        // 8. Guardar la cita
+<span class="fc" id="L185">        Cita citaGuardada =</span>
+<span class="fc" id="L186">        citaRepository.save(cita);</span>
+
+        // 9. Publicar evento de reserva
+<span class="fc" id="L189">        publicadorEventos.publishEvent(</span>
+        new CitaReservadaEvent(
+<span class="fc" id="L191">                citaGuardada.getIdCita(),</span>
+<span class="fc" id="L192">                horario.getMedico()</span>
+<span class="fc" id="L193">                        .getUsuario()</span>
+<span class="fc" id="L194">                        .getIdUsuario(),</span>
+                emailPaciente,
+<span class="fc" id="L196">                horario.getFecha(),</span>
+<span class="fc" id="L197">                horario.getHoraInicio()</span>
+        )
+);
+
+<span class="fc" id="L201">        publicadorEventos.publishEvent(new CitaPacienteEvent(</span>
+<span class="fc" id="L202">                citaGuardada.getIdCita(), Notificacion.Tipo.CITA_RESERVADA));</span>
+
+        // 10. Devolver DTO
+<span class="fc" id="L205">        return appointmentMapper.toDTO(citaGuardada);</span>
+    }
+
+
+    // =================================================
+    // REGISTRAR DIAGNÓSTICO
+    // =================================================
+
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+public AppointmentResponseDTO registrarDiagnostico(
+            Long idCita,
+            DiagnosisRequestDTO diagnosisRequest,
+            String emailMedico) {
+
+
+<span class="fc" id="L220">        Usuario usuarioAutenticado =</span>
+                usuarioRepository
+<span class="fc" id="L222">                        .findByCorreo(emailMedico)</span>
+<span class="fc" id="L223">                        .orElseThrow(() -&gt;</span>
+<span class="fc" id="L224">                                new ResponseStatusException(</span>
+                                        HttpStatus.UNAUTHORIZED,
+                                        &quot;Usuario autenticado no encontrado&quot;
+                                )
+                        );
+
+
+        // Obtener el horario relacionado con la cita
+<span class="fc" id="L232">        Long idHorario = citaRepository</span>
+<span class="fc" id="L233">        .obtenerIdHorarioDeCita(idCita)</span>
+<span class="fc" id="L234">        .orElseThrow(() -&gt;</span>
+<span class="fc" id="L235">                new ResourceNotFoundException(</span>
+                        &quot;La cita médica no existe&quot;
+                )
+        );
+
+        // Bloquear el horario mientras se registra
+        // el diagnóstico
+<span class="fc" id="L242">        horarioRepository</span>
+<span class="fc" id="L243">        .buscarHorarioConBloqueo(idHorario)</span>
+<span class="fc" id="L244">        .orElseThrow(() -&gt;</span>
+<span class="nc" id="L245">                new ResourceNotFoundException(</span>
+                        &quot;El horario no existe&quot;
+                )
+        );
+
+// Consultar la cita después de adquirir el bloqueo
+<span class="fc" id="L251">Cita cita = citaRepository</span>
+<span class="fc" id="L252">        .findById(idCita)</span>
+<span class="fc" id="L253">        .orElseThrow(() -&gt;</span>
+<span class="nc" id="L254">                new ResourceNotFoundException(</span>
+                        &quot;La cita médica no existe&quot;
+                )
+        );
+
+
+<span class="pc bpc" id="L260" title="1 of 2 branches missed.">        if (cita.getHorario() == null</span>
+<span class="fc bfc" id="L261" title="All 2 branches covered.">                || cita.getHorario().getMedico() == null</span>
+<span class="fc" id="L262">                || cita.getHorario()</span>
+<span class="fc" id="L263">                        .getMedico()</span>
+<span class="pc bpc" id="L264" title="1 of 2 branches missed.">                        .getUsuario() == null) {</span>
+
+<span class="fc" id="L266">            throw new ResourceConflictException(</span>
+                    &quot;La cita no tiene un médico asignado correctamente&quot;
+            );
+        }
+
+
+<span class="fc" id="L272">        Usuario medicoAsignado =</span>
+<span class="fc" id="L273">                cita.getHorario()</span>
+<span class="fc" id="L274">                        .getMedico()</span>
+<span class="fc" id="L275">                        .getUsuario();</span>
+
+
+<span class="fc" id="L278">        if (!medicoAsignado</span>
+<span class="fc" id="L279">                .getIdUsuario()</span>
+<span class="fc bfc" id="L280" title="All 2 branches covered.">                .equals(</span>
+<span class="fc" id="L281">                        usuarioAutenticado.getIdUsuario()</span>
+                )) {
+
+<span class="fc" id="L284">            throw new ResponseStatusException(</span>
+                    HttpStatus.FORBIDDEN,
+                    &quot;Solo el médico asignado puede registrar el diagnóstico&quot;
+            );
+        }
+
+
+<span class="pc bpc" id="L291" title="1 of 2 branches missed.">        if (cita.getEstado() == null</span>
+<span class="fc bfc" id="L292" title="All 2 branches covered.">                || cita.getEstado().getNombre()</span>
+                != EstadoCita.NombreEstado.PENDIENTE) {
+
+<span class="fc" id="L295">            throw new ResourceConflictException(</span>
+                    &quot;Solo se pueden completar citas que estén en estado PENDIENTE&quot;
+            );
+        }
+
+
+<span class="fc" id="L301">        EstadoCita estadoCompletada =</span>
+                estadoCitaRepository
+<span class="fc" id="L303">                        .findByNombre(</span>
+                                EstadoCita.NombreEstado.COMPLETADA
+                        )
+<span class="fc" id="L306">                        .orElseThrow(() -&gt;</span>
+<span class="nc" id="L307">                                new ResponseStatusException(</span>
+                                        HttpStatus.INTERNAL_SERVER_ERROR,
+                                        &quot;No se encontró el estado COMPLETADA&quot;
+                                )
+                        );
+
+
+<span class="fc" id="L314">        cita.setDiagnosticoReceta(</span>
+                diagnosisRequest
+<span class="fc" id="L316">                        .getDiagnosticoReceta()</span>
+<span class="fc" id="L317">                        .trim()</span>
+        );
+
+<span class="fc" id="L320">        cita.setObservaciones(</span>
+<span class="fc" id="L321">                diagnosisRequest.getObservaciones()</span>
+        );
+
+<span class="fc" id="L324">        cita.setEstado(estadoCompletada);</span>
+
+
+<span class="fc" id="L327">        Cita citaActualizada =</span>
+<span class="fc" id="L328">                citaRepository.save(cita);</span>
+
+<span class="fc" id="L330">        publicadorEventos.publishEvent(new CitaPacienteEvent(</span>
+<span class="fc" id="L331">                citaActualizada.getIdCita(), Notificacion.Tipo.DIAGNOSTICO_DISPONIBLE));</span>
+
+<span class="fc" id="L333">        return appointmentMapper</span>
+<span class="fc" id="L334">                .toDTO(citaActualizada);</span>
+    }
+
+
+    // =================================================
+    // HISTORIAL DEL PACIENTE
+    // =================================================
+
+    @Transactional(readOnly = true)
+    public List&lt;AppointmentResponseDTO&gt;
+            obtenerMiHistorial(
+                    String emailPaciente) {
+
+
+<span class="fc" id="L348">        Usuario paciente =</span>
+                usuarioRepository
+<span class="fc" id="L350">                        .findByCorreo(emailPaciente)</span>
+<span class="fc" id="L351">                        .orElseThrow(() -&gt;</span>
+<span class="fc" id="L352">                                new ResponseStatusException(</span>
+                                        HttpStatus.UNAUTHORIZED,
+                                        &quot;Usuario autenticado no encontrado&quot;
+                                )
+                        );
+
+
+<span class="fc" id="L359">        return citaRepository</span>
+<span class="fc" id="L360">                .findByPaciente_IdUsuario(</span>
+<span class="fc" id="L361">                        paciente.getIdUsuario()</span>
+                )
+<span class="fc" id="L363">                .stream()</span>
+<span class="fc" id="L364">                .map(appointmentMapper::toDTO)</span>
+<span class="fc" id="L365">                .toList();</span>
+    }
+// =================================================
+// CANCELAR CITA CON BLOQUEO TRANSACCIONAL
+// =================================================
+
+@Transactional(isolation = Isolation.READ_COMMITTED)
+public AppointmentResponseDTO cancelarCita(
+        Long idCita,
+        String correoPaciente,
+        String motivoCancelacion) {
+
+
+    // 1. Buscar al paciente autenticado
+<span class="fc" id="L379">    Usuario paciente = usuarioRepository</span>
+<span class="fc" id="L380">            .findByCorreo(correoPaciente)</span>
+<span class="fc" id="L381">            .orElseThrow(() -&gt;</span>
+<span class="fc" id="L382">                    new ResponseStatusException(</span>
+                            HttpStatus.UNAUTHORIZED,
+                            &quot;Paciente autenticado no encontrado&quot;
+                    )
+            );
+
+    // 2. Obtener el horario asociado a la cita
+<span class="fc" id="L389">    Long idHorario = citaRepository</span>
+<span class="fc" id="L390">            .obtenerIdHorarioDeCita(idCita)</span>
+<span class="fc" id="L391">            .orElseThrow(() -&gt;</span>
+<span class="fc" id="L392">                    new ResourceNotFoundException(</span>
+                            &quot;La cita no existe&quot;
+                    )
+            );
+
+    // 3. Bloquear el horario durante la cancelacion
+<span class="fc" id="L398">    HorarioDisponible horario = horarioRepository</span>
+<span class="fc" id="L399">            .buscarHorarioConBloqueo(idHorario)</span>
+<span class="fc" id="L400">            .orElseThrow(() -&gt;</span>
+<span class="nc" id="L401">                    new ResourceNotFoundException(</span>
+                            &quot;El horario no existe&quot;
+                    )
+            );
+
+    // 4. Consultar la cita despues de adquirir el bloqueo
+<span class="fc" id="L407">    Cita cita = citaRepository</span>
+<span class="fc" id="L408">            .findById(idCita)</span>
+<span class="fc" id="L409">            .orElseThrow(() -&gt;</span>
+<span class="nc" id="L410">                    new ResourceNotFoundException(</span>
+                            &quot;La cita no existe&quot;
+                    )
+            );
+
+    // 5. Verificar que pertenezca al paciente
+<span class="pc bpc" id="L416" title="1 of 2 branches missed.">    if (cita.getPaciente() == null</span>
+<span class="fc" id="L417">            || !cita.getPaciente()</span>
+<span class="fc" id="L418">                    .getIdUsuario()</span>
+<span class="fc bfc" id="L419" title="All 2 branches covered.">                    .equals(paciente.getIdUsuario())) {</span>
+
+<span class="fc" id="L421">        throw new ResponseStatusException(</span>
+                HttpStatus.FORBIDDEN,
+                &quot;No puedes cancelar una cita de otro paciente&quot;
+        );
+    }
+
+    // 6. Validar que la cita este pendiente
+<span class="pc bpc" id="L428" title="1 of 2 branches missed.">    if (cita.getEstado() == null</span>
+<span class="fc bfc" id="L429" title="All 2 branches covered.">            || cita.getEstado().getNombre()</span>
+            != EstadoCita.NombreEstado.PENDIENTE) {
+
+<span class="fc" id="L432">        throw new ResourceConflictException(</span>
+                &quot;Solo se pueden cancelar citas pendientes&quot;
+        );
+    }
+
+    // 7. Obtener el estado CANCELADA
+<span class="fc" id="L438">    EstadoCita estadoCancelada = estadoCitaRepository</span>
+<span class="fc" id="L439">            .findByNombre(</span>
+                    EstadoCita.NombreEstado.CANCELADA
+            )
+<span class="fc" id="L442">            .orElseThrow(() -&gt;</span>
+<span class="fc" id="L443">                    new ResponseStatusException(</span>
+                            HttpStatus.INTERNAL_SERVER_ERROR,
+                            &quot;No existe el estado CANCELADA&quot;
+                    )
+            );
+
+    // 8. Cambiar el estado de la cita, Validar y registrar el motivo de cancelacion
+<span class="pc bpc" id="L450" title="1 of 2 branches missed.">String motivoLimpio = motivoCancelacion == null</span>
+<span class="fc" id="L451">        ? null</span>
+<span class="pc" id="L452">        : motivoCancelacion.trim();</span>
+
+<span class="pc bpc" id="L454" title="3 of 4 branches missed.">if (motivoLimpio != null &amp;&amp; motivoLimpio.isEmpty()) {</span>
+<span class="nc" id="L455">    motivoLimpio = null;</span>
+}
+
+<span class="pc bpc" id="L458" title="3 of 4 branches missed.">if (motivoLimpio != null &amp;&amp; motivoLimpio.length() &gt; 500) {</span>
+<span class="nc" id="L459">    throw new ResponseStatusException(</span>
+            HttpStatus.BAD_REQUEST,
+            &quot;El motivo de cancelacion no puede superar 500 caracteres&quot;
+    );
+}
+
+// Cambiar el estado de la cita
+<span class="fc" id="L466">cita.setEstado(estadoCancelada);</span>
+<span class="fc" id="L467">cita.setMotivoCancelacion(motivoLimpio);</span>
+
+    // 9. Liberar el horario si estaba reservado
+<span class="pc bpc" id="L470" title="1 of 2 branches missed.">    if (horario.getEstado()</span>
+            == HorarioDisponible.EstadoHorario.RESERVADO) {
+<span class="fc" id="L472">        horario.setEstado(</span>
+                HorarioDisponible.EstadoHorario.DISPONIBLE
+        );
+    }
+
+    // 10. Guardar los cambios
+<span class="fc" id="L478">    horarioRepository.save(horario);</span>
+<span class="fc" id="L479">    Cita guardada = citaRepository.save(cita);</span>
+
+<span class="fc" id="L481">    publicadorEventos.publishEvent(new CitaPacienteEvent(</span>
+<span class="fc" id="L482">            guardada.getIdCita(), Notificacion.Tipo.CITA_CANCELADA));</span>
+
+    // 11. Devolver la cita cancelada
+<span class="fc" id="L485">    return appointmentMapper.toDTO(guardada);</span>
+}
+
+// =================================================
+// CANCELAR CITA SIN MOTIVO (COMPATIBILIDAD)
+// =================================================
+
+@Transactional(isolation = Isolation.READ_COMMITTED)
+public AppointmentResponseDTO cancelarCita(
+        Long idCita,
+        String correoPaciente) {
+
+<span class="fc" id="L497">    return cancelarCita(idCita, correoPaciente, null);</span>
+}
+
+// =================================================
+// REPROGRAMAR CITA MEDICA
+// =================================================
+
+@Transactional(isolation = Isolation.READ_COMMITTED)
+public AppointmentResponseDTO reprogramarCita(
+        Long idCita,
+        RescheduleRequestDTO request,
+        String correoPaciente) {
+
+    // 1. Obtener al paciente autenticado
+<span class="fc" id="L511">    Usuario paciente = usuarioRepository</span>
+<span class="fc" id="L512">            .findByCorreo(correoPaciente)</span>
+<span class="fc" id="L513">            .orElseThrow(() -&gt;</span>
+<span class="fc" id="L514">                    new ResponseStatusException(</span>
+                            HttpStatus.UNAUTHORIZED,
+                            &quot;Paciente no encontrado&quot;
+                    )
+            );
+
+    // 2. Obtener el horario actual de la cita
+<span class="fc" id="L521">    Long idHorarioAnterior = citaRepository</span>
+<span class="fc" id="L522">            .obtenerIdHorarioDeCita(idCita)</span>
+<span class="fc" id="L523">            .orElseThrow(() -&gt;</span>
+<span class="fc" id="L524">                    new ResourceNotFoundException(</span>
+                            &quot;La cita no existe&quot;
+                    )
+            );
+
+<span class="fc" id="L529">    Long idHorarioNuevo = request.getIdHorarioNuevo();</span>
+
+    // 3. No permitir seleccionar el mismo horario
+<span class="fc bfc" id="L532" title="All 2 branches covered.">    if (idHorarioAnterior.equals(idHorarioNuevo)) {</span>
+<span class="fc" id="L533">        throw new ResponseStatusException(</span>
+                HttpStatus.BAD_REQUEST,
+                &quot;Debes seleccionar un horario diferente&quot;
+        );
+    }
+
+    // 4. Bloquear ambos horarios en orden ascendente
+    // para reducir el riesgo de interbloqueos.
+<span class="fc" id="L541">    Long primerId = Math.min(</span>
+<span class="fc" id="L542">            idHorarioAnterior, idHorarioNuevo</span>
+    );
+
+<span class="fc" id="L545">    Long segundoId = Math.max(</span>
+<span class="fc" id="L546">            idHorarioAnterior, idHorarioNuevo</span>
+    );
+
+<span class="fc" id="L549">    HorarioDisponible primero = horarioRepository</span>
+<span class="fc" id="L550">            .buscarHorarioConBloqueo(primerId)</span>
+<span class="fc" id="L551">            .orElseThrow(() -&gt;</span>
+<span class="fc" id="L552">                    new ResourceNotFoundException(</span>
+                            &quot;Uno de los horarios no existe&quot;
+                    )
+            );
+
+<span class="fc" id="L557">    HorarioDisponible segundo = horarioRepository</span>
+<span class="fc" id="L558">            .buscarHorarioConBloqueo(segundoId)</span>
+<span class="fc" id="L559">            .orElseThrow(() -&gt;</span>
+<span class="fc" id="L560">                    new ResourceNotFoundException(</span>
+                            &quot;Uno de los horarios no existe&quot;
+                    )
+            );
+
+    HorarioDisponible horarioAnterior =
+<span class="fc bfc" id="L566" title="All 2 branches covered.">            idHorarioAnterior.equals(primerId)</span>
+<span class="fc" id="L567">                    ? primero : segundo;</span>
+
+    HorarioDisponible horarioNuevo =
+<span class="fc bfc" id="L570" title="All 2 branches covered.">            idHorarioNuevo.equals(primerId)</span>
+<span class="fc" id="L571">                    ? primero : segundo;</span>
+
+    // 5. Consultar nuevamente la cita
+<span class="fc" id="L574">    Cita cita = citaRepository.findById(idCita)</span>
+<span class="fc" id="L575">            .orElseThrow(() -&gt;</span>
+<span class="fc" id="L576">                    new ResourceNotFoundException(</span>
+                            &quot;La cita no existe&quot;
+                    )
+            );
+
+    // 6. Validar que sea del paciente autenticado
+<span class="fc bfc" id="L582" title="All 2 branches covered.">    if (cita.getPaciente() == null</span>
+<span class="fc bfc" id="L583" title="All 2 branches covered.">            || !Objects.equals(</span>
+<span class="fc" id="L584">                    cita.getPaciente().getIdUsuario(),</span>
+<span class="fc" id="L585">                    paciente.getIdUsuario())) {</span>
+
+<span class="fc" id="L587">        throw new ResponseStatusException(</span>
+                HttpStatus.FORBIDDEN,
+                &quot;No puedes reprogramar citas de otro paciente&quot;
+        );
+    }
+
+    // 7. Verificar que la cita no haya cambiado
+    // mientras se adquirian los bloqueos
+<span class="fc bfc" id="L595" title="All 2 branches covered.">    if (cita.getHorario() == null</span>
+<span class="fc bfc" id="L596" title="All 2 branches covered.">            || !Objects.equals(</span>
+<span class="fc" id="L597">                    cita.getHorario().getIdHorario(),</span>
+                    idHorarioAnterior)) {
+
+<span class="fc" id="L600">        throw new ScheduleConflictException(</span>
+                &quot;La cita fue modificada. Intenta nuevamente&quot;
+        );
+    }
+
+    // 8. Solo reprogramar citas pendientes
+<span class="fc bfc" id="L606" title="All 2 branches covered.">    if (cita.getEstado() == null</span>
+<span class="fc bfc" id="L607" title="All 2 branches covered.">            || cita.getEstado().getNombre()</span>
+            != EstadoCita.NombreEstado.PENDIENTE) {
+
+<span class="fc" id="L610">        throw new ResourceConflictException(</span>
+                &quot;Solo puedes reprogramar citas pendientes&quot;
+        );
+    }
+
+    // 9. Mantener el mismo medico
+<span class="fc bfc" id="L616" title="All 2 branches covered.">    if (horarioAnterior.getMedico() == null</span>
+<span class="fc bfc" id="L617" title="All 2 branches covered.">            || horarioNuevo.getMedico() == null</span>
+<span class="fc bfc" id="L618" title="All 2 branches covered.">            || !Objects.equals(</span>
+<span class="fc" id="L619">                    horarioAnterior.getMedico().getIdMedico(),</span>
+<span class="fc" id="L620">                    horarioNuevo.getMedico().getIdMedico())) {</span>
+
+<span class="fc" id="L622">        throw new ResponseStatusException(</span>
+                HttpStatus.BAD_REQUEST,
+                &quot;El nuevo horario debe ser del mismo medico&quot;
+        );
+    }
+
+    // 10. Comprobar disponibilidad
+<span class="fc bfc" id="L629" title="All 2 branches covered.">    if (horarioAnterior.getEstado()</span>
+            != HorarioDisponible.EstadoHorario.RESERVADO
+<span class="fc bfc" id="L631" title="All 2 branches covered.">            || horarioNuevo.getEstado()</span>
+            != HorarioDisponible.EstadoHorario.DISPONIBLE) {
+
+<span class="fc" id="L634">        throw new ScheduleConflictException(</span>
+                &quot;El horario no esta disponible&quot;
+        );
+    }
+
+    // 11. Validar que sea una fecha futura
+<span class="fc bfc" id="L640" title="All 2 branches covered.">    if (horarioNuevo.getFecha() == null</span>
+<span class="fc bfc" id="L641" title="All 2 branches covered.">            || horarioNuevo.getHoraInicio() == null</span>
+<span class="fc" id="L642">            || !LocalDateTime.of(</span>
+<span class="fc" id="L643">                    horarioNuevo.getFecha(),</span>
+<span class="fc" id="L644">                    horarioNuevo.getHoraInicio()</span>
+<span class="fc bfc" id="L645" title="All 2 branches covered.">            ).isAfter(LocalDateTime.now(ZoneId.of(&quot;America/Guatemala&quot;)))) {</span>
+
+<span class="fc" id="L647">        throw new ResponseStatusException(</span>
+                HttpStatus.BAD_REQUEST,
+                &quot;El nuevo horario debe ser futuro&quot;
+        );
+    }
+
+    // 12. Comprobar que no exista otra cita vigente
+<span class="fc" id="L654">    boolean ocupado = citaRepository</span>
+<span class="fc" id="L655">            .existsByHorario_IdHorarioAndEstado_NombreNot(</span>
+                    idHorarioNuevo,
+                    EstadoCita.NombreEstado.CANCELADA
+            );
+
+<span class="fc bfc" id="L660" title="All 2 branches covered.">    if (ocupado) {</span>
+<span class="fc" id="L661">        throw new ScheduleConflictException(</span>
+                &quot;El nuevo horario ya tiene una cita vigente&quot;
+        );
+    }
+
+    // 13. Liberar el horario anterior
+<span class="fc" id="L667">    horarioAnterior.setEstado(</span>
+            HorarioDisponible.EstadoHorario.DISPONIBLE
+    );
+
+    // 14. Reservar el nuevo horario
+<span class="fc" id="L672">    horarioNuevo.setEstado(</span>
+            HorarioDisponible.EstadoHorario.RESERVADO
+    );
+
+    // 15. Cambiar el horario de la cita
+<span class="fc" id="L677">    cita.setHorario(horarioNuevo);</span>
+<span class="fc" id="L678">    cita.setRecordatorioEnviado(false);</span>
+
+    // 16. Guardar los cambios
+<span class="fc" id="L681">    horarioRepository.save(horarioAnterior);</span>
+<span class="fc" id="L682">    horarioRepository.save(horarioNuevo);</span>
+
+<span class="fc" id="L684">    Cita actualizada = citaRepository.save(cita);</span>
+
+<span class="fc" id="L686">    publicadorEventos.publishEvent(new CitaPacienteEvent(</span>
+<span class="fc" id="L687">            actualizada.getIdCita(), Notificacion.Tipo.CITA_REPROGRAMADA));</span>
+
+<span class="fc" id="L689">    return appointmentMapper.toDTO(actualizada);</span>
+}
+
+/// =================================================
+// AGENDA DEL MEDICO CON FILTROS
+// =================================================
+
+@Transactional(readOnly = true)
+public List&lt;DoctorAgendaResponseDTO&gt; obtenerMiAgenda(
+        String correoMedico,
+        LocalDate fecha,
+        String periodo,
+        LocalDate desde,
+        LocalDate hasta) {
+
+    // 1. Validar usuario autenticado
+<span class="fc" id="L705">    usuarioRepository.findByCorreo(correoMedico)</span>
+<span class="fc" id="L706">            .orElseThrow(() -&gt;</span>
+<span class="fc" id="L707">                    new ResponseStatusException(</span>
+                            HttpStatus.UNAUTHORIZED,
+                            &quot;Usuario autenticado no encontrado&quot;
+                    )
+            );
+
+    LocalDate inicio;
+    LocalDate fin;
+
+    // 2. Consultar un rango personalizado
+<span class="fc bfc" id="L717" title="All 4 branches covered.">    if (desde != null || hasta != null) {</span>
+
+<span class="fc bfc" id="L719" title="All 8 branches covered.">        if (desde == null || hasta == null</span>
+                || fecha != null || periodo != null) {
+
+<span class="fc" id="L722">            throw new ResponseStatusException(</span>
+                    HttpStatus.BAD_REQUEST,
+                    &quot;Utiliza desde y hasta sin combinar otros filtros&quot;
+            );
+        }
+
+<span class="fc" id="L728">        inicio = desde;</span>
+<span class="fc" id="L729">        fin = hasta;</span>
+
+    } else {
+
+        // 3. Obtener la fecha de referencia
+<span class="fc bfc" id="L734" title="All 2 branches covered.">        LocalDate referencia = fecha == null</span>
+<span class="fc" id="L735">                ? LocalDate.now()</span>
+<span class="fc" id="L736">                : fecha;</span>
+
+<span class="fc bfc" id="L738" title="All 4 branches covered.">        String tipo = periodo == null || periodo.isBlank()</span>
+<span class="fc" id="L739">                ? &quot;dia&quot;</span>
+<span class="fc" id="L740">                : periodo.trim().toLowerCase(Locale.ROOT);</span>
+
+        // 4. Calcular el periodo solicitado
+<span class="fc bfc" id="L743" title="All 4 branches covered.">        switch (tipo) {</span>
+
+            case &quot;dia&quot; -&gt; {
+<span class="fc" id="L746">                inicio = referencia;</span>
+<span class="fc" id="L747">                fin = referencia;</span>
+<span class="fc" id="L748">            }</span>
+
+            case &quot;semana&quot; -&gt; {
+<span class="fc" id="L751">                inicio = referencia.with(DayOfWeek.MONDAY);</span>
+<span class="fc" id="L752">                fin = inicio.plusDays(6);</span>
+<span class="fc" id="L753">            }</span>
+
+            case &quot;mes&quot; -&gt; {
+<span class="fc" id="L756">                inicio = referencia.withDayOfMonth(1);</span>
+<span class="fc" id="L757">                fin = referencia.withDayOfMonth(</span>
+<span class="fc" id="L758">                        referencia.lengthOfMonth()</span>
+                );
+<span class="fc" id="L760">            }</span>
+
+<span class="fc" id="L762">            default -&gt; throw new ResponseStatusException(</span>
+                    HttpStatus.BAD_REQUEST,
+                    &quot;El periodo debe ser dia, semana o mes&quot;
+            );
+        }
+    }
+
+    // 5. Verificar el orden de las fechas
+<span class="fc bfc" id="L770" title="All 2 branches covered.">    if (inicio.isAfter(fin)) {</span>
+<span class="fc" id="L771">        throw new ResponseStatusException(</span>
+                HttpStatus.BAD_REQUEST,
+                &quot;La fecha inicial no puede superar la final&quot;
+        );
+    }
+
+    // 6. Consultar las citas del medico autenticado
+    List&lt;Cita&gt; citas;
+
+<span class="fc bfc" id="L780" title="All 2 branches covered.">    if (inicio.equals(fin)) {</span>
+<span class="fc" id="L781">        citas = citaRepository</span>
+<span class="fc" id="L782">                .findAgendaByCorreoMedicoAndFecha(</span>
+                        correoMedico,
+                        inicio
+                );
+    } else {
+<span class="fc" id="L787">        citas = citaRepository</span>
+<span class="fc" id="L788">                .findAgendaByCorreoMedicoAndRango(</span>
+                        correoMedico,
+                        inicio,
+                        fin
+                );
+    }
+
+    // 7. Convertir las citas a DTO
+<span class="fc" id="L796">    return citas.stream()</span>
+<span class="fc" id="L797">            .map(cita -&gt; {</span>
+
+<span class="fc" id="L799">                AppointmentResponseDTO citaDTO =</span>
+<span class="fc" id="L800">                        appointmentMapper.toDTO(cita);</span>
+
+<span class="fc" id="L802">                DoctorAgendaResponseDTO agenda = new DoctorAgendaResponseDTO(</span>
+<span class="fc" id="L803">                        citaDTO.getIdCita(),</span>
+<span class="fc" id="L804">                        citaDTO.getPaciente(),</span>
+<span class="fc" id="L805">                        citaDTO.getHoraInicio(),</span>
+<span class="fc" id="L806">                        citaDTO.getHoraFin(),</span>
+<span class="fc" id="L807">                        citaDTO.getMotivo(),</span>
+<span class="fc" id="L808">                        citaDTO.getEstado()</span>
+                );
+
+<span class="fc" id="L811">                agenda.setFecha(citaDTO.getFecha());</span>
+
+<span class="fc" id="L813">                return agenda;</span>
+            })
+<span class="fc" id="L815">            .toList();</span>
+}
+
+// =================================================
+// COMPATIBILIDAD CON LA AGENDA ORIGINAL
+// =================================================
+
+@Transactional(readOnly = true)
+public List&lt;DoctorAgendaResponseDTO&gt; obtenerMiAgenda(
+        String correoMedico) {
+
+<span class="fc" id="L826">    return obtenerMiAgenda(</span>
+            correoMedico,
+            null,
+            null,
+            null,
+            null
+    );
+}
+
+// =================================================
+// LISTAR TODAS LAS CITAS
+// =================================================
+
+@Transactional(readOnly = true)
+public List&lt;AppointmentResponseDTO&gt; obtenerTodasLasCitas() {
+
+<span class="fc" id="L842">    return citaRepository</span>
+<span class="fc" id="L843">            .findAll()</span>
+<span class="fc" id="L844">            .stream()</span>
+<span class="fc" id="L845">            .map(appointmentMapper::toDTO)</span>
+<span class="fc" id="L846">            .toList();</span>
+}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

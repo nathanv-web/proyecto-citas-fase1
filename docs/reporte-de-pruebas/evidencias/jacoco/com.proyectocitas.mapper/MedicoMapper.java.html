@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MedicoMapper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">citas-backend</a> &gt; <a href="index.source.html" class="el_package">com.proyectocitas.mapper</a> &gt; <span class="el_source">MedicoMapper.java</span></div><h1>MedicoMapper.java</h1><pre class="source lang-java linenums">package com.proyectocitas.mapper;
+
+import com.proyectocitas.dto.response.MedicoResponseDTO;
+import com.proyectocitas.dto.request.MedicoCreateRequestDTO;
+import com.proyectocitas.model.Medico;
+import org.springframework.stereotype.Component;
+
+@Component
+<span class="fc" id="L9">public class MedicoMapper {</span>
+
+    //Convierte una entidad Medico a MedicoResponseDTO
+    public MedicoResponseDTO toDTO(Medico medico) {
+
+        //Evitar error si el medico viene null
+<span class="fc bfc" id="L15" title="All 2 branches covered.">        if (medico == null) {</span>
+<span class="fc" id="L16">            return null;</span>
+        }
+
+<span class="fc" id="L19">        MedicoResponseDTO dto = new MedicoResponseDTO();</span>
+
+<span class="fc" id="L21">        dto.setIdMedico(medico.getIdMedico());</span>
+<span class="fc" id="L22">        dto.setColegiado(medico.getColegiado());</span>
+<span class="fc" id="L23">        dto.setAniosExperiencia(medico.getAniosExperiencia());</span>
+<span class="fc" id="L24">        dto.setBiografia(medico.getBiografia());</span>
+
+
+        //Convertir el estado Enum a texto
+<span class="fc bfc" id="L28" title="All 2 branches covered.">        if (medico.getEstado() != null) {</span>
+
+<span class="fc" id="L30">            dto.setEstado(</span>
+<span class="fc" id="L31">                    medico.getEstado().name()</span>
+            );
+        }
+
+
+        //Obtener los datos del usuario asociado al medico
+<span class="fc bfc" id="L37" title="All 2 branches covered.">        if (medico.getUsuario() != null) {</span>
+
+<span class="fc" id="L39">            String nombreCompleto =</span>
+<span class="fc" id="L40">                    medico.getUsuario().getNombre()</span>
+                    + &quot; &quot;
+<span class="fc" id="L42">                    + medico.getUsuario().getApellido();</span>
+
+<span class="fc" id="L44">            dto.setNombre(nombreCompleto);</span>
+
+<span class="fc" id="L46">            dto.setCorreo(</span>
+<span class="fc" id="L47">                    medico.getUsuario().getCorreo()</span>
+            );
+        }
+
+
+        //Obtener el nombre de la especialidad
+<span class="fc bfc" id="L53" title="All 2 branches covered.">        if (medico.getEspecialidad() != null) {</span>
+
+<span class="fc" id="L55">            dto.setEspecialidad(</span>
+<span class="fc" id="L56">                    medico.getEspecialidad().getNombre()</span>
+            );
+        }
+
+
+<span class="fc" id="L61">        return dto;</span>
+    }
+
+
+    //Convierte un MedicoCreateRequestDTO a una entidad Medico
+    public Medico toEntity(MedicoCreateRequestDTO dto) {
+
+        //Evitar error si el DTO viene null
+<span class="fc bfc" id="L69" title="All 2 branches covered.">        if (dto == null) {</span>
+<span class="fc" id="L70">            return null;</span>
+        }
+
+<span class="fc" id="L73">        Medico medico = new Medico();</span>
+
+<span class="fc" id="L75">        medico.setColegiado(</span>
+<span class="fc" id="L76">                dto.getColegiado()</span>
+        );
+
+<span class="fc" id="L79">        medico.setAniosExperiencia(</span>
+<span class="fc" id="L80">                dto.getAniosExperiencia()</span>
+        );
+
+<span class="fc" id="L83">        medico.setBiografia(</span>
+<span class="fc" id="L84">                dto.getBiografia()</span>
+        );
+
+<span class="fc" id="L87">        return medico;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>
